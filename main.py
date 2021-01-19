@@ -38,7 +38,7 @@ while i <= 200:
             Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + brasilBitcoin.nome + ' -> Saldo em BRL: ' + str(locale.currency(brasilBitcoin.saldoBRL)))
             Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + brasilBitcoin.nome + ' -> Saldo em {}: '.format(brasilBitcoin.saldoCrypto))
         else:
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] Pnl: ' + retornoVenda['ErroPnl'] + ' | Saldo: ' + retornoVenda['ErroSaldo'])
+            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] Pnl: ' + retornoVenda['ErroPnl'] + ' | Saldo: ' + retornoVenda['ErroSaldo']) 
 
     i += 1
     print(i)
