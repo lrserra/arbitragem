@@ -28,6 +28,8 @@ class Corretora:
             self.book = MercadoBitcoin(self.ativo).obterBooks()
         elif self.nome == 'BrasilBitcoin':
             self.book = BrasilBitcoin(self.ativo).obterBooks()
+        elif self.nome == 'BitcoinTrade':
+            self.book = BitcoinTrade(self.ativo).obterBooks()
 
         self.carregarBooks(ativo)
 
@@ -45,6 +47,13 @@ class Corretora:
             self.qtdCompra = self.book['sell'][ordem]['quantidade']
             self.precoVenda = self.book['buy'][ordem]['preco']
             self.qtdVenda = self.book['buy'][ordem]['quantidade']
+            self.corretagem = 0.005
+
+        elif self.nome == 'BitcoinTrade':
+            self.precoCompra = self.book['asks'][ordem]['unit_price']
+            self.qtdCompra = self.book['asks'][ordem]['amount']
+            self.precoVenda = self.book['bids'][ordem]['unit_price']
+            self.qtdVenda = self.book['bids'][ordem]['amount']
             self.corretagem = 0.005
         
         self.amountCompra = self.precoCompra * self.qtdCompra
