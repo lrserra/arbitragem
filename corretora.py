@@ -70,12 +70,18 @@ class Corretora:
             return self.precoVenda * self.qtdVenda
         return self.precoVenda * qtdVenda
 
+    def obterOrdemPorId(seld, idOrdem):
+        if self.nome == 'MercadoBitcoin':
+            pass
+        elif self.nome == 'BrasilBitcoin':
+            return BrasilBitcoin(self.ativo).obterOrdemPorId(idOrdem)
+
     def atualizarSaldo(self):
         if self.nome == 'MercadoBitcoin':
             response_json = MercadoBitcoin(self.ativo).obterSaldo()
             self.saldoBRL = float(response_json['response_data']['balance']['brl']['available'])
             self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['available'])
-        if self.nome == 'BrasilBitcoin':
+        elif self.nome == 'BrasilBitcoin':
             response_json = BrasilBitcoin(self.ativo).obterSaldo()
             self.saldoBRL = float(response_json['brl'])
             self.saldoCrypto = float(response_json[self.ativo])
@@ -91,6 +97,12 @@ class Corretora:
             return MercadoBitcoin(self.ativo).enviarOrdemVenda(quantity, typeOrder, self.precoVenda)
         elif self.nome == 'BrasilBitcoin':
             return BrasilBitcoin(self.ativo).enviarOrdemVenda(quantity, typeOrder, self.precoVenda)
+
+    def cancelarOrdem(self, idOrdem):
+        if self.nome == 'MercadoBitcoin':
+            pass
+        elif self.nome == 'BrasilBitcoin':
+            return BrasilBitcoin(self.ativo).cancelarOrdem(idOrdem)
 
     def TransferirCrypto(self, quantity):      
         if self.nome == 'MercadoBitcoin':
