@@ -5,43 +5,43 @@ from datetime import datetime
 from corretora import Corretora
 from util import Util
 from arbitragem import Arbitragem
-from coreTelegram import Telegram
+#from coreTelegram import Telegram
 
 #ativos = ['btc', 'eth', 'xrp', 'ltc']
-ativos = ['eth']
+ativo = 'xrp'
 i = 1
 
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
-while i <= 200:
-    for ativo in ativos:
+mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
+brasilBitcoin = Corretora('BrasilBitcoin', ativo)
 
-        # Instancia das corretoras por ativo
-        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
-        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+mercadoBitcoin.atualizarSaldo()
+brasilBitcoin.atualizarSaldo()
 
-        retornoCompra = Arbitragem.run(mercadoBitcoin, brasilBitcoin, ativo, True)
-        retornoVenda = Arbitragem.run(brasilBitcoin, mercadoBitcoin, ativo, True)   
+saldo_brl_inicial = mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL
+saldo_cripto_inicial = mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto
 
-        mercadoBitcoin.atualizarSaldo()
-        brasilBitcoin.atualizarSaldo()
+print('Saldo Inicial BRL: '+ str(round(saldo_brl_inicial,1)))
+print('Saldo Inicial Cripto: '+ str(round(saldo_cripto_inicial,1)))
 
-        if retornoCompra['sucesso'] == 'true':
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + mercadoBitcoin.nome + ' -> ' + brasilBitcoin.nome + ' = PnL: ' + str(retornoCompra['Pnl']))
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + mercadoBitcoin.nome + ' -> Saldo em BRL: ' + str(locale.currency(mercadoBitcoin.saldoBRL)))
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ']' + mercadoBitcoin.nome + ' -> Saldo em {}: '.format(mercadoBitcoin.saldoCrypto))
-        else:
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] Pnl: ' + retornoCompra['ErroPnl'] + ' | Saldo: ' + retornoCompra['ErroSaldo'])
+while i <= 20000:
 
-        if retornoVenda['sucesso'] == 'true':
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + brasilBitcoin.nome + ' -> ' + mercadoBitcoin.nome + ' = PnL: ' + str(retornoVenda['Pnl']))
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + brasilBitcoin.nome + ' -> Saldo em BRL: ' + str(locale.currency(brasilBitcoin.saldoBRL)))
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] ' + brasilBitcoin.nome + ' -> Saldo em {}: '.format(brasilBitcoin.saldoCrypto))
-        else:
-            Telegram.enviarMensagem('[' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + '] Pnl: ' + retornoVenda['ErroPnl'] + ' | Saldo: ' + retornoVenda['ErroSaldo']) 
+    # Instancia das corretoras por ativo
+    mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
+    brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+
+    retornoCompra = Arbitragem.run(mercadoBitcoin, brasilBitcoin, ativo, True)
+    retornoVenda = Arbitragem.run(brasilBitcoin, mercadoBitcoin, ativo, True)   
+
+    mercadoBitcoin.atualizarSaldo()
+    brasilBitcoin.atualizarSaldo()
 
     i += 1
-    print(i)
-    #time.sleep(120)
 
+    if retornoCompra['sucesso'] or retornoVenda['sucesso']:
 
+        print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
+        print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
+
+    time.sleep(45)

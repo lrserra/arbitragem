@@ -10,7 +10,7 @@ class Arbitragem:
         condicao = True
         ordem = 0
         
-        logList = {'sucesso': 'false', 'ErroPnl':'--', 'ErroSaldo':'--', 'logVenda':'--', 'logCompra': '--'}
+        logList = {'sucesso': False, 'ErroPnl':'--', 'ErroSaldo':'--', 'logVenda':'--', 'logCompra': '--'}
         
         maiorQtd = max(corretoraCompra.qtdCompra, corretoraVenda.qtdVenda)
         menorQtd = min(corretoraCompra.qtdCompra, corretoraVenda.qtdVenda)
@@ -31,13 +31,11 @@ class Arbitragem:
                     #Implementar ordem fracionada
                     if corretoraCompra.saldoBRL >= corretoraCompra.obterAmountCompra(qtdNegociada) and corretoraVenda.saldoCrypto >= qtdNegociada:
 
-                        logCompra = '{}|{}|{}|{}|{}|{}|{}|{}'.format(
-                                                    ativo, corretoraCompra.nome, 'C', corretoraCompra.precoCompra, qtdNegociada, financeiroCorretagem, pnl, datetime.now())
+                        logCompra = [ativo, corretoraCompra.nome, 'C', corretoraCompra.precoCompra, qtdNegociada, financeiroCorretagem, pnl, datetime.now()]
 
-                        logVenda = '{}|{}|{}|{}|{}|{}|{}|{}'.format(
-                                                    ativo, corretoraVenda.nome, 'V', corretoraVenda.precoVenda, qtdNegociada, financeiroCorretagem, pnl, datetime.now())
+                        logVenda = [ativo, corretoraVenda.nome, 'V', corretoraVenda.precoVenda, qtdNegociada, financeiroCorretagem, pnl, datetime.now()]
 
-                        logList['sucesso'] = 'true'
+                        logList['sucesso'] = True
                         logList['logCompra'] = logCompra
                         logList['logVenda'] = logVenda
                         logList['Pnl'] = pnl
@@ -65,15 +63,14 @@ class Arbitragem:
 
                     else:
                         condicao = False
+                        logList['sucesso'] = False
                         logList['ErroSaldo'] = 'Saldo insuficiente para operar o ativo {}.'.format(ativo)
 
                 else:
                     condicao = False
-                    logList['sucesso'] = 'false'
+                    logList['sucesso'] = False
                     logList['ErroPnl'] = 'PnL({}) menor que a corretagem({}) do ativo {}.'.format(pnl, financeiroCorretagem, ativo)
 
             else:
                 condicao = False
-                logList['sucesso'] = 'false'
-
-        return logList
+                logList['sucesso'] = False
