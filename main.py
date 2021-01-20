@@ -45,5 +45,3 @@ while i <= 20000:
         print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
 
     time.sleep(45)
-
-

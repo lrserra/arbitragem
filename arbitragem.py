@@ -74,5 +74,3 @@ class Arbitragem:
             else:
                 condicao = False
                 logList['sucesso'] = False
-
-        return logList
