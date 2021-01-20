@@ -5,6 +5,7 @@ from datetime import datetime
 from corretora import Corretora
 from util import Util
 from arbitragem import Arbitragem
+from leilao import Leilao
 #from coreTelegram import Telegram
 
 #ativos = ['btc', 'eth', 'xrp', 'ltc']
@@ -25,6 +26,9 @@ saldo_cripto_inicial = mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto
 print('Saldo Inicial BRL: '+ str(round(saldo_brl_inicial,1)))
 print('Saldo Inicial Cripto: '+ str(round(saldo_cripto_inicial,1)))
 
+idOrdem = 0
+qtdExecutada = 0
+
 while i <= 20000:
     try:
         # Instancia das corretoras por ativo
@@ -44,6 +48,30 @@ while i <= 20000:
 
         print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
         print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
+    else:
+        operou = Leilao.zera_risco_e_cancela_ordens(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
+        idOrdem = 0
+
+        if operou:
+
+            mercadoBitcoin.atualizarSaldo()
+            brasilBitcoin.atualizarSaldo()
+            
+            print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
+            print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
+        
+
+        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
+        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+
+        retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
+        idOrdem = retorno['idOrdem']
+        
+        #print(retornoCompra['ErroPnl'])
+        #print(retornoVenda['ErroPnl'])
+
 
     i += 1
-    time.sleep(45)
+    time.sleep(60)
+
+

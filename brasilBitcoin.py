@@ -20,6 +20,9 @@ class BrasilBitcoin:
     def obterSaldo(self):
         return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
 
+    def obterOrdemPorId(self, idOrdem):
+        return self.executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
+
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         payload = {
@@ -59,6 +62,9 @@ class BrasilBitcoin:
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         return self.executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')
+
+    def cancelarOrdem(self, idOrdem):
+        return self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
 
     def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()

@@ -28,6 +28,8 @@ class Corretora:
             self.book = MercadoBitcoin(self.ativo).obterBooks()
         elif self.nome == 'BrasilBitcoin':
             self.book = BrasilBitcoin(self.ativo).obterBooks()
+        elif self.nome == 'BitcoinTrade':
+            self.book = BitcoinTrade(self.ativo).obterBooks()
 
         self.carregarBooks(ativo)
 
@@ -45,6 +47,13 @@ class Corretora:
             self.qtdCompra = self.book['sell'][ordem]['quantidade']
             self.precoVenda = self.book['buy'][ordem]['preco']
             self.qtdVenda = self.book['buy'][ordem]['quantidade']
+            self.corretagem = 0.005
+
+        elif self.nome == 'BitcoinTrade':
+            self.precoCompra = self.book['asks'][ordem]['unit_price']
+            self.qtdCompra = self.book['asks'][ordem]['amount']
+            self.precoVenda = self.book['bids'][ordem]['unit_price']
+            self.qtdVenda = self.book['bids'][ordem]['amount']
             self.corretagem = 0.005
         
         self.amountCompra = self.precoCompra * self.qtdCompra
@@ -70,12 +79,18 @@ class Corretora:
             return self.precoVenda * self.qtdVenda
         return self.precoVenda * qtdVenda
 
+    def obterOrdemPorId(self, idOrdem):
+        if self.nome == 'MercadoBitcoin':
+            pass
+        elif self.nome == 'BrasilBitcoin':
+            return BrasilBitcoin(self.ativo).obterOrdemPorId(idOrdem)
+
     def atualizarSaldo(self):
         if self.nome == 'MercadoBitcoin':
             response_json = MercadoBitcoin(self.ativo).obterSaldo()
             self.saldoBRL = float(response_json['response_data']['balance']['brl']['available'])
             self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['available'])
-        if self.nome == 'BrasilBitcoin':
+        elif self.nome == 'BrasilBitcoin':
             response_json = BrasilBitcoin(self.ativo).obterSaldo()
             self.saldoBRL = float(response_json['brl'])
             self.saldoCrypto = float(response_json[self.ativo])
@@ -91,6 +106,12 @@ class Corretora:
             return MercadoBitcoin(self.ativo).enviarOrdemVenda(quantity, typeOrder, self.precoVenda)
         elif self.nome == 'BrasilBitcoin':
             return BrasilBitcoin(self.ativo).enviarOrdemVenda(quantity, typeOrder, self.precoVenda)
+
+    def cancelarOrdem(self, idOrdem):
+        if self.nome == 'MercadoBitcoin':
+            pass
+        elif self.nome == 'BrasilBitcoin':
+            return BrasilBitcoin(self.ativo).cancelarOrdem(idOrdem)
 
     def TransferirCrypto(self, quantity):      
         if self.nome == 'MercadoBitcoin':
