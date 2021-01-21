@@ -38,7 +38,7 @@ class Leilao:
         if idOrdem > 0:#antes de verificar preços e condições, ja verifica se tem ordem sendo executada
             ordem = corretoraParte.obterOrdemPorId(idOrdem)
             
-            if ordem['data']['executed'] > 1: #algo ja foi executado
+            if ordem['data']['executed']*corretoraParte.precoCompra > 1: #mais de um real executado
                 
                 corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'], 'market')#zerando o risco na mercado bitcoin
                 return True
