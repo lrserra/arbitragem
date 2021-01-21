@@ -37,6 +37,7 @@ class Leilao:
 
         if idOrdem > 0:#antes de verificar preços e condições, ja verifica se tem ordem sendo executada
             ordem = corretoraParte.obterOrdemPorId(idOrdem)
+            corretoraParte.cancelarOrdem(idOrdem)
             
             if ordem['data']['executed']*corretoraParte.precoCompra > 1: #mais de um real executado
                 
@@ -44,7 +45,7 @@ class Leilao:
                 return True
         
             
-            corretoraParte.cancelarOrdem(idOrdem)
+            #corretoraParte.cancelarOrdem(idOrdem)
             idOrdem = 0
             
             #if float(corretoraParte.precoCompra) != float(ordem['data']['price']): # a minha ordem não é a primeira na fila a ser comprada
