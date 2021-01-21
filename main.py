@@ -49,15 +49,24 @@ while i <= 20000:
         print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
         print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
     else:
-        #retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, False, idOrdem, qtdExecutada)
-        #idOrdem = retorno['idOrdem']
-        #qtdExecutada = retorno['qtdExecutada']
+        operou = Leilao.zera_risco_e_cancela_ordens(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
+        
+        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
+        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+
+        retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
+        idOrdem = retorno['idOrdem']
+
+        if operou:
+            print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
+            print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
+        
 
         #print(retornoCompra['ErroPnl'])
         #print(retornoVenda['ErroPnl'])
 
 
     i += 1
-    time.sleep(10)
+    time.sleep(60)
 
 
