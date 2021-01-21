@@ -26,8 +26,8 @@ saldo_cripto_inicial = mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto
 print('Saldo Inicial BRL: '+ str(round(saldo_brl_inicial,1)))
 print('Saldo Inicial Cripto: '+ str(round(saldo_cripto_inicial,1)))
 
-idOrdem = 0
-qtdExecutada = 0
+idOrdem_compra = 0
+idOrdem_venda = 0
 
 while i <= 20000:
     try:
@@ -52,9 +52,10 @@ while i <= 20000:
 
     
     try:
-        me_executaram = Leilao.zera_risco_e_cancela_ordens(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
-        
-        if me_executaram:
+        me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem_compra)
+        me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, False, idOrdem_venda)
+
+        if me_executaram_na_compra or me_executaram_na_venda:
 
             mercadoBitcoin.atualizarSaldo()
             brasilBitcoin.atualizarSaldo()
@@ -66,9 +67,12 @@ while i <= 20000:
         mercadoBitcoin = Corretora('MercadoBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
         brasilBitcoin = Corretora('BrasilBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
 
-        retorno_leilao_compra = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True)
-        idOrdem = retorno_leilao_compra['idOrdem'] #para cancelar depois
+        retorno_leilao_compra = Leilao.compra(brasilBitcoin, mercadoBitcoin, ativo, True)
+        idOrdem_compra = retorno_leilao_compra['idOrdem'] #para cancelar depois
     
+        retorno_leilao_venda = Leilao.venda(brasilBitcoin, mercadoBitcoin, ativo, False)#desligado
+        idOrdem_venda = retorno_leilao_venda['idOrdem'] #para cancelar depois
+
     except Exception as erro:
         print('deu algum ruim no leilao')
         print(erro)    
