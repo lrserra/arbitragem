@@ -63,9 +63,7 @@ while i <= 20000:
 
         retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
         idOrdem = retorno['idOrdem']
-
         
-
         #print(retornoCompra['ErroPnl'])
         #print(retornoVenda['ErroPnl'])
 
