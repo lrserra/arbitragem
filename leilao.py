@@ -17,7 +17,8 @@ class Leilao:
         if idOrdem > 0:#antes de verificar preços e condições, ja verifica se tem ordem sendo executada
             ordem = corretoraParte.obterOrdemPorId(idOrdem)
             
-            if ordem['data']['executed'] > 0: #algo ja foi executado
+            if ordem['data']['executed'] > 0 and int((ordem['data']['executed'] - qtdExecutada))>0: #algo ja foi executado
+                
                 corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'] - qtdExecutada, 'market')#zerando o risco na mercado bitcoin
                 qtdExecutada += ordem['data']['executed']
                 logList['qtdExecutada'] = qtdExecutada
@@ -32,7 +33,7 @@ class Leilao:
         #corretoraParte tem que ser Brasil, pq la a liquidez é menor e mais facil de fazer leilão
         if (idOrdem == 0) and (corretoraParte.precoCompra >= 1.0095 * corretoraContraparte.precoCompra):#Iniciar leilão compra
 
-            qtdNegociada = corretoraParte.saldoCrypto #o ideal era só vender oq conseguimos zerar na mercado a um preço bom, mas isso aqui é oq tem pra hoje
+            qtdNegociada = corretoraParte.saldoCrypto/2 #o ideal era só vender oq conseguimos zerar na mercado a um preço bom, mas isso aqui é oq tem pra hoje
 
             if corretoraParte.saldoBRL < (saldoTotalBRL/10): #eh pra ser deseperado aqui, tenho menos em reais doq um oitavo do totalbrl
                 #quando estou desesperado uso a regra do pnl zero

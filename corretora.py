@@ -79,7 +79,7 @@ class Corretora:
             return self.precoVenda * self.qtdVenda
         return self.precoVenda * qtdVenda
 
-    def obterOrdemPorId(seld, idOrdem):
+    def obterOrdemPorId(self, idOrdem):
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':

@@ -9,7 +9,7 @@ from leilao import Leilao
 #from coreTelegram import Telegram
 
 #ativos = ['btc', 'eth', 'xrp', 'ltc']
-ativo = 'eth'
+ativo = 'xrp'
 i = 1
 
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
@@ -49,12 +49,12 @@ while i <= 20000:
         print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
         print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
     else:
-        retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, False, idOrdem, qtdExecutada)
-        idOrdem = retorno['idOrdem']
-        qtdExecutada = retorno['qtdExecutada']
+        #retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, False, idOrdem, qtdExecutada)
+        #idOrdem = retorno['idOrdem']
+        #qtdExecutada = retorno['qtdExecutada']
 
-        print(retornoCompra['ErroPnl'])
-        print(retornoVenda['ErroPnl'])
+        #print(retornoCompra['ErroPnl'])
+        #print(retornoVenda['ErroPnl'])
 
 
     i += 1
