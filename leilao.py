@@ -22,7 +22,7 @@ class Leilao:
                 qtdExecutada += ordem['data']['executed']
                 logList['qtdExecutada'] = qtdExecutada
             
-            if corretoraParte.precoCompra != ordem['data']['price']: # a minha ordem não é a primeira na fila a ser comprada
+            if float(corretoraParte.precoCompra) != float(ordem['data']['price']): # a minha ordem não é a primeira na fila a ser comprada
                 corretoraParte.cancelarOrdem(idOrdem)
                 idOrdem = 0 #voltando esse ID pra zero, esta tudo cancelado, barril!
                 qtdExecutada = 0 #voltando esse qty pra zero, esta tudo cancelado, barril!
