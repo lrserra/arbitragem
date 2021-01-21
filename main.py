@@ -53,7 +53,7 @@ while i <= 20000:
     
     try:
         me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem_compra)
-        me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, False, idOrdem_venda)
+        me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem_venda)
 
         if me_executaram_na_compra or me_executaram_na_venda:
 
@@ -70,7 +70,10 @@ while i <= 20000:
         retorno_leilao_compra = Leilao.compra(brasilBitcoin, mercadoBitcoin, ativo, True)
         idOrdem_compra = retorno_leilao_compra['idOrdem'] #para cancelar depois
     
-        retorno_leilao_venda = Leilao.venda(brasilBitcoin, mercadoBitcoin, ativo, False)#desligado
+        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
+        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+
+        retorno_leilao_venda = Leilao.venda(brasilBitcoin, mercadoBitcoin, ativo, True)
         idOrdem_venda = retorno_leilao_venda['idOrdem'] #para cancelar depois
 
     except Exception as erro:
