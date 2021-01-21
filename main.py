@@ -53,6 +53,9 @@ while i <= 20000:
         idOrdem = 0
 
         if operou:
+
+            mercadoBitcoin.atualizarSaldo()
+            brasilBitcoin.atualizarSaldo()
             
             print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
             print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
