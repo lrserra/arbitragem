@@ -7,67 +7,37 @@ class Leilao:
 
     def run(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0, qtdExecutada = 0):
 
-        logList = {'sucesso': False, 'ordemEnviada': False}
+        #ja considerando que não ha arbitragem
+        logList = {'sucesso': False, 'ordemEnviada': False, 'idOrdem': idOrdem , 'qtdExecutada': qtdExecutada}
 
         corretoraParte.atualizarSaldo()
         corretoraContraparte.atualizarSaldo()
-
-        saldoTotalCrypto = corretoraParte.saldoCrypto + corretoraContraparte.saldoCrypto
+        saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
         
-        if corretoraParte.saldoCrypto < (saldoTotalCrypto/2): #Iniciar leilão compra
-            qtdNegociada = abs(corretoraContraparte - corretoraParte)/2
-
-            if idOrdem > 0:
-                ordem = corretoraParte.obterOrdemPorId(idOrdem)
-                
-                if ordem['data']['executed'] > 0:
-                    corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'] - qtdExecutada, 'market')
-                    qtdExecutada += ordem['data']['executed']
-                elif corretoraParte.precoCompra == ordem['data']['price']: # a minha ordem é a primeira na fila a ser comprada
-                    if ordem['data']['executed'] > 0:
-                        corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'] - qtdExecutada, 'market')# compra a mercado da mesma quantidade executada na venda
-                        qtdExecutada += ordem['data']['executed']
-                else:
-                    corretoraParte.cancelarOrdem(idOrdem)
-
-        if corretoraParte.precoCompra >= 1.095 * corretoraContraparte.precoCompra:
-            # Vender crypto na corretora parte
-            corretoraParte.precoCompra = corretoraParte.precoCompra - 0.1 
-            vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited')
-            idOrdem = vendaCorretoraParte['data']['id']
-
-
-
-    '''if retornoCompra['sucesso']== False and  retornoVenda['sucesso'] == False: #liga leilão
-        if saldocripto_corretora_mercado < saldo_total_cripto/2: #liga leilao de compra
+        if idOrdem > 0:#antes de verificar preços e condições, ja verifica se tem ordem sendo executada
+            ordem = corretoraParte.obterOrdemPorId(idOrdem)
             
-            qty = abs(quantidade_brasil - quantidade_mercado)/2 #sempre positivo
-
-            #se minha ordem não é a primeira no book, cancelo minha ordem -> o meu preço é diferente da primeira ordem no book
-            #se executou alguma coisa ja compra cripto no mercado a mercado
+            if ordem['data']['executed'] > 0: #algo ja foi executado
+                corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'] - qtdExecutada, 'market')#zerando o risco na mercado bitcoin
+                qtdExecutada += ordem['data']['executed']
             
-            if brasilBitcoin.precoCompra >= 1.095*mercadoBitcoin.precoCompra:
-                #*vende cripto na brasil limitada*
-                #envia ordem de venda limitada na brasil, quantidade = qty, preço = brasilBitcoin.precoCompra - 1 centavo
+            if corretoraParte.precoCompra != ordem['data']['price']: # a minha ordem não é a primeira na fila a ser comprada
+                corretoraParte.cancelarOrdem(idOrdem)
+                idOrdem = 0 #voltando esse ID pra zero, esta tudo cancelado, barril!
+                qtdExecutada = 0 #voltando esse qty pra zero, esta tudo cancelado, barril!
+          
+        #corretoraParte tem que ser Brasil, pq la a liquidez é menor e mais facil de fazer leilão
+        if (idOrdem == 0) and (corretoraParte.precoCompra >= 1.0095 * corretoraContraparte.precoCompra):#Iniciar leilão compra
+
+            qtdNegociada = corretoraParte.saldoCrypto #o ideal era só vender oq conseguimos zerar na mercado a um preço bom, mas isso aqui é oq tem pra hoje
+
+            if corretoraParte.saldoBRL < (saldoTotalBRL/10): #eh pra ser deseperado aqui, tenho menos em reais doq um oitavo do totalbrl
+                #quando estou desesperado uso a regra do pnl zero
+                corretoraParte.precoCompra = corretoraContraparte.precoCompra*1.0095
+                vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') #ta certo isso lucas?
+
+            else:#todos outros casos
+                corretoraParte.precoCompra = corretoraParte.precoCompra - 0.01 #quando não estou desesperado, uso a regra do um centavo
+                vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') #ta certo isso lucas?
                 
-                #se tiver ordens executadas
-                    #compra cripto na mercado a mercado, na quantidade executada
-            else:
-                #cancelar todas ordens
-
-        elif saldocripto_corretora_brasil < saldo_total_cripto/2:
-
-            qty = abs(quantidade_mercado - quantidade_brasil)/2
-
-            #se minha ordem não é a primeira no book, cancelo minha ordem -> o meu preço é diferente da primeira ordem no book
-            #se executou alguma coisa ja vendo cripto no mercado a mercado
-            
-            if brasilBitcoin.precoVenda <= (1-0.095)*mercadoBitcoin.precoVenda:
-                #*compra cripto na brasil limitada*
-                #envia ordem de compra limitada na brasil, quantidade = qty, preço = brasilBitcoin.precoVenda + 1 centavo
-                
-                #se tiver ordens executadas
-                    #vende cripto na mercado a mercado
-            else:
-                #cancelar todas ordens
-        '''
+        return logList
