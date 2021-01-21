@@ -37,22 +37,24 @@ while i <= 20000:
 
         retornoCompra = Arbitragem.run(mercadoBitcoin, brasilBitcoin, ativo, True)
         retornoVenda = Arbitragem.run(brasilBitcoin, mercadoBitcoin, ativo, True)   
-        
+
+        if retornoCompra['sucesso'] or retornoVenda['sucesso']:
+
+            mercadoBitcoin.atualizarSaldo()
+            brasilBitcoin.atualizarSaldo()
+
+            print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
+            print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
+            
     except Exception as erro:
+        print('deu algum ruim na arbitragem!')
         print(erro)
 
-    if retornoCompra['sucesso'] or retornoVenda['sucesso']:
-
-        mercadoBitcoin.atualizarSaldo()
-        brasilBitcoin.atualizarSaldo()
-
-        print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
-        print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
-    else:
-        operou = Leilao.zera_risco_e_cancela_ordens(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
-        idOrdem = 0
-
-        if operou:
+    
+    try:
+        me_executaram = Leilao.zera_risco_e_cancela_ordens(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
+        
+        if me_executaram:
 
             mercadoBitcoin.atualizarSaldo()
             brasilBitcoin.atualizarSaldo()
@@ -61,15 +63,15 @@ while i <= 20000:
             print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
         
 
-        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
-        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
+        mercadoBitcoin = Corretora('MercadoBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+        brasilBitcoin = Corretora('BrasilBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
 
-        retorno = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem)
-        idOrdem = retorno['idOrdem']
-        
-        #print(retornoCompra['ErroPnl'])
-        #print(retornoVenda['ErroPnl'])
-
+        retorno_leilao_compra = Leilao.run(brasilBitcoin, mercadoBitcoin, ativo, True)
+        idOrdem = retorno_leilao_compra['idOrdem'] #para cancelar depois
+    
+    except Exception as erro:
+        print('deu algum ruim no leilao')
+        print(erro)    
 
     i += 1
     time.sleep(60)
