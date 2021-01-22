@@ -19,7 +19,7 @@ class Leilao:
         if ((corretoraParte.precoCompra-0.01) >= 1.01 * corretoraContraparte.precoCompra):# o preço que eu posso vender é maior doq o preço que posso comprar
             
             gostaria_de_vender = corretoraParte.saldoCrypto/4
-            maximo_que_consigo_zerar = corretoraContraparte.saldoBRL*corretoraContraparte.precoCompra*1.01
+            maximo_que_consigo_zerar = corretoraContraparte.saldoBRL/(corretoraContraparte.precoCompra*1.01)
             qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
 
             if corretoraParte.saldoBRL < (saldoTotalBRL/10): #eh pra ser deseperado aqui, tenho menos em reais doq um decimo do totalbrl
@@ -48,7 +48,7 @@ class Leilao:
         #corretoraParte tem que ser Brasil, pq la a liquidez é menor e mais facil de fazer leilão
         if ((corretoraParte.precoVenda+0.01) <= 0.99 * corretoraContraparte.precoVenda):# o preço que eu posso comprar é menor doq o preço que posso vender
             
-            gostaria_de_comprar = corretoraParte.saldoBRL*(corretoraParte.precoVenda+0.01)
+            gostaria_de_comprar = corretoraParte.saldoBRL/(corretoraParte.precoVenda+0.01)
             maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto/4
             qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
 

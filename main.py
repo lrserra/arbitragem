@@ -81,6 +81,7 @@ while i <= 20000:
         print(erro)    
 
     i += 1
+    print(i)
     time.sleep(60)
 
 
