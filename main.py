@@ -46,9 +46,14 @@ while day <= 365:
                 retornoCompra = Arbitragem.run(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
                 retornoVenda = Arbitragem.run(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
 
-                if retornoCompra['sucesso'] or retornoVenda['sucesso']:
+                if retornoCompra['sucesso']:
                     agora = datetime.now() 
-                    print('{}: operou arb de {}!'.format(agora,moeda))
+                    print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoCompra['Pnl'],2)))
+                    CorretoraMaisLiquida.atualizarSaldo()
+                    CorretoraMenosLiquida.atualizarSaldo()
+                elif retornoVenda['sucesso']:
+                    agora = datetime.now() 
+                    print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoVenda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                     
@@ -62,12 +67,16 @@ while day <= 365:
                 me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['compra'])
                 me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
-                if me_executaram_na_compra or me_executaram_na_venda:
-
+                if me_executaram_na_compra['sucesso']:
                     agora = datetime.now() 
-                    print('{}: operou leilao de {}!'.format(agora,moeda))
+                    print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_compra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
+                elif me_executaram_na_venda['sucesso']:  
+                    agora = datetime.now() 
+                    print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_venda['Pnl'],2)))
+                    CorretoraMaisLiquida.atualizarSaldo()
+                    CorretoraMenosLiquida.atualizarSaldo()              
 
                 CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
                 CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao

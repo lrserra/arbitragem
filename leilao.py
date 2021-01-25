@@ -75,32 +75,48 @@ class Leilao:
 
     def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
 
+        logList = {'sucesso': False, 'Pnl': 0 }
+        
         if idOrdem > 0:#verifica se tem ordem sendo executada
             ordem = corretoraParte.obterOrdemPorId(idOrdem)
             corretoraParte.cancelarOrdem(idOrdem)
             
-            if executarOrdens and ordem['data']['executed']*corretoraParte.precoCompra > 1: #mais de um real executado
+            qtd_executada = ordem['data']['executed']
+            preco_executado = ordem['data']['price']
+            
+            if executarOrdens and qtd_executada*corretoraParte.precoCompra > 1: #mais de um real executado
                 
-                corretoraContraparte.enviarOrdemCompra(ordem['data']['executed'], 'market')#zerando o risco na mercado bitcoin
-                return True
+                corretoraContraparte.enviarOrdemCompra(qtd_executada, 'market')#zerando o risco na mercado bitcoin
+                logList['sucesso'] = True
+                logList['Pnl'] = qtd_executada*abs((preco_executado-corretoraContraparte.precoCompra))
+                                
+                return logList
         
             corretoraParte.atualizarSaldo()
             corretoraContraparte.atualizarSaldo()
         
-        return False
+        return logList
 
     def cancela_ordens_e_vende_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
 
+        logList = {'sucesso': False, 'Pnl': 0 }
+
         if idOrdem > 0:#verifica se tem ordem sendo executada
             ordem = corretoraParte.obterOrdemPorId(idOrdem)
             corretoraParte.cancelarOrdem(idOrdem)
             
-            if executarOrdens and ordem['data']['executed']*corretoraParte.precoVenda > 1: #mais de um real executado
+            qtd_executada = ordem['data']['executed']
+            preco_executado = ordem['data']['price']
+
+            if executarOrdens and qtd_executada*corretoraParte.precoVenda > 1: #mais de um real executado
                 
-                corretoraContraparte.enviarOrdemVenda(ordem['data']['executed'], 'market')#zerando o risco na mercado bitcoin
-                return True
+                corretoraContraparte.enviarOrdemVenda(qtd_executada, 'market')#zerando o risco na mercado bitcoin
+                logList['sucesso'] = True
+                logList['Pnl'] = qtd_executada*abs((corretoraContraparte.precoVenda-preco_executado))
+
+                return logList
         
             corretoraParte.atualizarSaldo()
             corretoraContraparte.atualizarSaldo()
         
-        return False
+        return logList
