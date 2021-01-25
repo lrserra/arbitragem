@@ -58,7 +58,8 @@ class Caixa:
             pnl_em_moeda = abs(saldo_final[moeda]-saldo_inicial[moeda])
 
             if pnl_em_moeda >0:
-                print('zera {} de pnl em {}'.format(pnl_em_moeda,moeda))
+                agora = datetime.now() 
+                print('{}: zera {} de pnl em {}'.format(agora,round(pnl_em_moeda,4),moeda))
 
 
         return True
