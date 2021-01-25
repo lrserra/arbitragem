@@ -14,6 +14,12 @@ lista_de_moedas = Util.obter_lista_de_moedas()
 corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
 corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
+idOrdem = {}#inicializa o dic
+for moeda in lista_de_moedas:
+    idOrdem[moeda]={}
+    idOrdem[moeda]['compra'] = 0
+    idOrdem[moeda]['venda'] = 0
+
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
 day = 1
@@ -24,12 +30,6 @@ while day <= 365:
     
     #atualiza saldo inicial nesse dicionario
     saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-
-    idOrdem = {}#inicializa o dic
-    for moeda in lista_de_moedas:
-        idOrdem[moeda]={}
-        idOrdem[moeda]['compra'] = 0
-        idOrdem[moeda]['venda'] = 0
 
     while agora < meia_noite:
         #essa parte executa diversas vezes ao dia
