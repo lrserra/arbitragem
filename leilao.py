@@ -24,7 +24,8 @@ class Leilao:
             maximo_que_consigo_zerar = corretoraContraparte.saldoBRL/(qtd_de_moedas*corretoraContraparte.precoCompra*1.01)
             qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
 
-            if qtdNegociada>0:
+            if (qtdNegociada>0) and (maximo_que_consigo_zerar>1):
+                
                 if corretoraParte.saldoBRL < (saldoTotalBRL/10): #eh pra ser deseperado aqui, tenho menos em reais doq um decimo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
                     corretoraParte.precoVenda = 0.01+corretoraContraparte.precoCompra*1.01
@@ -56,7 +57,8 @@ class Leilao:
             gostaria_de_comprar = corretoraParte.saldoBRL/(qtd_de_moedas*corretoraParte.precoVenda+0.01)
             maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto/4
             qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
-            if qtdNegociada > 0:
+            
+            if (qtdNegociada > 0) and (gostaria_de_comprar>1):
 
                 if corretoraContraparte.saldoBRL < (saldoTotalBRL/10): #eh pra ser deseperado aqui, tenho menos em reais na mercado doq um decimo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero

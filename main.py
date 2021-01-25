@@ -48,12 +48,13 @@ while day <= 365:
 
                 if retornoCompra['sucesso'] or retornoVenda['sucesso']:
                     agora = datetime.now() 
-                    print('{}: operou arb!'.format(agora))
+                    print('{}: operou arb de {}!'.format(agora,moeda))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                     
             except Exception as erro:
-                print('deu algum ruim na arbitragem!')
+                agora = datetime.now() 
+                print('{}: deu algum ruim na arb'.format(agora))
                 print(erro)
 
             
@@ -64,7 +65,7 @@ while day <= 365:
                 if me_executaram_na_compra or me_executaram_na_venda:
 
                     agora = datetime.now() 
-                    print('{}: operou leilao!'.format(agora))
+                    print('{}: operou leilao de {}!'.format(agora,moeda))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
 
@@ -81,7 +82,8 @@ while day <= 365:
                 idOrdem[moeda]['venda'] = retorno_leilao_venda['idOrdem'] #para cancelar depois
 
             except Exception as erro:
-                print('deu algum ruim no leilao')
+                agora = datetime.now() 
+                print('{}: deu algum ruim no leilao'.format(agora))
                 print(erro)    
 
             
@@ -90,7 +92,7 @@ while day <= 365:
 
         agora = datetime.now() 
     
-
+    
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
     day = day+1
