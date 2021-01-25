@@ -25,9 +25,11 @@ while day <= 365:
     #atualiza saldo inicial nesse dicionario
     saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
-    idOrdem = {}
-    idOrdem['compra'] = 0
-    idOrdem['venda'] = 0
+    idOrdem = {}#inicializa o dic
+    for moeda in lista_de_moedas:
+        idOrdem[moeda]={}
+        idOrdem[moeda]['compra'] = 0
+        idOrdem[moeda]['venda'] = 0
 
     while agora < meia_noite:
         #essa parte executa diversas vezes ao dia
@@ -56,8 +58,8 @@ while day <= 365:
 
             
             try:
-                me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem['compra'])
-                me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem['venda'])
+                me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['compra'])
+                me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
                 if me_executaram_na_compra or me_executaram_na_venda:
 
@@ -70,13 +72,13 @@ while day <= 365:
                 CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
 
                 retorno_leilao_compra = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                idOrdem['compra'] = retorno_leilao_compra['idOrdem'] #para cancelar depois
+                idOrdem[moeda]['compra'] = retorno_leilao_compra['idOrdem'] #para cancelar depois
             
                 CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
                 CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
 
                 retorno_leilao_venda = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                idOrdem['venda'] = retorno_leilao_venda['idOrdem'] #para cancelar depois
+                idOrdem[moeda]['venda'] = retorno_leilao_venda['idOrdem'] #para cancelar depois
 
             except Exception as erro:
                 print('deu algum ruim no leilao')
