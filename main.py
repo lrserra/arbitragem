@@ -4,84 +4,93 @@ import time
 from datetime import datetime
 from corretora import Corretora
 from util import Util
+from caixa import Caixa
 from arbitragem import Arbitragem
 from leilao import Leilao
 #from coreTelegram import Telegram
 
-#ativos = ['btc', 'eth', 'xrp', 'ltc']
-ativo = 'xrp'
-i = 1
+#essa parte executa apenas uma vez
+lista_de_moedas = Util.obter_lista_de_moedas()
+corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
+corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
-mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
-brasilBitcoin = Corretora('BrasilBitcoin', ativo)
-
-mercadoBitcoin.atualizarSaldo()
-brasilBitcoin.atualizarSaldo()
-
-saldo_brl_inicial = mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL
-saldo_cripto_inicial = mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto
-
-print('Saldo Inicial BRL: '+ str(round(saldo_brl_inicial,1)))
-print('Saldo Inicial Cripto: '+ str(round(saldo_cripto_inicial,1)))
-
-idOrdem_compra = 0
-idOrdem_venda = 0
-
-while i <= 20000:
-    try:
-        # Instancia das corretoras por ativo
-        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
-        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
-
-        retornoCompra = Arbitragem.run(mercadoBitcoin, brasilBitcoin, ativo, True)
-        retornoVenda = Arbitragem.run(brasilBitcoin, mercadoBitcoin, ativo, True)   
-
-        if retornoCompra['sucesso'] or retornoVenda['sucesso']:
-
-            mercadoBitcoin.atualizarSaldo()
-            brasilBitcoin.atualizarSaldo()
-
-            print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
-            print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
-            
-    except Exception as erro:
-        print('deu algum ruim na arbitragem!')
-        print(erro)
-
+day = 1
+while day <= 365:
+    #essa parte executa uma vez por dia
+    agora = datetime.now() 
+    meia_noite = datetime.now().replace(day= datetime.now().day +1,hour=0,minute=0,second=0,microsecond=0)
     
-    try:
-        me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem_compra)
-        me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(brasilBitcoin, mercadoBitcoin, ativo, True, idOrdem_venda)
+    #atualiza saldo inicial nesse dicionario
+    saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
-        if me_executaram_na_compra or me_executaram_na_venda:
+    idOrdem = {}
+    idOrdem['compra'] = 0
+    idOrdem['venda'] = 0
 
-            mercadoBitcoin.atualizarSaldo()
-            brasilBitcoin.atualizarSaldo()
+    while agora < meia_noite:
+        #essa parte executa diversas vezes ao dia
+
+        for moeda in lista_de_moedas:
+            try:
+                # Instancia das corretoras por ativo
+                CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
+                CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+                CorretoraMaisLiquida.atualizarSaldo()
+                CorretoraMenosLiquida.atualizarSaldo()
+
+                retornoCompra = Arbitragem.run(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                retornoVenda = Arbitragem.run(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+
+                if retornoCompra['sucesso'] or retornoVenda['sucesso']:
+                    agora = datetime.now() 
+                    print('{}: operou arb!'.format(agora))
+                    CorretoraMaisLiquida.atualizarSaldo()
+                    CorretoraMenosLiquida.atualizarSaldo()
+                    
+            except Exception as erro:
+                print('deu algum ruim na arbitragem!')
+                print(erro)
+
             
-            print('Total PnL BRL: '+ str(round(mercadoBitcoin.saldoBRL+brasilBitcoin.saldoBRL-saldo_brl_inicial,1)))
-            print('Total PnL Cripto: '+ str(round(mercadoBitcoin.saldoCrypto+brasilBitcoin.saldoCrypto-saldo_cripto_inicial,1)))
-        
+            try:
+                me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem['compra'])
+                me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem['venda'])
 
-        mercadoBitcoin = Corretora('MercadoBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
-        brasilBitcoin = Corretora('BrasilBitcoin', ativo) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+                if me_executaram_na_compra or me_executaram_na_venda:
 
-        retorno_leilao_compra = Leilao.compra(brasilBitcoin, mercadoBitcoin, ativo, True)
-        idOrdem_compra = retorno_leilao_compra['idOrdem'] #para cancelar depois
+                    agora = datetime.now() 
+                    print('{}: operou leilao!'.format(agora))
+                    CorretoraMaisLiquida.atualizarSaldo()
+                    CorretoraMenosLiquida.atualizarSaldo()
+
+                CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+                CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+
+                retorno_leilao_compra = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                idOrdem['compra'] = retorno_leilao_compra['idOrdem'] #para cancelar depois
+            
+                CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+                CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
+
+                retorno_leilao_venda = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                idOrdem['venda'] = retorno_leilao_venda['idOrdem'] #para cancelar depois
+
+            except Exception as erro:
+                print('deu algum ruim no leilao')
+                print(erro)    
+
+            
+            
+            time.sleep(Util.frequencia())
+
+        agora = datetime.now() 
     
-        mercadoBitcoin = Corretora('MercadoBitcoin', ativo)
-        brasilBitcoin = Corretora('BrasilBitcoin', ativo)
 
-        retorno_leilao_venda = Leilao.venda(brasilBitcoin, mercadoBitcoin, ativo, True)
-        idOrdem_venda = retorno_leilao_venda['idOrdem'] #para cancelar depois
+    Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
-    except Exception as erro:
-        print('deu algum ruim no leilao')
-        print(erro)    
-
-    i += 1
-    print(i)
-    time.sleep(60)
-
+    day = day+1
+    print(day)
 
