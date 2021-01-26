@@ -52,6 +52,22 @@ class Util:
         '''
         with open('appsettings.json') as f:
             return json.load(f)["frequencia"]
+    
+    def retorna_menor_valor_compra(moeda):
+        '''
+        retorna o menor valor possivel que vc pode operar na mercado bitcoin
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)[moeda]["valor_minima_compra"]
+
+    def retorna_menor_quantidade_venda(moeda):
+        '''
+        retorna a menor quantidade possivel que vc pode operar na mercado bitcoin
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)[moeda]["quantidade_minima_venda"]
+
+
 
     
     

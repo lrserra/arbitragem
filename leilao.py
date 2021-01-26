@@ -24,7 +24,7 @@ class Leilao:
             maximo_que_consigo_zerar = corretoraContraparte.saldoBRL/(qtd_de_moedas*corretoraContraparte.precoCompra*1.01)
             qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
 
-            if (qtdNegociada>0) and (corretoraContraparte.saldoBRL>1):#nao pode ter saldo na mercado de menos de um real
+            if (qtdNegociada>0) and (qtdNegociada*(corretoraParte.precoCompra-0.01)>Util.retorna_menor_valor_compra(ativo) and corretoraContraparte.saldoBRL>Util.retorna_menor_valor_compra(ativo)):#nao pode ter saldo na mercado de menos de um real
                 
                 if corretoraParte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais doq um oitavo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
@@ -56,9 +56,10 @@ class Leilao:
             
             gostaria_de_comprar = corretoraParte.saldoBRL/(qtd_de_moedas*corretoraParte.precoVenda+0.01)
             maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto/4
+                       
             qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
             
-            if qtdNegociada > 0:
+            if qtdNegociada > 0 and qtdNegociada>Util.retorna_menor_quantidade_venda(ativo):
 
                 if corretoraContraparte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais na mercado doq um decimo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
@@ -82,12 +83,14 @@ class Leilao:
             qtd_executada = float(ordem['data']['executed'])
             preco_executado = float(ordem['data']['price'])
             
-            if (preco_executado != corretoraParte.precoCompra) or (qtd_executada >0):
+            if (preco_executado != corretoraParte.precoCompra) or (qtd_executada >0) or (preco_executado < 1.01 * corretoraContraparte.precoCompra):
                 corretoraParte.cancelarOrdem(idOrdem)
             else:
                 logList['idOrdem'] = idOrdem
             
-            if executarOrdens and qtd_executada*corretoraParte.precoCompra > 1: #mais de um real executado
+            minimo_valor_que_posso_comprar = Util.retorna_menor_valor_compra(ativo)
+
+            if executarOrdens and qtd_executada*corretoraParte.precoCompra > minimo_valor_que_posso_comprar: #mais de xxx reais executado
                 
                 corretoraContraparte.enviarOrdemCompra(qtd_executada, 'market')#zerando o risco na mercado bitcoin
                 logList['sucesso'] = True
@@ -109,13 +112,14 @@ class Leilao:
             qtd_executada = float(ordem['data']['executed'])
             preco_executado = float(ordem['data']['price'])
             
-            if (preco_executado != corretoraParte.precoVenda) or (qtd_executada >0):
+            if (preco_executado != corretoraParte.precoVenda) or (qtd_executada >0) or (preco_executado > 0.99 * corretoraContraparte.precoVenda):
                 corretoraParte.cancelarOrdem(idOrdem)
             else:
                 logList['idOrdem'] = idOrdem
            
+            minima_quantidade_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo)
 
-            if executarOrdens and qtd_executada*corretoraParte.precoVenda > 1: #mais de um real executado
+            if executarOrdens and qtd_executada > minima_quantidade_que_posso_vender: #mais de xxx quantidade executadas
                 
                 corretoraContraparte.enviarOrdemVenda(qtd_executada, 'market')#zerando o risco na mercado bitcoin
                 logList['sucesso'] = True

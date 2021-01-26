@@ -25,7 +25,7 @@ class Caixa:
             saldo_inicial['brl'] = saldo_inicial['brl'] + (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL) #para não contar duas vezes esse cara
             saldo_inicial[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
             
-            print('{}: saldo inicial em {}: {}'.format(agora,moeda,round(saldo_inicial[moeda],2)))
+            print('{}: saldo inicial em {}: {}'.format(agora,moeda,round(saldo_inicial[moeda],4)))
 
         print('{}: saldo inicial em reais: {}'.format(agora,round(saldo_inicial['brl']/len(lista_de_moedas),2)))
 
