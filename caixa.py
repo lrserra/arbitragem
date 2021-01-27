@@ -35,7 +35,6 @@ class Caixa:
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então uma vez ao dia vamos comprar essa quantidade novamente
         '''
-
         saldo_final = {}
 
         #verifica saldo final, para comparar com inicial
@@ -44,6 +43,9 @@ class Caixa:
             # Instancia das corretoras por ativo
             CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+            #incialmente cancela todas ordens abertas na brasil
+            CorretoraMenosLiquida.cancelarTodasOrdens(moeda)
 
             CorretoraMaisLiquida.atualizarSaldo()
             CorretoraMenosLiquida.atualizarSaldo()

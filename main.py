@@ -40,7 +40,7 @@ while hour <= 720:
     
     #atualiza saldo inicial nesse dicionario
     saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-
+    
     while agora < proxima_hora:
         #essa parte executa diversas vezes
 

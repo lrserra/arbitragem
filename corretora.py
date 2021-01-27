@@ -114,6 +114,15 @@ class Corretora:
         elif self.nome == 'BrasilBitcoin':
             return BrasilBitcoin(self.ativo).cancelarOrdem(idOrdem)
 
+    def cancelarTodasOrdens(self,ativo):
+        if self.nome == 'MercadoBitcoin':
+            pass
+        elif self.nome == 'BrasilBitcoin':
+            ordens_abertas = BrasilBitcoin(self.ativo).obterOrdensAbertas()
+            for ordem in ordens_abertas:
+                if str(ativo).upper() == str(ordem['coin']).upper():
+                    self.cancelarOrdem(ordem['id'])     
+
     def TransferirCrypto(self, quantity):      
         if self.nome == 'MercadoBitcoin':
             return MercadoBitcoin(self.ativo).TransferirCrypto(quantity)
