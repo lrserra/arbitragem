@@ -114,8 +114,12 @@ while hour <= 720:
 
         agora = datetime.now() 
     
-    
+    #zerar o pnl e reiniciar a bagaça
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
+    for moeda in lista_de_moedas:
+        idOrdem[moeda]={}
+        idOrdem[moeda]['compra'] = 0
+        idOrdem[moeda]['venda'] = 0
 
     hour = hour+1
     

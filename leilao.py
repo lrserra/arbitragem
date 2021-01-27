@@ -40,7 +40,7 @@ class Leilao:
                     vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') 
                     logList['idOrdem'] = vendaCorretoraParte['data']['id']
         else:
-            logging.info('leilao compra nao vale a pena, {} é menor que 1.01*{}'.format((corretoraParte.precoCompra-0.01),corretoraContraparte.precoCompra))
+            logging.info('leilao compra de {} nao vale a pena, {} é menor que 1.01*{}'.format(ativo,(corretoraParte.precoCompra-0.01),corretoraContraparte.precoCompra))
 
         return logList
 
@@ -69,17 +69,17 @@ class Leilao:
                 if corretoraContraparte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais na mercado doq um decimo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
                     corretoraParte.precoCompra = corretoraContraparte.precoVenda*0.99-0.01
-                    logging.info('leilao venda vai enviar ordem de compra de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoCompra))
+                    logging.info('leilao venda de vai enviar ordem de compra de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoCompra))
                     CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
                     logList['idOrdem'] = CompraCorretoraParte['data']['id']
 
                 else:#todos outros casos
                     corretoraParte.precoCompra = corretoraParte.precoVenda + 0.01 #quando não estou desesperado, uso a regra do um centavo
-                    logging.info('leilao venda vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoCompra))
+                    logging.info('leilao venda de vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoCompra))
                     CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
                     logList['idOrdem'] = CompraCorretoraParte['data']['id']
         else:
-            logging.info('leilao venda nao vale a pena, {} é maior que 0.99*{}'.format((corretoraParte.precoVenda+0.01),corretoraContraparte.precoVenda))
+            logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,(corretoraParte.precoVenda+0.01),corretoraContraparte.precoVenda))
 
         return logList
 
