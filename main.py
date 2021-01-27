@@ -1,13 +1,23 @@
 import requests
 import locale
 import time
+import logging
+
 from datetime import datetime
 from corretora import Corretora
 from util import Util
 from caixa import Caixa
 from arbitragem import Arbitragem
 from leilao import Leilao
+
 #from coreTelegram import Telegram
+
+#inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os info ou acima
+logging.basicConfig(filename='main.log', level=logging.DEBUG,
+                    format='[%(asctime)s][%(levelname)s][%(message)s]')
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logging.getLogger().addHandler(console)
 
 #essa parte executa apenas uma vez
 lista_de_moedas = Util.obter_lista_de_moedas()
@@ -47,20 +57,17 @@ while day <= 365:
                 retornoVenda = Arbitragem.run(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
 
                 if retornoCompra['sucesso']:
-                    agora = datetime.now() 
-                    print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoCompra['Pnl'],2)))
+                    logging.info('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoCompra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                 elif retornoVenda['sucesso']:
-                    agora = datetime.now() 
-                    print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoVenda['Pnl'],2)))
+                    logging.info('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoVenda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                     
             except Exception as erro:
-                agora = datetime.now() 
-                print('{}: deu algum ruim na arb'.format(agora))
-                print(erro)
+                logging.error('deu algum ruim na arb')
+                logging.error(erro)
 
             
             try:
@@ -68,14 +75,12 @@ while day <= 365:
                 me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
                 if me_executaram_na_compra['sucesso']:
-                    agora = datetime.now() 
-                    print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_compra['Pnl'],2)))
+                    logging.info('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_compra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
 
                 if me_executaram_na_venda['sucesso']:  
-                    agora = datetime.now() 
-                    print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_venda['Pnl'],2)))
+                    logging.info('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_venda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()              
 
@@ -100,9 +105,8 @@ while day <= 365:
                     idOrdem[moeda]['venda'] = me_executaram_na_venda['idOrdem']
 
             except Exception as erro:
-                agora = datetime.now() 
-                print('{}: deu algum ruim no leilao'.format(agora))
-                print(erro)    
+                logging.error('deu algum ruim no leilao')
+                logging.error(erro)    
 
             
             
@@ -114,5 +118,5 @@ while day <= 365:
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
     day = day+1
-    print(day)
+    logging.info('mudando para o proximo dia {}'.format(day))
 
