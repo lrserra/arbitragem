@@ -56,12 +56,30 @@ class Caixa:
         #zerar saldo_final[moeda] - saldo_inicial[moeda]
         for moeda in lista_de_moedas:
             
-            pnl_em_moeda = abs(saldo_final[moeda]-saldo_inicial[moeda])
+            CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
+            CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+            pnl_em_moeda = saldo_final[moeda]-saldo_inicial[moeda]
+            quantidade_a_zerar = abs(pnl_em_moeda)
 
             if pnl_em_moeda >0:
-                logging.info('caixa vai zerar {} de pnl em {}'.format(round(pnl_em_moeda,4),moeda))
+                if CorretoraMaisLiquida.precoVenda > CorretoraMenosLiquida.precoVenda: #vamos vender na corretora que paga mais
+                    logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(pnl_em_moeda,4),moeda,CorretoraMaisLiquida.nome))
+                    CorretoraMaisLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                else:
+                    logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(pnl_em_moeda,4),moeda,CorretoraMenosLiquida.nome))
+                    CorretoraMenosLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na brasil
+
+            elif pnl_em_moeda <0:
+                if CorretoraMaisLiquida.precoCompra < CorretoraMenosLiquida.precoCompra: #vamos comprar na corretora que esta mais barato
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(pnl_em_moeda,4),moeda,CorretoraMaisLiquida.nome))
+                    CorretoraMaisLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                else:
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(pnl_em_moeda,4),moeda,CorretoraMenosLiquida.nome))
+                    CorretoraMenosLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na brasil
+
             else:
-                logging.info('caixa não precisa zerar de pnl em {} por ora'.format(moeda))
+                logging.info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
 
 
         return True

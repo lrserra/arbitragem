@@ -36,8 +36,9 @@ hour = 1
 while hour <= 720:
     #essa parte executa uma vez por hora
     agora = datetime.now() 
-    proxima_hora = datetime.now().replace(hour=datetime.now().hour+1,minute=0,second=0,microsecond=0)
-    
+    proxima_hora = datetime.now().replace(hour=datetime.now().hour+1,minute=datetime.now().minute,second=0,microsecond=0)
+    logging.warning('proxima atualizacao: {}'.format(proxima_hora))
+
     #atualiza saldo inicial nesse dicionario
     saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
     
@@ -122,5 +123,6 @@ while hour <= 720:
         idOrdem[moeda]['venda'] = 0
 
     hour = hour+1
+
     
 
