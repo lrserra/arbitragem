@@ -30,13 +30,13 @@ class Leilao:
                 if corretoraParte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais doq um oitavo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
                     corretoraParte.precoVenda = 0.01+corretoraContraparte.precoCompra*1.01 #pnl zero
-                    logging.info('leilao compra vai enviar ordem de venda limitada DESESPERADA a {}'.format(corretoraParte.precoVenda))
+                    logging.info('leilao compra vai enviar ordem de venda de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoVenda))
                     vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') 
                     logList['idOrdem'] = vendaCorretoraParte['data']['id']
 
                 else:#todos outros casos
                     corretoraParte.precoVenda = corretoraParte.precoCompra - 0.01 #quando não estou desesperado, pnl maximo
-                    logging.info('leilao compra vai enviar ordem de venda limitada NORMAL a {}'.format(corretoraParte.precoVenda))
+                    logging.info('leilao compra vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoVenda))
                     vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') 
                     logList['idOrdem'] = vendaCorretoraParte['data']['id']
         else:
@@ -69,13 +69,13 @@ class Leilao:
                 if corretoraContraparte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais na mercado doq um decimo do totalbrl
                     #quando estou desesperado uso a regra do pnl zero
                     corretoraParte.precoCompra = corretoraContraparte.precoVenda*0.99-0.01
-                    logging.info('leilao venda vai enviar ordem de compra limitada DESESPERADA a {}'.format(corretoraParte.precoCompra))
+                    logging.info('leilao venda vai enviar ordem de compra de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoCompra))
                     CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
                     logList['idOrdem'] = CompraCorretoraParte['data']['id']
 
                 else:#todos outros casos
                     corretoraParte.precoCompra = corretoraParte.precoVenda + 0.01 #quando não estou desesperado, uso a regra do um centavo
-                    logging.info('leilao venda vai enviar ordem de venda limitada NORMAL a {}'.format(corretoraParte.precoCompra))
+                    logging.info('leilao venda vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoCompra))
                     CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
                     logList['idOrdem'] = CompraCorretoraParte['data']['id']
         else:
@@ -93,13 +93,13 @@ class Leilao:
             preco_executado = float(ordem['data']['price'])
             
             if (preco_executado != corretoraParte.precoCompra):
-                logging.info('leilao compra vai cancelar ordem {} pq nao sou o primeiro da fila'.format(ordem))
+                logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             elif (qtd_executada >0):
-                logging.info('leilao compra vai cancelar ordem {} pq fui executado'.format(ordem))
+                logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             elif (preco_executado < 1.01 * corretoraContraparte.precoCompra):
-                logging.info('leilao compra vai cancelar ordem {} pq o pnl esta dando negativo'.format(ordem))
+                logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             else:
                 logList['idOrdem'] = idOrdem
@@ -108,7 +108,7 @@ class Leilao:
 
             if executarOrdens and qtd_executada*corretoraParte.precoCompra > minimo_valor_que_posso_comprar: #mais de xxx reais executado
                 
-                logging.info('leilao compra vai zerar ordem executada {} na outra corretora'.format(ordem))
+                logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(idOrdem,ativo))
                 corretoraContraparte.enviarOrdemCompra(qtd_executada, 'market')#zerando o risco na mercado bitcoin
                 logList['sucesso'] = True
                 logList['Pnl'] = qtd_executada*abs((preco_executado-corretoraContraparte.precoCompra))
@@ -130,13 +130,13 @@ class Leilao:
             preco_executado = float(ordem['data']['price'])
             
             if (preco_executado != corretoraParte.precoVenda):
-                logging.info('leilao venda vai cancelar ordem {} pq nao sou o primeiro da fila'.format(ordem))
+                logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             elif (qtd_executada >0):
-                logging.info('leilao venda vai cancelar ordem {} pq fui executado'.format(ordem))
+                logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             elif (preco_executado > 0.99 * corretoraContraparte.precoVenda):
-                logging.info('leilao venda vai cancelar ordem {} pq o pnl esta dando negativo'.format(ordem))
+                logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(idOrdem,ativo))
                 corretoraParte.cancelarOrdem(idOrdem)
             else:
                 logList['idOrdem'] = idOrdem
@@ -145,7 +145,7 @@ class Leilao:
 
             if executarOrdens and qtd_executada > minima_quantidade_que_posso_vender: #mais de xxx quantidade executadas
                 
-                logging.info('leilao venda vai zerar ordem executada {} na outra corretora'.format(ordem))
+                logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(idOrdem,ativo))
                 corretoraContraparte.enviarOrdemVenda(qtd_executada, 'market')#zerando o risco na mercado bitcoin
                 logList['sucesso'] = True
                 logList['Pnl'] = qtd_executada*abs((corretoraContraparte.precoVenda-preco_executado))

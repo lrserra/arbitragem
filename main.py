@@ -32,17 +32,17 @@ for moeda in lista_de_moedas:
 
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
-day = 1
-while day <= 365:
-    #essa parte executa uma vez por dia
+hour = 1
+while hour <= 720:
+    #essa parte executa uma vez por hora
     agora = datetime.now() 
-    meia_noite = datetime.now().replace(day= datetime.now().day +1,hour=0,minute=0,second=0,microsecond=0)
+    proxima_hora = datetime.now().replace(hour=datetime.now().hour+1,minute=0,second=0,microsecond=0)
     
     #atualiza saldo inicial nesse dicionario
     saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
-    while agora < meia_noite:
-        #essa parte executa diversas vezes ao dia
+    while agora < proxima_hora:
+        #essa parte executa diversas vezes
 
         for moeda in lista_de_moedas:
             try:
@@ -75,12 +75,12 @@ while day <= 365:
                 me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
                 if me_executaram_na_compra['sucesso']:
-                    logging.warning('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_compra['Pnl'],2)))
+                    logging.warning('operou leilao de compra de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_compra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
 
                 if me_executaram_na_venda['sucesso']:  
-                    logging.warning('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_venda['Pnl'],2)))
+                    logging.warning('operou leilao de venda de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_venda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()              
 
@@ -117,6 +117,6 @@ while day <= 365:
     
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
-    day = day+1
-    logging.info('mudando para o proximo dia {}'.format(day))
+    hour = hour+1
+    
 

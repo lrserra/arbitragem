@@ -57,7 +57,9 @@ class Caixa:
             pnl_em_moeda = abs(saldo_final[moeda]-saldo_inicial[moeda])
 
             if pnl_em_moeda >0:
-                logging.info('zera {} de pnl em {}'.format(round(pnl_em_moeda,4),moeda))
+                logging.info('caixa vai zerar {} de pnl em {}'.format(round(pnl_em_moeda,4),moeda))
+            else:
+                logging.info('caixa não precisa zerar de pnl em {} por ora'.format(moeda))
 
 
         return True
