@@ -12,11 +12,11 @@ from leilao import Leilao
 
 #from coreTelegram import Telegram
 
-#inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os info ou acima
-logging.basicConfig(filename='main.log', level=logging.DEBUG,
+#inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os warning ou acima
+logging.basicConfig(filename='main.log', level=logging.INFO,
                     format='[%(asctime)s][%(levelname)s][%(message)s]')
 console = logging.StreamHandler()
-console.setLevel(logging.INFO)
+console.setLevel(logging.WARNING)
 logging.getLogger().addHandler(console)
 
 #essa parte executa apenas uma vez
@@ -57,11 +57,11 @@ while day <= 365:
                 retornoVenda = Arbitragem.run(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
 
                 if retornoCompra['sucesso']:
-                    logging.info('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoCompra['Pnl'],2)))
+                    logging.warning('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoCompra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                 elif retornoVenda['sucesso']:
-                    logging.info('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoVenda['Pnl'],2)))
+                    logging.warning('operou arb de {}! + {}brl de pnl'.format(moeda,round(retornoVenda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
                     
@@ -75,12 +75,12 @@ while day <= 365:
                 me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
                 if me_executaram_na_compra['sucesso']:
-                    logging.info('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_compra['Pnl'],2)))
+                    logging.warning('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_compra['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()
 
                 if me_executaram_na_venda['sucesso']:  
-                    logging.info('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_venda['Pnl'],2)))
+                    logging.warning('operou leilao de {}! + {}brl de pnl'.format(moeda,round(me_executaram_na_venda['Pnl'],2)))
                     CorretoraMaisLiquida.atualizarSaldo()
                     CorretoraMenosLiquida.atualizarSaldo()              
 
