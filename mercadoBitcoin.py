@@ -37,7 +37,8 @@ class MercadoBitcoin:
         }
 
         params = urlencode(params)
-        return self.executarRequestMercadoBTC(params)
+        retorno = self.executarRequestMercadoBTC(params)
+        return retorno
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         tapi_nonce = str(int(time.time()))
@@ -49,7 +50,8 @@ class MercadoBitcoin:
             'limit_price': precoVenda
         }
         params = urlencode(params)
-        return self.executarRequestMercadoBTC(params)
+        retorno = self.executarRequestMercadoBTC(params)
+        return retorno
 
     def TransferirCrypto(self, quantity):
         config = Util.obterCredenciais()

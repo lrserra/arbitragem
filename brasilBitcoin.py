@@ -34,7 +34,8 @@ class BrasilBitcoin:
         }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        return self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        return retorno
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
@@ -47,7 +48,8 @@ class BrasilBitcoin:
         }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        return self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        return retorno
 
     def TransferirCrypto(self, quantity):      
         config = Util.obterCredenciais()
