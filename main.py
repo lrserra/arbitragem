@@ -38,8 +38,6 @@ while hour <= 720:
     agora = datetime.now() 
     proxima_hora = agora + timedelta(hours=1)
     logging.warning('proxima atualizacao: {}'.format(proxima_hora))
-
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
     
     while agora < proxima_hora:
         #essa parte executa diversas vezes
@@ -122,6 +120,8 @@ while hour <= 720:
         idOrdem[moeda]['venda'] = 0
 
     hour = hour+1
+    
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
     
 
