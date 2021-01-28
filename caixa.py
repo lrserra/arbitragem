@@ -1,5 +1,7 @@
+import logging
 from corretora import Corretora
 from datetime import datetime
+
 
 class Caixa:
     
@@ -11,8 +13,6 @@ class Caixa:
         saldo_inicial = {}
         saldo_inicial['brl'] = 0
 
-        agora = datetime.now() 
-        
         for moeda in lista_de_moedas:
             
             # Instancia das corretoras por ativo
@@ -25,9 +25,9 @@ class Caixa:
             saldo_inicial['brl'] = saldo_inicial['brl'] + (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL) #para não contar duas vezes esse cara
             saldo_inicial[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
             
-            print('{}: saldo inicial em {}: {}'.format(agora,moeda,round(saldo_inicial[moeda],4)))
+            logging.warning('saldo inicial em {}: {}'.format(moeda,round(saldo_inicial[moeda],4)))
 
-        print('{}: saldo inicial em reais: {}'.format(agora,round(saldo_inicial['brl']/len(lista_de_moedas),2)))
+        logging.warning('saldo inicial em reais: {}'.format(round(saldo_inicial['brl']/len(lista_de_moedas),2)))
 
         return saldo_inicial
 
@@ -46,6 +46,9 @@ class Caixa:
             CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
+            #incialmente cancela todas ordens abertas na brasil
+            CorretoraMenosLiquida.cancelarTodasOrdens(moeda)
+
             CorretoraMaisLiquida.atualizarSaldo()
             CorretoraMenosLiquida.atualizarSaldo()
 
@@ -55,11 +58,30 @@ class Caixa:
         #zerar saldo_final[moeda] - saldo_inicial[moeda]
         for moeda in lista_de_moedas:
             
-            pnl_em_moeda = abs(saldo_final[moeda]-saldo_inicial[moeda])
+            CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
+            CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+            pnl_em_moeda = saldo_final[moeda]-saldo_inicial[moeda]
+            quantidade_a_zerar = abs(pnl_em_moeda)
 
             if pnl_em_moeda >0:
-                agora = datetime.now() 
-                print('{}: zera {} de pnl em {}'.format(agora,round(pnl_em_moeda,4),moeda))
+                if CorretoraMaisLiquida.precoVenda > CorretoraMenosLiquida.precoVenda: #vamos vender na corretora que paga mais
+                    logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.nome))
+                    CorretoraMaisLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                else:
+                    logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.nome))
+                    CorretoraMenosLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na brasil
+
+            elif pnl_em_moeda <0:
+                if CorretoraMaisLiquida.precoCompra < CorretoraMenosLiquida.precoCompra: #vamos comprar na corretora que esta mais barato
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.nome))
+                    CorretoraMaisLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                else:
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.nome))
+                    CorretoraMenosLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na brasil
+
+            else:
+                logging.info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
 
 
         return True
