@@ -4,7 +4,6 @@ import hmac
 import json
 import time
 import mimetypes
-import logging
 from http import client
 from urllib.parse import urlencode
 from mercadoBitcoin import MercadoBitcoin
@@ -89,8 +88,8 @@ class Corretora:
     def atualizarSaldo(self):
         if self.nome == 'MercadoBitcoin':
             response_json = MercadoBitcoin(self.ativo).obterSaldo()
-            self.saldoBRL = float(response_json['response_data']['balance']['brl']['total'])
-            self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['total'])
+            self.saldoBRL = float(response_json['response_data']['balance']['brl']['available'])
+            self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['available'])
         elif self.nome == 'BrasilBitcoin':
             response_json = BrasilBitcoin(self.ativo).obterSaldo()
             self.saldoBRL = float(response_json['brl'])
@@ -113,15 +112,6 @@ class Corretora:
             pass
         elif self.nome == 'BrasilBitcoin':
             return BrasilBitcoin(self.ativo).cancelarOrdem(idOrdem)
-
-    def cancelarTodasOrdens(self,ativo):
-        if self.nome == 'MercadoBitcoin':
-            pass
-        elif self.nome == 'BrasilBitcoin':
-            ordens_abertas = BrasilBitcoin(self.ativo).obterOrdensAbertas()
-            for ordem in ordens_abertas:
-                if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelarOrdem(ordem['id'])     
 
     def TransferirCrypto(self, quantity):      
         if self.nome == 'MercadoBitcoin':
