@@ -15,12 +15,12 @@ corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
 corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
 idOrdem = {}#inicializa o dic
+
+# Operando com mais de um
 for moeda in lista_de_moedas:
     idOrdem[moeda]={}
     idOrdem[moeda]['compra'] = 0
     idOrdem[moeda]['venda'] = 0
-
-locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
 day = 1
 while day <= 365:
@@ -40,47 +40,42 @@ while day <= 365:
                 CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
                 CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
-                CorretoraMaisLiquida.atualizarSaldo()
-                CorretoraMenosLiquida.atualizarSaldo()
+                # Atualiza o saldo de crypto e de BRL nas corretoras
+                CorretoraMaisLiquida.atualizar_saldo()
+                CorretoraMenosLiquida.atualizar_saldo()
 
-                retornoCompra = Arbitragem.run(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                retornoVenda = Arbitragem.run(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+                # Roda a arbitragem nas 2 corretoras
+                retornoCompra = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                retornoVenda = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
 
                 if retornoCompra['sucesso']:
                     agora = datetime.now() 
                     print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoCompra['Pnl'],2)))
-                    CorretoraMaisLiquida.atualizarSaldo()
-                    CorretoraMenosLiquida.atualizarSaldo()
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    CorretoraMenosLiquida.atualizar_saldo()
                 elif retornoVenda['sucesso']:
                     agora = datetime.now() 
                     print('{}: operou arb de {}! + {}brl de pnl'.format(agora,moeda,round(retornoVenda['Pnl'],2)))
-                    CorretoraMaisLiquida.atualizarSaldo()
-                    CorretoraMenosLiquida.atualizarSaldo()
-                    
-            except Exception as erro:
-                agora = datetime.now() 
-                print('{}: deu algum ruim na arb'.format(agora))
-                print(erro)
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    CorretoraMenosLiquida.atualizar_saldo()
 
-            
-            #teset
-            try:
+            # Bloco que executa a estratégia de leilão
                 me_executaram_na_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['compra'])
                 me_executaram_na_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, idOrdem[moeda]['venda'])
 
                 if me_executaram_na_compra['sucesso']:
                     agora = datetime.now() 
                     print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_compra['Pnl'],2)))
-                    CorretoraMaisLiquida.atualizarSaldo()
-                    CorretoraMenosLiquida.atualizarSaldo()
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    CorretoraMenosLiquida.atualizar_saldo()
 
                 if me_executaram_na_venda['sucesso']:  
                     agora = datetime.now() 
                     print('{}: operou leilao de {}! + {}brl de pnl'.format(agora,moeda,round(me_executaram_na_venda['Pnl'],2)))
-                    CorretoraMaisLiquida.atualizarSaldo()
-                    CorretoraMenosLiquida.atualizarSaldo()              
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    CorretoraMenosLiquida.atualizar_saldo()              
 
-                if me_executaram_na_compra['idOrdem'] ==0:
+                if me_executaram_na_compra['idOrdem'] == 0:
                     
                     CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
                     CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
@@ -90,7 +85,7 @@ while day <= 365:
                 else:
                     idOrdem[moeda]['compra'] = me_executaram_na_compra['idOrdem']
                 
-                if me_executaram_na_venda['idOrdem'] ==0:
+                if me_executaram_na_venda['idOrdem'] == 0:
                     
                     CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
                     CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda) #atualizar os books aqui pra mandar a proxima ordem pro leilao
@@ -101,16 +96,11 @@ while day <= 365:
                     idOrdem[moeda]['venda'] = me_executaram_na_venda['idOrdem']
 
             except Exception as erro:
-                agora = datetime.now() 
-                print('{}: deu algum ruim no leilao'.format(agora))
-                print(erro)    
-
-            
+                print(erro)
             
             time.sleep(Util.frequencia())
 
         agora = datetime.now() 
-    
     
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
