@@ -1,5 +1,4 @@
 import requests
-import locale
 import time
 import logging
 
@@ -30,7 +29,8 @@ for moeda in lista_de_moedas:
     idOrdem[moeda]['compra'] = 0
     idOrdem[moeda]['venda'] = 0
 
-locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
+#atualiza saldo inicial nesse dicionario
+saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
 hour = 1
 while hour <= 720:
@@ -39,8 +39,7 @@ while hour <= 720:
     proxima_hora = agora + timedelta(hours=1)
     logging.warning('proxima atualizacao: {}'.format(proxima_hora))
 
-    #atualiza saldo inicial nesse dicionario
-    saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
     
     while agora < proxima_hora:
         #essa parte executa diversas vezes
