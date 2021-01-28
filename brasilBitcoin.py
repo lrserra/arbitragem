@@ -68,6 +68,9 @@ class BrasilBitcoin:
     def cancelarOrdem(self, idOrdem):
         return self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
 
+    def obterOrdensAbertas(self):
+        return self.executarRequestBrasilBTC('GET', '','/api/my_orders')
+
     def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
         

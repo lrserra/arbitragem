@@ -1,5 +1,6 @@
 import requests
 import time
+import logging
 from datetime import datetime
 from corretora import Corretora
 from ordem import Ordem
@@ -42,7 +43,9 @@ class Arbitragem:
                         logList['Pnl'] = pnl
 
                         if executarOrdens:
+                            logging.info('arbitragem envia ordem de compra a marcado da quantidade {}'.format(qtdNegociada))
                             corretoraCompra.enviarOrdemCompra(qtdNegociada, 'market')
+                            logging.info('arbitragem envia ordem de venda a marcado da quantidade {}'.format(qtdNegociada))
                             corretoraVenda.enviarOrdemVenda(qtdNegociada, 'market')
 
                         # Atualizando a carteira
@@ -65,12 +68,14 @@ class Arbitragem:
                     else:
                         condicao = False
                         logList['sucesso'] = False
-                        logList['ErroSaldo'] = 'Saldo insuficiente para operar o ativo {}.'.format(ativo)
+                        logList['ErroSaldo'] = 'arbitragem deu saldo insuficiente para operar o ativo {}.'.format(ativo)
+                        logging.info(logList['ErroSaldo'])
 
                 else:
                     condicao = False
                     logList['sucesso'] = False
-                    logList['ErroPnl'] = 'PnL({}) menor que a corretagem({}) do ativo {}.'.format(pnl, financeiroCorretagem, ativo)
+                    logList['ErroPnl'] = 'arbitragem deu que PnL({}) menor que a corretagem({}) do ativo {}.'.format(pnl, financeiroCorretagem, ativo)
+                    logging.info(logList['ErroPnl'])
 
             else:
                 condicao = False
