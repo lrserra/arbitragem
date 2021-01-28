@@ -3,7 +3,7 @@ import locale
 import time
 import logging
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from corretora import Corretora
 from util import Util
 from caixa import Caixa
@@ -36,7 +36,7 @@ hour = 1
 while hour <= 720:
     #essa parte executa uma vez por hora
     agora = datetime.now() 
-    proxima_hora = datetime.now().replace(hour=datetime.now().hour+1,minute=datetime.now().minute,second=0,microsecond=0)
+    proxima_hora = agora + timedelta(hours=1)
     logging.warning('proxima atualizacao: {}'.format(proxima_hora))
 
     #atualiza saldo inicial nesse dicionario
