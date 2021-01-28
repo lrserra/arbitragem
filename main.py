@@ -1,7 +1,8 @@
 import requests
-import locale
 import time
-from datetime import datetime
+import logging
+
+from datetime import datetime, timedelta
 from corretora import Corretora
 from util import Util
 from caixa import Caixa
@@ -20,19 +21,18 @@ for moeda in lista_de_moedas:
     idOrdem[moeda]['compra'] = 0
     idOrdem[moeda]['venda'] = 0
 
-locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
+#atualiza saldo inicial nesse dicionario
+saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
 
 day = 1
 while day <= 365:
     #essa parte executa uma vez por dia
     agora = datetime.now() 
-    meia_noite = datetime.now().replace(day= datetime.now().day +1,hour=0,minute=0,second=0,microsecond=0)
+    proxima_hora = agora + timedelta(hours=1)
+    logging.warning('proxima atualizacao: {}'.format(proxima_hora))
     
-    #atualiza saldo inicial nesse dicionario
-    saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-
-    while agora < meia_noite:
-        #essa parte executa diversas vezes ao dia
+    while agora < proxima_hora:
+        #essa parte executa diversas vezes
 
         for moeda in lista_de_moedas:
             try:
@@ -114,6 +114,8 @@ while day <= 365:
     
     Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
 
-    day = day+1
-    print(day)
+    hour = hour+1
+    
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
+
 
