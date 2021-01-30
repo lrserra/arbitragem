@@ -86,7 +86,7 @@ while hour <= 720:
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo()
                     dict_ordem_leilao_compra[moeda] = Ordem()
-                else:# Se Id igual a zero, enviar ordem de leilão
+                elif dict_ordem_leilao_compra[moeda].id == 0: 
                     retorno_ordem_leilao_compra = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                     dict_ordem_leilao_compra[moeda] = retorno_ordem_leilao_compra
 
@@ -98,7 +98,7 @@ while hour <= 720:
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo() 
                     dict_ordem_leilao_venda[moeda] = Ordem()             
-                else:
+                elif dict_ordem_leilao_venda[moeda].id == 0:
                     retorno_ordem_leilao_venda = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                     dict_ordem_leilao_venda[moeda] = retorno_ordem_leilao_venda
 
