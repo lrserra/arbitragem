@@ -88,9 +88,13 @@ while hour <= 720:
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if dict_leilao_compra[moeda]['zeragem'].id != 0:
                     
-                    pnl = ((dict_leilao_compra[moeda]['ordem'].preco_compra * 0.998) - (dict_leilao_compra[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_compra[moeda]['zeragem'].quantidade_executada
+                    comprei_a = round(dict_leilao_compra[moeda]['zeragem'].preco_executado,2)
+                    vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_compra,2)
+                    quantidade = round(dict_leilao_compra[moeda]['zeragem'].quantidade_executada,4)
 
-                    logging.warning('operou leilao de compra de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
+                    pnl = round(((vendi_a * 0.998) - (comprei_a * 1.007)) * quantidade,2)
+
+                    logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} e venda a @{})'.format(moeda,pnl,quantidade,moeda,comprei_a,vendi_a))
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo()
                     dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
@@ -101,9 +105,13 @@ while hour <= 720:
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
-                    pnl = ((dict_leilao_venda[moeda]['ordem'].preco_venda * 0.998) - (dict_leilao_venda[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_venda[moeda]['zeragem'].quantidade_executada
+                    vendi_a = round(dict_leilao_venda[moeda]['zeragem'].preco_executado,2)
+                    comprei_a = round(dict_leilao_venda[moeda]['ordem'].preco_venda,2)
+                    quantidade = round(dict_leilao_venda[moeda]['zeragem'].quantidade_executada,4)
 
-                    logging.warning('operou leilao de venda de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
+                    pnl = round(((comprei_a * 0.998) - (vendi_a * 1.007)) * quantidade,2)
+
+                    logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} e compra a @{})'.format(moeda,pnl,quantidade,moeda,vendi_a,comprei_a))
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo() 
                     dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens   
