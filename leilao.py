@@ -101,7 +101,7 @@ class Leilao:
 
                 ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_compra.id)
                 
-                if (ordem_leilao_compra.preco_executado != corretoraParte.ordem.preco_compra):
+                if (ordem_leilao_compra.preco_venda != corretoraParte.ordem.preco_compra):
                     
                     logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
@@ -111,7 +111,7 @@ class Leilao:
                     logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
                 
-                elif (ordem_leilao_compra.preco_executado < 1.01 * corretoraContraparte.ordem.preco_compra):
+                elif (ordem_leilao_compra.preco_venda < 1.01 * corretoraContraparte.ordem.preco_compra):
                     
                     logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
@@ -147,7 +147,7 @@ class Leilao:
                 qtd_executada = ordem.quantidade_executada
                 preco_executado = ordem_leilao_venda.preco_executado
             
-                if (ordem_leilao_venda.preco_executado != corretoraParte.ordem.preco_venda):
+                if (ordem_leilao_venda.preco_compra != corretoraParte.ordem.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
@@ -157,7 +157,7 @@ class Leilao:
                     logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
 
-                elif (ordem_leilao_venda.preco_executado > 0.99 * corretoraContraparte.ordem.preco_venda):
+                elif (ordem_leilao_venda.preco_compra > 0.99 * corretoraContraparte.ordem.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
