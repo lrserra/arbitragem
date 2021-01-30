@@ -26,6 +26,12 @@ corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
 retorno_ordem_leilao_compra = Ordem()
 retorno_ordem_leilao_venda = Ordem()
+dict_ordem_leilao_compra = {}
+dict_ordem_leilao_venda = {}
+
+for ativo in lista_de_moedas:
+    dict_ordem_leilao_compra[ativo] = retorno_ordem_leilao_compra
+    dict_ordem_leilao_venda[ativo] = retorno_ordem_leilao_venda
 
 #atualiza saldo inicial nesse dicionario
 saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
@@ -68,8 +74,8 @@ while hour <= 720:
 
                 # -----------------------------------------------------------------------------------------------------------------------------------#
                              
-                retorno_zeragem_leilao_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, retorno_ordem_leilao_compra)
-                retorno_zeragem_leilao_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, retorno_ordem_leilao_venda)
+                retorno_zeragem_leilao_compra = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_ordem_leilao_compra[moeda])
+                retorno_zeragem_leilao_venda = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_ordem_leilao_venda[moeda])
 
                 # Se Id diferente de zero, significa que operou leilão
                 if retorno_zeragem_leilao_compra.id != 0:
@@ -81,6 +87,7 @@ while hour <= 720:
                     CorretoraMenosLiquida.atualizar_saldo()
                 else:# Se Id igual a zero, enviar ordem de leilão
                     retorno_ordem_leilao_compra = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    dict_ordem_leilao_compra[moeda] = retorno_ordem_leilao_compra
 
                 if retorno_zeragem_leilao_venda.id != 0:
 
@@ -91,6 +98,7 @@ while hour <= 720:
                     CorretoraMenosLiquida.atualizar_saldo()              
                 else:
                     retorno_ordem_leilao_venda = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    dict_ordem_leilao_venda[moeda] = retorno_ordem_leilao_venda
 
             except Exception as erro:        
                 logging.error(erro) 
