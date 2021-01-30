@@ -84,10 +84,11 @@ class Arbitragem:
         return logList
 
     def processar(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, executarOrdens = False):
-        condicao = True
+        existe_arbitragem = True
         indexOrdem = 0
-        
-        logList = {'sucesso': False, 'ErroPnl':'--', 'ErroSaldo':'--', 'logVenda':'--', 'logCompra': '--'}
+        pnl = 0
+        retorno_compra = Ordem()
+        retorno_venda = Ordem()
         
         # Obtendo a maior e menor quantidade de compra e venda entre as corretoras
         maiorQtd = max(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda)
@@ -96,7 +97,7 @@ class Arbitragem:
         # Na estratégia, consideramos negociar a partir da menor quantidade
         qtdNegociada = menorQtd
 
-        while condicao and (menorQtd < maiorQtd):
+        while existe_arbitragem and (menorQtd < maiorQtd):
 
             try:
             # Verifica se existe arbitragem entre as corretoras
@@ -108,16 +109,8 @@ class Arbitragem:
 
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
                     if financeiroCorretagem < pnl:
-                        
-                        # Atualiza o saldo de crypto e BRL nas corretoras
-                        corretoraCompra.atualizar_saldo()
-                        corretoraVenda.atualizar_saldo()
-
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if corretoraCompra.saldoBRL >= corretoraCompra.obter_amount_compra(qtdNegociada) and corretoraVenda.saldoCrypto >= qtdNegociada:
-
-                            logList['sucesso'] = True
-                            logList['Pnl'] = pnl
 
                             if executarOrdens:
                                 # Atualiza a quantidade negociada e o tipo de ordem 
@@ -126,15 +119,12 @@ class Arbitragem:
                                 corretoraCompra.ordem.tipo_ordem = 'market'
                                 corretoraVenda.ordem.tipo_ordem = 'market'
 
-                                corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
-                                corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
+                                retorno_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
+                                retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
 
-                            # Atualizando a carteira
-                            corretoraCompra.saldoBRL -= corretoraCompra.obter_amount_compra(qtdNegociada)
-                            corretoraCompra.saldoCrypto += qtdNegociada
-                    
-                            corretoraVenda.saldoBRL += corretoraVenda.obter_amount_venda(qtdNegociada)
-                            corretoraVenda.saldoCrypto -= qtdNegociada
+                                corretoraCompra.atualizar_saldo()
+                                corretoraVenda.atualizar_saldo()
+
                             indexOrdem += 1
 
                             # Trecho que verifica se a pena ir para a próxima ordem do book dado critério de preço atendido
@@ -148,19 +138,13 @@ class Arbitragem:
                             menorQtd += min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda) 
 
                         else:
-                            condicao = False
-                            logList['sucesso'] = False
-                            logList['ErroSaldo'] = 'Saldo insuficiente para operar o ativo {}.'.format(ativo)
-
+                            existe_arbitragem = False
                     else:
-                        condicao = False
-                        logList['sucesso'] = False
-                        logList['ErroPnl'] = 'PnL({}) menor que a corretagem({}) do ativo {}.'.format(pnl, financeiroCorretagem, ativo)
-
+                        existe_arbitragem = False
                 else:
-                    condicao = False
-                    logList['sucesso'] = False
+                    existe_arbitragem = False
             except Exception as erro:
                 msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: processar.', erro)
                 raise Exception(msg_erro)
-        return logList
+        
+        return retorno_venda, pnl

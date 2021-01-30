@@ -28,8 +28,14 @@ class MercadoBitcoin:
 
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         tapi_nonce = str(int(time.time()))
+
+        if tipoOrdem == 'market':
+            method = 'place_market_buy_order'
+        else:
+            method = 'place_buy_order'
+
         params = {
-            'tapi_method': 'place_{}_buy_order'.format(tipoOrdem),
+            'tapi_method': method,
             'tapi_nonce': tapi_nonce,
             'coin_pair': 'BRL{}'.format(str.upper(self.ativo)),
             'quantity': quantity,
@@ -42,8 +48,14 @@ class MercadoBitcoin:
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         tapi_nonce = str(int(time.time()))
+
+        if tipoOrdem == 'market':
+            method = 'place_market_sell_order'
+        else:
+            method = 'place_sell_order'
+
         params = {
-            'tapi_method': 'place_{}_sell_order'.format(tipoOrdem),
+            'tapi_method': method,
             'tapi_nonce': tapi_nonce,
             'coin_pair': 'BRL{}'.format(str.upper(self.ativo)),
             'quantity': quantity,

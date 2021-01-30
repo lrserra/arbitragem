@@ -12,4 +12,5 @@ class Ordem:
        self.quantidade_executada = 0.0
        self.status = ''
        self.tipo_ordem = ''
+       self.mensagem = ''
        
