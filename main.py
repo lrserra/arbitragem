@@ -109,7 +109,7 @@ while hour <= 720:
                     comprei_a = round(dict_leilao_venda[moeda]['ordem'].preco_venda,2)
                     quantidade = round(dict_leilao_venda[moeda]['zeragem'].quantidade_executada,4)
 
-                    pnl = round(((comprei_a * 0.998) - (vendi_a * 1.007)) * quantidade,2)
+                    pnl = round(((vendi_a*0.993)-(comprei_a*1.002)) * quantidade,2)
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} e compra a @{})'.format(moeda,pnl,quantidade,moeda,vendi_a,comprei_a))
                     CorretoraMaisLiquida.atualizar_saldo()
