@@ -57,8 +57,8 @@ while hour <= 720:
                 CorretoraMenosLiquida.atualizar_saldo()
 
                 # Roda a arbitragem nas 2 corretoras
-                retorno_mais_liquida_para_menos_liquida, pnl_abritragem_mais_liquida = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, False)
-                retorno_menos_liquida_para_mais_liquida, pnl_abritragem_menos_liquida = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, False)   
+                retorno_mais_liquida_para_menos_liquida, pnl_abritragem_mais_liquida = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                retorno_menos_liquida_para_mais_liquida, pnl_abritragem_menos_liquida = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
 
                 if retorno_mais_liquida_para_menos_liquida.id > 0:
 
@@ -92,7 +92,7 @@ while hour <= 720:
 
                 if retorno_zeragem_leilao_venda.id != 0:
 
-                    pnl = ((retorno_ordem_leilao_venda.preco_executado * 0.998) - (retorno_zeragem_leilao_venda.preco_executado * 1.007)) * retorno_zeragem_leilao_venda.quantidade_executada
+                    pnl = ((retorno_ordem_leilao_venda.preco_venda * 0.998) - (retorno_zeragem_leilao_venda.preco_executado * 1.007)) * retorno_zeragem_leilao_venda.quantidade_executada
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
                     CorretoraMaisLiquida.atualizar_saldo()

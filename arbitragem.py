@@ -35,7 +35,7 @@ class Arbitragem:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
                     if financeiroCorretagem < pnl:
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
-                        if corretoraCompra.saldoBRL >= corretoraCompra.obter_amount_compra(qtdNegociada) and corretoraVenda.saldoCrypto >= qtdNegociada:
+                        if (corretoraCompra.saldoBRL >= corretoraCompra.obter_amount_compra(qtdNegociada) and corretoraCompra.obter_amount_compra(qtdNegociada) > Util.retorna_menor_valor_compra(ativo)) and (corretoraVenda.saldoCrypto >= qtdNegociada and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
 
                             if executarOrdens:
                                 # Atualiza a quantidade negociada e o tipo de ordem 
