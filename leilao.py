@@ -116,7 +116,7 @@ class Leilao:
                 
                 elif (ordem_leilao_compra.preco_venda < 1.01 * corretoraContraparte.ordem.preco_compra):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(orordem_leilao_compradem.id,ativo))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_compra.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
                     cancelou = True
 
