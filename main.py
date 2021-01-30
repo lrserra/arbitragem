@@ -89,7 +89,7 @@ while hour <= 720:
                 if dict_leilao_compra[moeda]['zeragem'].id != 0:
                     
                     comprei_a = round(dict_leilao_compra[moeda]['zeragem'].preco_executado,2)
-                    vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_compra,2)
+                    vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_venda,2)#a revisar!
                     quantidade = round(dict_leilao_compra[moeda]['zeragem'].quantidade_executada,4)
 
                     pnl = round(((vendi_a * 0.998) - (comprei_a * 1.007)) * quantidade,2)
