@@ -86,6 +86,7 @@ class Leilao:
     def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_compra):
 
         retorno_compra = Ordem()
+        cancelou = False
 
         try:
             if ordem_leilao_compra.status == 'filled' and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
@@ -103,18 +104,21 @@ class Leilao:
                 
                 if (ordem_leilao_compra.preco_venda != corretoraParte.ordem.preco_compra):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem.id,ativo))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_compra.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
 
                 elif (ordem.quantidade_executada > 0):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem.id,ativo))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_compra.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
                 
                 elif (ordem_leilao_compra.preco_venda < 1.01 * corretoraContraparte.ordem.preco_compra):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(orordem_leilao_compradem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
 
                 if executarOrdens and ordem.quantidade_executada * corretoraParte.ordem.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
                     
@@ -127,11 +131,12 @@ class Leilao:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
             raise Exception(msg_erro)
 
-        return retorno_compra
+        return retorno_compra, cancelou
 
     def cancela_ordens_e_vende_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_venda):
 
         retorno_venda = Ordem()
+        cancelou = False
 
         try:
              
@@ -149,22 +154,25 @@ class Leilao:
             
                 if (ordem_leilao_venda.preco_compra != corretoraParte.ordem.preco_venda):
                     
-                    logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem.id,ativo))
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
                 
                 elif (ordem.quantidade_executada >0):
                     
-                    logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem.id,ativo))
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_venda.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
 
                 elif (ordem_leilao_venda.preco_compra > 0.99 * corretoraContraparte.ordem.preco_venda):
                     
-                    logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_venda.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
             
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
-                    logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem.id,ativo))
+                    logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
                     corretoraContraparte.ordem.quantidade_negociada = ordem.quantidade_executada
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
@@ -173,4 +181,4 @@ class Leilao:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
             raise Exception(msg_erro)
         
-        return retorno_venda
+        return retorno_venda,cancelou
