@@ -88,7 +88,7 @@ while hour <= 720:
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if dict_leilao_compra[moeda]['zeragem'].id != 0:
                     
-                    pnl = ((retorno_ordem_leilao_compra.preco_compra * 0.998) - (dict_leilao_compra[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_compra[moeda]['zeragem'].quantidade_executada
+                    pnl = ((dict_leilao_compra[moeda]['ordem'].preco_compra * 0.998) - (dict_leilao_compra[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_compra[moeda]['zeragem'].quantidade_executada
 
                     logging.warning('operou leilao de compra de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
                     CorretoraMaisLiquida.atualizar_saldo()
@@ -101,7 +101,7 @@ while hour <= 720:
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
-                    pnl = ((retorno_ordem_leilao_venda.preco_venda * 0.998) - (dict_leilao_venda[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_venda[moeda]['zeragem'].quantidade_executada
+                    pnl = ((dict_leilao_venda[moeda]['ordem'].preco_venda * 0.998) - (dict_leilao_venda[moeda]['zeragem'].preco_executado * 1.007)) * dict_leilao_venda[moeda]['zeragem'].quantidade_executada
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
                     CorretoraMaisLiquida.atualizar_saldo()
