@@ -1,3 +1,4 @@
+ 
 import time
 import logging
 from datetime import datetime
@@ -146,7 +147,7 @@ class Leilao:
                 qtd_executada = ordem.quantidade_executada
                 preco_executado = ordem_leilao_venda.preco_executado
             
-                if (ordem_leilaordem_leilao_vendao_compra.preco_executado != corretoraParte.ordem.preco_venda):
+                if (ordem_leilao_venda.preco_executado != corretoraParte.ordem.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
@@ -161,7 +162,7 @@ class Leilao:
                     logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
             
-                if executarOrdens and ordem_leilao_venda.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
+                if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
                     logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem.id,ativo))
                     corretoraContraparte.ordem.quantidade_negociada = ordem.quantidade_executada

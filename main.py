@@ -57,8 +57,8 @@ while hour <= 720:
                 CorretoraMenosLiquida.atualizar_saldo()
 
                 # Roda a arbitragem nas 2 corretoras
-                retorno_mais_liquida_para_menos_liquida, pnl_abritragem_mais_liquida = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                retorno_menos_liquida_para_mais_liquida, pnl_abritragem_menos_liquida = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+                retorno_mais_liquida_para_menos_liquida, pnl_abritragem_mais_liquida = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, False)
+                retorno_menos_liquida_para_mais_liquida, pnl_abritragem_menos_liquida = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, False)   
 
                 if retorno_mais_liquida_para_menos_liquida.id > 0:
 
@@ -80,22 +80,24 @@ while hour <= 720:
                 # Se Id diferente de zero, significa que operou leilão
                 if retorno_zeragem_leilao_compra.id != 0:
                     
-                    pnl = ((retorno_ordem_leilao_compra.preco_executado * 0.998) - (retorno_zeragem_leilao_compra.preco_executado * 1.007)) * retorno_zeragem_leilao_compra.quantidade_executada
+                    pnl = ((retorno_ordem_leilao_compra.preco_compra * 0.998) - (retorno_zeragem_leilao_compra.preco_executado * 1.007)) * retorno_zeragem_leilao_compra.quantidade_executada
 
                     logging.warning('operou leilao de compra de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo()
+                    dict_ordem_leilao_compra[moeda] = Ordem()
                 else:# Se Id igual a zero, enviar ordem de leilão
                     retorno_ordem_leilao_compra = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                     dict_ordem_leilao_compra[moeda] = retorno_ordem_leilao_compra
 
                 if retorno_zeragem_leilao_venda.id != 0:
 
-                    pnl = ((retorno_zeragem_leilao_venda.preco_executado * 0.998) - (retorno_zeragem_leilao_venda.preco_executado * 1.007)) * retorno_zeragem_leilao_venda.quantidade_executada
+                    pnl = ((retorno_ordem_leilao_venda.preco_executado * 0.998) - (retorno_zeragem_leilao_venda.preco_executado * 1.007)) * retorno_zeragem_leilao_venda.quantidade_executada
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl'.format(moeda,round(pnl,2)))
                     CorretoraMaisLiquida.atualizar_saldo()
-                    CorretoraMenosLiquida.atualizar_saldo()              
+                    CorretoraMenosLiquida.atualizar_saldo() 
+                    dict_ordem_leilao_venda[moeda] = Ordem()             
                 else:
                     retorno_ordem_leilao_venda = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                     dict_ordem_leilao_venda[moeda] = retorno_ordem_leilao_venda

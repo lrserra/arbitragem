@@ -125,66 +125,74 @@ class Corretora:
         try:
             if self.nome == 'MercadoBitcoin':
                 response = MercadoBitcoin(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
-
-                ordemRetorno.id = response['response_data']['order']['order_id']
-                if response['response_data']['order']['status'] == 4:
-                    ordemRetorno.status = 'filled'
-                ordemRetorno.quantidade_compra = response['response_data']['order']['quantity']
-                ordemRetorno.preco_compra = response['response_data']['order']['limit_price']
-                ordemRetorno.quantidade_executada = response['response_data']['order']['executed_quantity']
-                ordemRetorno.preco_executado = response['response_data']['order']['executed_price_avg']
-
+                if response['status_code'] == 100: 
+                    ordemRetorno.id = response['response_data']['order']['order_id']
+                    if response['response_data']['order']['status'] == 4:
+                        ordemRetorno.status = 'filled'
+                    ordemRetorno.quantidade_compra = float(response['response_data']['order']['quantity'])
+                    ordemRetorno.preco_compra = float(response['response_data']['order']['limit_price'])
+                    ordemRetorno.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
+                    ordemRetorno.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+                else:
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['erro_message'])
+                    raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
-                
-                ordemRetorno.id = response['data']['id']
-                ordemRetorno.status = response['data']['status']
-                ordemRetorno.quantidade_venda = response['data']['amount']
-                ordemRetorno.preco_venda = response['data']['price']
-                i = 0
-                qtd = len(response['data']['fills'])
-                while i < qtd:
-                    ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                    ordemRetorno.preco_executado += float(response['data']['fills'][i]['price'])
-                    i += 1
+                if response['success'] == True:
+                    ordemRetorno.id = response['data']['id']
+                    ordemRetorno.status = response['data']['status']
+                    ordemRetorno.quantidade_venda = float(response['data']['amount'])
+                    ordemRetorno.preco_venda = float(response['data']['price'])
+                    i = 0
+                    qtd = len(response['data']['fills'])
+                    while i < qtd:
+                        ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
+                        ordemRetorno.preco_executado = float(response['data']['fills'][i]['price'].replace(',','.'))
+                        i += 1
+                else:
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+                    raise Exception(mensagem)
         except Exception as erro:
-            if self.nome == 'BrasilBitcoin':
-                    ordemRetorno.mensagem = response['data']['message']
             raise Exception(erro)
 
         return ordemRetorno
 
     def enviar_ordem_venda(self, ordem:Ordem):
         ordemRetorno = Ordem()
-        
+        mensagem = ''
+
         try:
             if self.nome == 'MercadoBitcoin':
                 response = MercadoBitcoin(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
-                            
-                ordemRetorno.id = response['response_data']['order']['order_id']
-                if response['response_data']['order']['status'] == 4:
-                    ordemRetorno.status = 'filled'
-                ordemRetorno.quantidade_venda = response['response_data']['order']['quantity']
-                ordemRetorno.preco_venda = response['response_data']['order']['limit_price']
-                ordemRetorno.quantidade_executada = response['response_data']['order']['executed_quantity']
-                ordemRetorno.preco_executado = response['response_data']['order']['executed_price_avg']
+                if response['status_code'] == 100:            
+                    ordemRetorno.id = response['response_data']['order']['order_id']
+                    if response['response_data']['order']['status'] == 4:
+                        ordemRetorno.status = 'filled'
+                    ordemRetorno.quantidade_venda = float(response['response_data']['order']['quantity'])
+                    ordemRetorno.preco_venda = float(response['response_data']['order']['limit_price'])
+                    ordemRetorno.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
+                    ordemRetorno.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+                else:
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
+                    raise Exception(mensagem)
 
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
-
-                ordemRetorno.id = response['data']['id']
-                ordemRetorno.status = response['data']['status']
-                ordemRetorno.quantidade_venda = response['data']['amount']
-                ordemRetorno.preco_venda = response['data']['price']
-                i = 0
-                qtd = len(response['data']['fills'])
-                while i < qtd:
-                    ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                    ordemRetorno.preco_executado = response['data']['fills'][i]['price']
-                    i += 1
+                if response['success'] == True:
+                    ordemRetorno.id = response['data']['id']
+                    ordemRetorno.status = response['data']['status']
+                    ordemRetorno.quantidade_venda = float(response['data']['amount'])
+                    ordemRetorno.preco_venda = float(response['data']['price'])
+                    i = 0
+                    qtd = len(response['data']['fills'])
+                    while i < qtd:
+                        ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
+                        ordemRetorno.preco_executado = float(response['data']['fills'][i]['price'].replace(',','.'))
+                        i += 1
+                else:
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+                    raise Exception(mensagem)
         except Exception as erro:
-                if self.nome == 'BrasilBitcoin':
-                    ordemRetorno.mensagem = response['data']['message']
                 raise Exception(erro)
 
         return ordemRetorno
