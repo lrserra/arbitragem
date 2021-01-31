@@ -19,8 +19,8 @@ class Caixa:
             CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
-            CorretoraMaisLiquida.atualizarSaldo()
-            CorretoraMenosLiquida.atualizarSaldo()
+            CorretoraMaisLiquida.atualizar_saldo()
+            CorretoraMenosLiquida.atualizar_saldo()
 
             saldo_inicial['brl'] = saldo_inicial['brl'] + (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL) #para não contar duas vezes esse cara
             saldo_inicial[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
@@ -47,41 +47,42 @@ class Caixa:
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
             #incialmente cancela todas ordens abertas na brasil
-            CorretoraMenosLiquida.cancelarTodasOrdens(moeda)
+            CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
 
-            CorretoraMaisLiquida.atualizarSaldo()
-            CorretoraMenosLiquida.atualizarSaldo()
+            CorretoraMaisLiquida.atualizar_saldo()
+            CorretoraMenosLiquida.atualizar_saldo()
 
             saldo_final['brl'] = (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL)/len(lista_de_moedas) #para não contar duas vezes esse cara
             saldo_final[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
 
-        #zerar saldo_final[moeda] - saldo_inicial[moeda]
-        for moeda in lista_de_moedas:
-            
-            CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
-            CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
-
-            pnl_em_moeda = saldo_final[moeda]-saldo_inicial[moeda]
+            pnl_em_moeda = saldo_final[moeda] - saldo_inicial[moeda]
             quantidade_a_zerar = abs(pnl_em_moeda)
 
-            if pnl_em_moeda >0:
-                if CorretoraMaisLiquida.precoVenda > CorretoraMenosLiquida.precoVenda: #vamos vender na corretora que paga mais
+            if pnl_em_moeda > 0:
+                if CorretoraMaisLiquida.ordem.preco_venda > CorretoraMenosLiquida.ordem.preco_venda: #vamos vender na corretora que paga mais
                     logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.nome))
-                    CorretoraMaisLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                    CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
+                    CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
+                    CorretoraMaisLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem)
                 else:
                     logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.nome))
-                    CorretoraMenosLiquida.enviarOrdemVenda(quantidade_a_zerar, 'market')#zerando o risco na brasil
+                    CorretoraMenosLiquida.ordem.quantidade_negociada = quantidade_a_zerar
+                    CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
+                    CorretoraMenosLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem)
 
-            elif pnl_em_moeda <0:
-                if CorretoraMaisLiquida.precoCompra < CorretoraMenosLiquida.precoCompra: #vamos comprar na corretora que esta mais barato
+            elif pnl_em_moeda < 0:
+                if CorretoraMaisLiquida.ordem.preco_compra < CorretoraMenosLiquida.ordem.preco_compra: #vamos comprar na corretora que esta mais barato
                     logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.nome))
-                    CorretoraMaisLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na mercado bitcoin
+                    CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
+                    CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
+                    CorretoraMaisLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem)#zerando o risco na mercado bitcoin
                 else:
                     logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.nome))
-                    CorretoraMenosLiquida.enviarOrdemCompra(quantidade_a_zerar, 'market')#zerando o risco na brasil
+                    CorretoraMenosLiquida.ordem.quantidade_negociada = quantidade_a_zerar
+                    CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
+                    CorretoraMenosLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem)#zerando o risco na mercado bitcoin
 
             else:
                 logging.info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
-
 
         return True

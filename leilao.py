@@ -1,158 +1,184 @@
+ 
 import time
 import logging
 from datetime import datetime
 from corretora import Corretora
 from util import Util
+from ordem import Ordem
 
 class Leilao:
 
-    def compra(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
+    def compra(corretoraParte, corretoraContraparte, ativo, executarOrdens = False):
 
-        #ja considerando que cancelou as ordens
-        logList = {'sucesso': False, 'idOrdem': 0 }
+        retorno_venda_corretora_parte = Ordem()
         
-        qtd_de_moedas = len(Util.obter_lista_de_moedas())
+        try:
+            # Lista de moedas que está rodando de forma parametrizada
+            qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
-        corretoraParte.atualizarSaldo()
-        corretoraContraparte.atualizarSaldo()
-
-        saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
-        
-        #corretoraParte tem que ser Brasil, pq la a liquidez é menor e mais facil de fazer leilão
-        if ((corretoraParte.precoCompra-0.01) >= 1.01 * corretoraContraparte.precoCompra):# o preço que eu posso vender é maior doq o preço que posso comprar
+            # Soma do saldo total em reais
+            saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
             
-            gostaria_de_vender = corretoraParte.saldoCrypto/4
-            maximo_que_consigo_zerar = corretoraContraparte.saldoBRL/(qtd_de_moedas*corretoraContraparte.precoCompra*1.01)
-            qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
-
-            if (qtdNegociada>0) and (qtdNegociada*(corretoraParte.precoCompra-0.01)>Util.retorna_menor_valor_compra(ativo) and corretoraContraparte.saldoBRL>Util.retorna_menor_valor_compra(ativo)):#nao pode ter saldo na mercado de menos de um real
+            # Valida se existe oportunidade de leilão
+            if ((corretoraParte.ordem.preco_compra-0.01) >= 1.01 * corretoraContraparte.ordem.preco_compra):
                 
-                if corretoraParte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais doq um oitavo do totalbrl
-                    #quando estou desesperado uso a regra do pnl zero
-                    corretoraParte.precoVenda = 0.01+corretoraContraparte.precoCompra*1.01 #pnl zero
-                    logging.info('leilao compra vai enviar ordem de venda de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoVenda))
-                    vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') 
-                    logList['idOrdem'] = vendaCorretoraParte['data']['id']
+                # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
+                gostaria_de_vender = corretoraParte.saldoCrypto / 4
+                maximo_que_consigo_zerar = corretoraContraparte.saldoBRL / (qtd_de_moedas*corretoraContraparte.ordem.preco_compra * 1.01)
+                qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
 
-                else:#todos outros casos
-                    corretoraParte.precoVenda = corretoraParte.precoCompra - 0.01 #quando não estou desesperado, pnl maximo
-                    logging.info('leilao compra vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoVenda))
-                    vendaCorretoraParte = corretoraParte.enviarOrdemVenda(qtdNegociada, 'limited') 
-                    logList['idOrdem'] = vendaCorretoraParte['data']['id']
-        else:
-            logging.info('leilao compra de {} nao vale a pena, {} é menor que 1.01*{}'.format(ativo,(corretoraParte.precoCompra-0.01),corretoraContraparte.precoCompra))
+                # Nao pode ter saldo na mercado de menos de um real
+                if (qtdNegociada*(corretoraParte.ordem.preco_compra-0.01) > Util.retorna_menor_valor_compra(ativo) and corretoraContraparte.saldoBRL > Util.retorna_menor_valor_compra(ativo)):
+                    
+                    corretoraParte.ordem.preco_venda = corretoraParte.ordem.preco_compra - 0.01
+                    logging.info('Leilão compra vai enviar ordem de venda de {} limitada a {}'.format(ativo,corretoraParte.ordem.preco_venda))
 
-        return logList
-
-    def venda(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
-
-        #ja considerando que cancelou as ordens
-        logList = {'sucesso': False, 'idOrdem': 0 }
-
-        qtd_de_moedas = len(Util.obter_lista_de_moedas())
-
-        corretoraParte.atualizarSaldo()
-        corretoraContraparte.atualizarSaldo()
-
-        saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
-        
-        #corretoraParte tem que ser Brasil, pq la a liquidez é menor e mais facil de fazer leilão
-        if ((corretoraParte.precoVenda+0.01) <= 0.99 * corretoraContraparte.precoVenda):# o preço que eu posso comprar é menor doq o preço que posso vender
-            
-            gostaria_de_comprar = corretoraParte.saldoBRL/(qtd_de_moedas*corretoraParte.precoVenda+0.01)
-            maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto/4
-                       
-            qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
-            
-            if qtdNegociada > 0 and qtdNegociada>Util.retorna_menor_quantidade_venda(ativo):
-
-                if corretoraContraparte.saldoBRL < (saldoTotalBRL/8): #eh pra ser deseperado aqui, tenho menos em reais na mercado doq um decimo do totalbrl
-                    #quando estou desesperado uso a regra do pnl zero
-                    corretoraParte.precoCompra = corretoraContraparte.precoVenda*0.99-0.01
-                    logging.info('leilao venda de vai enviar ordem de compra de {} limitada DESESPERADA a {}'.format(ativo,corretoraParte.precoCompra))
-                    CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
-                    logList['idOrdem'] = CompraCorretoraParte['data']['id']
-
-                else:#todos outros casos
-                    corretoraParte.precoCompra = corretoraParte.precoVenda + 0.01 #quando não estou desesperado, uso a regra do um centavo
-                    logging.info('leilao venda de vai enviar ordem de venda de {} limitada NORMAL a {}'.format(ativo,corretoraParte.precoCompra))
-                    CompraCorretoraParte = corretoraParte.enviarOrdemCompra(qtdNegociada, 'limited') #ta certo isso lucas?
-                    logList['idOrdem'] = CompraCorretoraParte['data']['id']
-        else:
-            logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,(corretoraParte.precoVenda+0.01),corretoraContraparte.precoVenda))
-
-        return logList
-
-    def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
-
-        logList = {'sucesso': False, 'Pnl': 0 , 'idOrdem':0}
-        
-        if idOrdem > 0:#verifica se tem ordem sendo executada
-            ordem = corretoraParte.obterOrdemPorId(idOrdem)
-            qtd_executada = float(ordem['data']['executed'])
-            preco_executado = float(ordem['data']['price'])
-            
-            if (preco_executado != corretoraParte.precoCompra):
-                logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
-            elif (qtd_executada >0):
-                logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
-            elif (preco_executado < 1.01 * corretoraContraparte.precoCompra):
-                logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
+                    if executarOrdens:
+                        corretoraParte.ordem.quantidade_negociada = qtdNegociada
+                        corretoraParte.ordem.tipo_ordem = 'limited'
+                        retorno_venda_corretora_parte = corretoraParte.enviar_ordem_venda(corretoraParte.ordem)  
             else:
-                logList['idOrdem'] = idOrdem
-            
-            minimo_valor_que_posso_comprar = Util.retorna_menor_valor_compra(ativo)
+                logging.info('leilao compra de {} nao vale a pena, {} é menor que 1.01*{}'.format(ativo,(corretoraParte.ordem.preco_compra-0.01),corretoraContraparte.ordem.preco_compra))
 
-            if executarOrdens and qtd_executada*corretoraParte.precoCompra > minimo_valor_que_posso_comprar: #mais de xxx reais executado
+        except Exception as erro:
+                msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: compra. Msg Corretora:', erro)
+                raise Exception(msg_erro)
+
+        return retorno_venda_corretora_parte
+
+    def venda(corretoraParte, corretoraContraparte, ativo, executarOrdens = False):
+
+        retorno_compra_corretora_parte = Ordem()
+
+        try:
+            qtd_de_moedas = len(Util.obter_lista_de_moedas())
+
+            saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
+            
+            # 0.99 = 1 - Soma das corretagens
+            if ((corretoraParte.ordem.preco_venda+0.01) <= 0.99 * corretoraContraparte.ordem.preco_venda):
                 
-                logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(idOrdem,ativo))
-                corretoraContraparte.enviarOrdemCompra(qtd_executada, 'market')#zerando o risco na mercado bitcoin
-                logList['sucesso'] = True
-                logList['Pnl'] = qtd_executada*abs((preco_executado-corretoraContraparte.precoCompra))
+                gostaria_de_comprar = corretoraParte.saldoBRL / (qtd_de_moedas * corretoraParte.ordem.preco_venda + 0.01)
+                maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto / 4
+                
+                # Mínimo entre o que eu gostaria de comprar com o máximo que consigo zerar na outra ponta
+                qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
+                
+                # Se quantidade negociada maior que a quantidade mínima permitida de venda
+                if qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
+
+                    logging.info('leilao venda de vai enviar ordem de venda de {} limitada a {}'.format(ativo,corretoraParte.ordem.preco_venda))
+                    corretoraParte.ordem.preco_compra = corretoraParte.ordem.preco_venda + 0.01 
+                    if executarOrdens:
+                        corretoraParte.ordem.quantidade_negociada = qtdNegociada
+                        corretoraParte.ordem.tipo_ordem = 'limited'    
+                        retorno_compra_corretora_parte = corretoraParte.enviar_ordem_compra(corretoraParte.ordem)
+                
+            else:
+                logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,(corretoraParte.ordem.preco_venda+0.01),corretoraContraparte.ordem.preco_venda))
+        except Exception as erro:
+                msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: venda. Msg Corretora:', erro)
+                raise Exception(msg_erro)
+        
+        return retorno_compra_corretora_parte
+
+    #def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0, status='new'):
+    def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_compra):
+
+        retorno_compra = Ordem()
+        cancelou = False
+
+        try:
+            if ordem_leilao_compra.status == 'filled' and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+                
+                preco_executado = ordem_leilao_compra.preco_executado
+                
+                logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
+                corretoraContraparte.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)
+                corretoraContraparte.ordem.tipo_ordem = 'market'
+                retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
+                
+            elif ordem_leilao_compra.id > 0:
+
+                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_compra.id)
+                
+                if (ordem_leilao_compra.preco_venda != corretoraParte.ordem.preco_compra):
+                    
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_compra.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
+
+                elif (ordem.quantidade_executada > 0):
+                    
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_compra.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
+                
+                elif (ordem_leilao_compra.preco_venda < 1.01 * corretoraContraparte.ordem.preco_compra):
+                    
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_compra.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
+
+                if executarOrdens and ordem.quantidade_executada * corretoraParte.ordem.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
+                    
+                    # Zera o risco na outra corretora com uma operação à mercado
+                    corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
+                    corretoraContraparte.ordem.tipo_ordem = 'market'
+                    retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
                                 
-                return logList
+        except Exception as erro:
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
+            raise Exception(msg_erro)
+
+        return retorno_compra, cancelou
+
+    def cancela_ordens_e_vende_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_venda):
+
+        retorno_venda = Ordem()
+        cancelou = False
+
+        try:
+             
+            if ordem_leilao_venda.status == 'filled' and ordem_leilao_venda.id == False:
+
+                corretoraContraparte.ordem.quantidade_negociada = ordem_leilao_venda.quantidade_executada
+                corretoraContraparte.ordem.tipo_ordem = 'market'
+                retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
         
-            corretoraParte.atualizarSaldo()
-            corretoraContraparte.atualizarSaldo()
-        
-        return logList
-
-    def cancela_ordens_e_vende_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0):
-
-        logList = {'sucesso': False, 'Pnl': 0 , 'idOrdem':0}
-
-        if idOrdem > 0:#verifica se tem ordem sendo executada
-            ordem = corretoraParte.obterOrdemPorId(idOrdem)             
-            qtd_executada = float(ordem['data']['executed'])
-            preco_executado = float(ordem['data']['price'])
-            
-            if (preco_executado != corretoraParte.precoVenda):
-                logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
-            elif (qtd_executada >0):
-                logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
-            elif (preco_executado > 0.99 * corretoraContraparte.precoVenda):
-                logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(idOrdem,ativo))
-                corretoraParte.cancelarOrdem(idOrdem)
-            else:
-                logList['idOrdem'] = idOrdem
-           
-            minima_quantidade_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo)
-
-            if executarOrdens and qtd_executada > minima_quantidade_que_posso_vender: #mais de xxx quantidade executadas
+            elif ordem_leilao_venda.id > 0:
                 
-                logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(idOrdem,ativo))
-                corretoraContraparte.enviarOrdemVenda(qtd_executada, 'market')#zerando o risco na mercado bitcoin
-                logList['sucesso'] = True
-                logList['Pnl'] = qtd_executada*abs((corretoraContraparte.precoVenda-preco_executado))
+                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.id)             
+                qtd_executada = ordem.quantidade_executada
+                preco_executado = ordem_leilao_venda.preco_executado
+            
+                if (ordem_leilao_venda.preco_compra != corretoraParte.ordem.preco_venda):
+                    
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
+                
+                elif (ordem.quantidade_executada >0):
+                    
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_venda.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
 
-                return logList
+                elif (ordem_leilao_venda.preco_compra > 0.99 * corretoraContraparte.ordem.preco_venda):
+                    
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_venda.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
+            
+                if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
+                    
+                    logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
+                    corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
+                    corretoraContraparte.ordem.tipo_ordem = 'market'
+                    retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
+                
+        except Exception as erro:
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
+            raise Exception(msg_erro)
         
-            corretoraParte.atualizarSaldo()
-            corretoraContraparte.atualizarSaldo()
-        
-        return logList
+        return retorno_venda,cancelou

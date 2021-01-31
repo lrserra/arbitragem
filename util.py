@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 class Util:
     
@@ -67,7 +68,19 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)[moeda]["quantidade_minima_venda"]
 
-
-
-    
-    
+    def retorna_erros_objeto_exception(mensagem, erro):
+        '''
+        escrever todos os erros logado no objeto exception na sequencia
+        '''
+        retorno = mensagem + ' | '
+        i=0
+        
+        while i < erro.args.__len__():
+            if i == 0: 
+                retorno += str(datetime.now()) + str(erro.args[i]) + ' | '
+            else:
+                retorno += str(erro.args[i]) + ' | '
+                print(erro.args[i])
+            i += 1
+        
+        return retorno
