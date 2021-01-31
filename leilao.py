@@ -173,7 +173,7 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
                     logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
-                    corretoraContraparte.ordem.quantidade_negociada = ordem.quantidade_executada
+                    corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
                 

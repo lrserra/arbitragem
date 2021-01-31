@@ -43,7 +43,7 @@ class Arbitragem:
                                 corretoraVenda.ordem.quantidade_negociada = qtdNegociada
                                 corretoraCompra.ordem.tipo_ordem = 'market'
                                 corretoraVenda.ordem.tipo_ordem = 'market'
-                                logging.info('arbitragem vai comprar {}{} @{} e vender @{}'.format(round(qtdNegociada,4),ativo,round(corretoraCompra.ordem.preco_compra,2),round(corretoraVenda.ordem.preco_venda,2)))
+                                logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,round(corretoraCompra.ordem.preco_compra,4),corretoraCompra.nome,round(corretoraVenda.ordem.preco_venda,4),corretoraVenda.nome))
                                 retorno_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
                                 retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
 
