@@ -70,10 +70,10 @@ class Arbitragem:
 
                             # Trecho que verifica se a pena ir para a próxima ordem do book dado critério de preço atendido
                             if corretoraCompra.ordem.quantidade_compra <  corretoraVenda.ordem.quantidade_venda:
-                                corretoraCompra.obter_ordem_book_por_indice(indexOrdem)
+                                corretoraCompra.ordem = corretoraCompra.obter_ordem_book_por_indice(indexOrdem)
                                 qtdNegociada = min(corretoraCompra.ordem.quantidade_compra, (corretoraVenda.ordem.quantidade_venda - menorQtd))
                             else:
-                                corretoraVenda.obter_ordem_book_por_indice(indexOrdem)
+                                corretoraVenda.ordem = corretoraVenda.obter_ordem_book_por_indice(indexOrdem)
                                 qtdNegociada = min(corretoraVenda.ordem.quantidade_venda, (corretoraCompra.ordem.quantidade_compra - menorQtd))
 
                             menorQtd += min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda) 
