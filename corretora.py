@@ -214,7 +214,7 @@ class Corretora:
             ordens_abertas = BrasilBitcoin(self.ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
                 if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelarOrdem(ordem['id'])
+                    self.cancelar_ordem(ordem['id'])
 
     def transferir_crypto(self, ordem:Ordem):      
         if self.nome == 'MercadoBitcoin':
