@@ -94,7 +94,7 @@ class Leilao:
                 preco_executado = ordem_leilao_compra.preco_executado
                 
                 logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
-                corretoraContraparte.ordem.quantidade_negociada = ordem_leilao_compra.quantidade_executada
+                corretoraContraparte.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)
                 corretoraContraparte.ordem.tipo_ordem = 'market'
                 retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
                 
@@ -123,7 +123,7 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada * corretoraParte.ordem.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
                     
                     # Zera o risco na outra corretora com uma operação à mercado
-                    corretoraContraparte.ordem.quantidade_negociada = ordem.quantidade_executada
+                    corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
                                 
