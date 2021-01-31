@@ -47,12 +47,22 @@ class Arbitragem:
                                 comprei_a = round(corretoraCompra.ordem.preco_compra,4)
                                 vendi_a = round(corretoraVenda.ordem.preco_venda,4)
 
-                                logging.warning('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome,vendi_a,corretoraVenda.nome))
+                                logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome,vendi_a,corretoraVenda.nome))
                                 retorno_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
-                                logging.warning('operou arb de {}! + {}brl de pnl com compra de {}{} @{}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,comprei_a))
                                 retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
-                                logging.warning('operou arb de {}! + {}brl de pnl com venda de {}{} @{}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,vendi_a))
+                                
 
+                                if retorno_compra.status == 'filled':
+                                    logging.error('arbitragem NAO zerou na {}'.format(corretoraCompra.nome))
+                                else:
+                                    logging.warning('operou arb de {}! + {}brl de pnl com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome))
+                                
+                                if retorno_venda.status == 'filled':
+                                    logging.error('arbitragem NAO zerou na {}'.format(corretoraVenda.nome))
+                                else: 
+                                    logging.warning('operou arb de {}! + {}brl de pnl com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,vendi_a,corretoraVenda.nome))
+
+                                
                                 corretoraCompra.atualizar_saldo()
                                 corretoraVenda.atualizar_saldo()
 
