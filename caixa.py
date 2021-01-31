@@ -56,7 +56,7 @@ class Caixa:
             saldo_final[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
 
             pnl_em_moeda = saldo_final[moeda] - saldo_inicial[moeda]
-            quantidade_a_zerar = abs(pnl_em_moeda)
+            quantidade_a_zerar = round(abs(pnl_em_moeda),6)
 
             if pnl_em_moeda > 0:
                 if CorretoraMaisLiquida.ordem.preco_venda > CorretoraMenosLiquida.ordem.preco_venda: #vamos vender na corretora que paga mais
