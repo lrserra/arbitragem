@@ -71,7 +71,7 @@ class Caixa:
                     CorretoraMenosLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem)
 
             elif pnl_em_moeda < 0:
-                if CorretoraMaisLiquida.precoCompra < CorretoraMenosLiquida.precoCompra: #vamos comprar na corretora que esta mais barato
+                if CorretoraMaisLiquida.ordem.preco_compra < CorretoraMenosLiquida.ordem.preco_compra: #vamos comprar na corretora que esta mais barato
                     logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.ordem.nome))
                     CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
