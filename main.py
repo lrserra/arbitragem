@@ -64,21 +64,9 @@ while hour <= 720:
                 CorretoraMenosLiquida.atualizar_saldo()
 
                 # Roda a arbitragem nas 2 corretoras
-                retorno_mais_liquida_para_menos_liquida, pnl_abritragem_mais_liquida = Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                retorno_menos_liquida_para_mais_liquida, pnl_abritragem_menos_liquida = Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
-
-                if retorno_mais_liquida_para_menos_liquida.id > 0:
-
-                    CorretoraMaisLiquida.atualizar_saldo()
-                    CorretoraMenosLiquida.atualizar_saldo()
-                    logging.warning('operou arb de {}! + {}brl de pnl'.format(moeda,round(pnl_abritragem_mais_liquida,2)))
-                
-                elif retorno_menos_liquida_para_mais_liquida.id > 0:
+                Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
                     
-                    CorretoraMaisLiquida.atualizar_saldo()
-                    CorretoraMenosLiquida.atualizar_saldo()
-                    logging.warning('operou arb de {}! + {}brl de pnl'.format(moeda,round(pnl_abritragem_menos_liquida,2)))
-
                 # -----------------------------------------------------------------------------------------------------------------------------------#
 
                 #verifica se fui executado e se necessario cancelar ordens abertas            

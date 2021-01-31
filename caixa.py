@@ -72,12 +72,12 @@ class Caixa:
 
             elif pnl_em_moeda < 0:
                 if CorretoraMaisLiquida.ordem.preco_compra < CorretoraMenosLiquida.ordem.preco_compra: #vamos comprar na corretora que esta mais barato
-                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.ordem.nome))
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMaisLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem)#zerando o risco na mercado bitcoin
                 else:
-                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.ordem.nome))
+                    logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,CorretoraMenosLiquida.nome))
                     CorretoraMenosLiquida.ordem.quantidade_negociada = quantidade_a_zerar
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMenosLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem)#zerando o risco na mercado bitcoin

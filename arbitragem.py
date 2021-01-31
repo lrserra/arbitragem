@@ -43,9 +43,15 @@ class Arbitragem:
                                 corretoraVenda.ordem.quantidade_negociada = qtdNegociada
                                 corretoraCompra.ordem.tipo_ordem = 'market'
                                 corretoraVenda.ordem.tipo_ordem = 'market'
-                                logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,round(corretoraCompra.ordem.preco_compra,4),corretoraCompra.nome,round(corretoraVenda.ordem.preco_venda,4),corretoraVenda.nome))
+
+                                comprei_a = round(corretoraCompra.ordem.preco_compra,4)
+                                vendi_a = round(corretoraVenda.ordem.preco_venda,4)
+
+                                logging.warning('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome,vendi_a,corretoraVenda.nome))
                                 retorno_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
+                                logging.warning('operou arb de {}! + {}brl de pnl com compra de {}{} @{}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,comprei_a))
                                 retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
+                                logging.warning('operou arb de {}! + {}brl de pnl com venda de {}{} @{}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,vendi_a))
 
                                 corretoraCompra.atualizar_saldo()
                                 corretoraVenda.atualizar_saldo()
