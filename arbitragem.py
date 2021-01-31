@@ -43,7 +43,7 @@ class Arbitragem:
                                 corretoraVenda.ordem.quantidade_negociada = qtdNegociada
                                 corretoraCompra.ordem.tipo_ordem = 'market'
                                 corretoraVenda.ordem.tipo_ordem = 'market'
-
+                                logging.info('arbitragem vai comprar {}{} @{} e vender @{}'.format(round(qtdNegociada,4),ativo,round(corretoraCompra.ordem.preco_compra,2),round(corretoraVenda.ordem.preco_venda,2)))
                                 retorno_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem)
                                 retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
 
@@ -63,10 +63,13 @@ class Arbitragem:
                             menorQtd += min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda) 
 
                         else:
+                            logging.info('arbitragem nao vai enviar ordem de {} porque saldo {} nao é suficiente'.format(ativo,round(corretoraCompra.saldoBRL,2)))
                             existe_arbitragem = False
                     else:
+                        logging.info('arbitragem nao vai enviar ordem de {} porque pnl ({}) é menor que corretagem ({})'.format(ativo,round(pnl,2),round(financeiroCorretagem,2)))
                         existe_arbitragem = False
                 else:
+                    logging.info('arbitragem nao vai enviar ordem de {} porque preco compra ({}) é maior que preco venda ({})'.format(ativo,round(corretoraCompra.ordem.preco_compra,2),round(corretoraVenda.ordem.preco_venda,2)))
                     existe_arbitragem = False
             except Exception as erro:
                 msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: processar.', erro)
