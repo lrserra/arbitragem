@@ -88,7 +88,13 @@ class Leilao:
         retorno_compra = Ordem()
         cancelou = False
 
+        
         try:
+        
+            corretoraParte.carregar_ordem_books()
+            corretoraContraparte.carregar_ordem_books()
+
+        
             if ordem_leilao_compra.status == 'filled' and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
                 preco_executado = ordem_leilao_compra.preco_executado
@@ -133,12 +139,15 @@ class Leilao:
 
         return retorno_compra, cancelou
 
-    def cancela_ordens_e_vende_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_venda):
+    def cancela_ordens_e_vende_na_mercado(corretoraParte:Corretora, corretoraContraparte:Corretora, ativo, executarOrdens, ordem_leilao_venda):
 
         retorno_venda = Ordem()
         cancelou = False
 
         try:
+    
+            corretoraParte.carregar_ordem_books()
+            corretoraContraparte.carregar_ordem_books()
              
             if ordem_leilao_venda.status == 'filled' and ordem_leilao_venda.id == False:
 
