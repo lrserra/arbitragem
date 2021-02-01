@@ -1,7 +1,7 @@
 import logging
 from corretora import Corretora
 from datetime import datetime
-
+from util import Util
 
 class Caixa:
     
@@ -55,10 +55,10 @@ class Caixa:
             saldo_final['brl'] = (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL)/len(lista_de_moedas) #para não contar duas vezes esse cara
             saldo_final[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
 
-            pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],4)
-            quantidade_a_zerar = round(abs(pnl_em_moeda),4)
+            pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],2)
+            quantidade_a_zerar = round(abs(pnl_em_moeda),2)
 
-            if pnl_em_moeda > 0:
+            if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
                 if CorretoraMaisLiquida.ordem.preco_venda > CorretoraMenosLiquida.ordem.preco_venda: #vamos vender na corretora que paga mais
                     logging.info('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
@@ -70,7 +70,7 @@ class Caixa:
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMenosLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem)
 
-            elif pnl_em_moeda < 0:
+            elif pnl_em_moeda < 0 and quantidade_a_zerar > CorretoraMaisLiquida.ordem.preco_compra*Util.retorna_menor_valor_compra(moeda):
                 if CorretoraMaisLiquida.ordem.preco_compra < CorretoraMenosLiquida.ordem.preco_compra: #vamos comprar na corretora que esta mais barato
                     logging.info('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_negociada = quantidade_a_zerar
