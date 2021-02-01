@@ -143,10 +143,9 @@ class Corretora:
                     ordemRetorno.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordemRetorno.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
-                    if 'erro_message' in response.keys():
-                        mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['erro_message'])
-                        print(mensagem)
-                        raise Exception(mensagem)
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
+                    print(mensagem)
+                    raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
                 if response['success'] == True:
