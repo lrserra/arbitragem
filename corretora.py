@@ -143,9 +143,9 @@ class Corretora:
                     ordemRetorno.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordemRetorno.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
-                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['erro_message'])
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
                 if response['success'] == True:
@@ -157,12 +157,13 @@ class Corretora:
                     qtd = len(response['data']['fills'])
                     while i < qtd:
                         ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                        ordemRetorno.preco_executado = float(response['data']['fills'][i]['price'].replace(',','.'))
+                        valor = response['data']['fills'][i]['price'].replace('.','')
+                        ordemRetorno.preco_executado = float(valor.replace(',','.'))
                         i += 1
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
                 if response['code'] == 100:
@@ -172,7 +173,7 @@ class Corretora:
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
         except Exception as erro:
             raise Exception(erro)
 
@@ -196,7 +197,7 @@ class Corretora:
                 else:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
 
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
@@ -209,12 +210,13 @@ class Corretora:
                     qtd = len(response['data']['fills'])
                     while i < qtd:
                         ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                        ordemRetorno.preco_executado = float(response['data']['fills'][i]['price'].replace(',','.'))
+                        valor = response['data']['fills'][i]['price'].replace('.','')
+                        ordemRetorno.preco_executado = float(valor.replace(',','.'))
                         i += 1
                 else:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
                 if response['code'] == 100:
@@ -224,7 +226,7 @@ class Corretora:
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
-                    raise Exception(mensagem)
+                    #raise Exception(mensagem)
         except Exception as erro:
                 raise Exception(erro)
 
