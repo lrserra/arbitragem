@@ -33,7 +33,7 @@ class Leilao:
                     corretoraParte.ordem.preco_venda = corretoraParte.ordem.preco_compra - 0.01
                     logging.info('Leilão compra vai enviar ordem de venda de {} limitada a {}'.format(ativo,corretoraParte.ordem.preco_venda))
 
-                    if executarOrdens:
+                    if executarOrdens and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
                         corretoraParte.ordem.quantidade_negociada = qtdNegociada
                         corretoraParte.ordem.tipo_ordem = 'limited'
                         retorno_venda_corretora_parte = corretoraParte.enviar_ordem_venda(corretoraParte.ordem)  
