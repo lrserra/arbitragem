@@ -2,17 +2,16 @@ import requests
 import time
 from datetime import datetime
 from corretora import Corretora
+from ordem import Ordem
 from util import Util
-from coreTelegram import Telegram
 
-mercadoBitcoin = Corretora('MercadoBitcoin', 'eth')
-brasilBitcoin = Corretora('BrasilBitcoin', 'eth')
+bitcoinTrade = Corretora('BitcoinTrade', 'btc')
 
-mercadoBitcoin.atualizarSaldo()
-brasilBitcoin.atualizarSaldo()
+ordem = Ordem()
+ordem.quantidade_negociada = 1
+ordem.preco_venda = 1
+ordem.tipo_ordem = 'market'
 
-msg = 'Saldo em Reais na Mercado BTC: ' + str(mercadoBitcoin.saldoBRL)
-
-Telegram.enviarMensagem(msg)
+bitcoinTrade.enviar_ordem_venda(ordem)
 
 

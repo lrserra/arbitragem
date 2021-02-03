@@ -15,7 +15,7 @@ class BitcoinTrade:
         self.urlBitcoinTrade = 'https://api.bitcointrade.com.br/'
     
     def obterBooks(self):
-        return requests.get(url = self.urlBrasilBitcoin + '/v3/public/BRL{}}/orders?limit=50'.format(self.ativo)).json()
+        return requests.get(url = self.urlBitcoinTrade + 'v3/public/BRL{}/orders?limit=50'.format(self.ativo.upper())).json()
 
     def obterSaldo(self):
         return self.executarRequestBTCTrade('GET', '','v3/wallets/balance')

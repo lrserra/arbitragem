@@ -46,10 +46,10 @@ class Corretora:
                 self.corretagem = 0.005
 
             elif self.nome == 'BitcoinTrade':
-                ordem.preco_compra = float(self.book['asks'][indice]['unit_price'])
-                ordem.quantidade_compra = float(self.book['asks'][indice]['amount'])
-                ordem.preco_venda = float(self.book['bids'][indice]['unit_price'])
-                ordem.quantidade_venda = float(self.book['bids'][indice]['amount'])
+                ordem.preco_compra = float(self.book['data']['asks'][indice]['unit_price'])
+                ordem.quantidade_compra = float(self.book['data']['asks'][indice]['amount'])
+                ordem.preco_venda = float(self.book['data']['bids'][indice]['unit_price'])
+                ordem.quantidade_venda = float(self.book['data']['bids'][indice]['amount'])
                 self.corretagem = 0.005
             
             self.amountCompra = ordem.preco_compra * ordem.quantidade_compra
@@ -122,9 +122,12 @@ class Corretora:
                 self.saldoBRL = float(response_json['brl'])
                 self.saldoCrypto = float(response_json[self.ativo])
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(self.ativo).obterSaldo()
-                self.saldoBRL = float(response_json['brl']['available'])
-                self.saldoCrypto = float(response_json[self.ativo]['available'])
+                response_json = BitcoinTrade(self.ativo).obterSaldo()
+                for ativo in response_json['data']:
+                    if ativo['currency_code'] == 'BRL':
+                        self.saldoBRL = float(ativo['available_amount'])
+                    elif ativo['currency_code'] == self.ativo.upper():
+                        self.saldoCrypto = float(ativo['available_amount'])
         except Exception as erro:
             raise Exception(erro)
 
@@ -218,8 +221,8 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
-                if response['code'] == 100:
+                response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                if response['code'] == 200:
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.quantidade_venda = float(response['data']['amount'])
                     ordemRetorno.preco_venda = float(response['data']['unit_price'])
