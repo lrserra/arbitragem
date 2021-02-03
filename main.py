@@ -10,7 +10,7 @@ from arbitragem import Arbitragem
 from leilao import Leilao
 from ordem import Ordem
 
-#from coreTelegram import Telegram
+#from coreTelegram import Telegram - teste iran
 
 #inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os warning ou acima
 logging.basicConfig(filename='main.log', level=logging.INFO,
