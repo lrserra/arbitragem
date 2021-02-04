@@ -7,6 +7,7 @@ import mimetypes
 from http import client
 from urllib.parse import urlencode
 from util import Util
+from datetime import date, datetime, timedelta
 
 class BitcoinTrade:
 
@@ -20,13 +21,13 @@ class BitcoinTrade:
     def obterSaldo(self):
         return self.executarRequestBTCTrade('GET', '','v3/wallets/balance')
 
+    def obterOrdemPorIdStatusExecuted(self, idOrdem):
+        # objeto que será postado para o endpoint
+        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?status=executed_completely&start_date={}&end_date={}&pair=BRL{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo.upper()))
+
     def obterOrdemPorId(self, idOrdem):
         # objeto que será postado para o endpoint
-        payload = {
-            'pair': 'BRL{}'.format(self.ativo),
-            'id': tipoOrdem
-        }
-        return self.executarRequestBTCTrade('GET', payload, 'market/user_orders/list')
+        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair=BRL{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo.upper()))
 
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
@@ -79,25 +80,23 @@ class BitcoinTrade:
         return self.executarRequestBTCTrade('POST', json.dumps(payload), api)
 
     def cancelarOrdem(self, idOrdem):
+        
         payload = {
-            'id': idOrdem
+            "id": idOrdem
         }
+        
         return self.executarRequestBTCTrade('DELETE', payload, 'v3/market/user_orders/')
 
     def obterOrdensAbertas(self):
         # objeto que será postado para o endpoint
-        payload = {
-            'pair': 'BRL{}'.format(self.ativo),
-            'status': 'waiting'
-        }
-        return self.executarRequestBTCTrade('GET', payload, 'market/user_orders/list')
+        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair=BRL{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo.upper()))
 
     def executarRequestBTCTrade(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
         
         headers ={
-            'x-api-key': config["BitcoinTrade"]["Authentication"],
-            'Content-type': 'application/json'
+            'Content-type': 'application/json',
+            'x-api-key': config["BitcoinTrade"]["Authentication"]
         }
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)

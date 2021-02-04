@@ -104,9 +104,23 @@ class Corretora:
                 ordem.preco_executado = response['data']['price']
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).obterOrdemPorId(id_ordem)
-                ordem.status = response['orders'][0]['status']
-                ordem.quantidade_executada = response['orders'][0]['executed_amount']
-                ordem.preco_executado = response['orders'][0]['total_price']
+                if 'orders' in response['data']:
+                    for ativo in response['data']['orders']: 
+                        if ativo['code'] == id_ordem:
+                            ordem.status = ativo['status']
+                            ordem.code = ativo['code']
+                            ordem.id = ativo['id']
+                            ordem.quantidade_executada = ativo['executed_amount']
+                            ordem.preco_executado = ativo['unit_price']
+                if ordem.id == 0:
+                    response = BitcoinTrade(self.ativo).obterOrdemPorIdStatusExecuted(id_ordem)
+                    for ativo in response['data']['orders']: 
+                        if ativo['code'] == id_ordem:
+                            ordem.status = ativo['status']
+                            ordem.code = ativo['code']
+                            ordem.id = ativo['id']
+                            ordem.quantidade_executada = ativo['executed_amount']
+                            ordem.preco_executado = ativo['unit_price']
         except Exception as erro:
             raise Exception(erro)
         return ordem
@@ -169,7 +183,8 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
-                if response['code'] == 100:
+                if response['code'] == None or response['code'] == 200:
+                    ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.quantidade_compra = float(response['data']['amount'])
                     ordemRetorno.preco_compra = float(response['data']['unit_price'])
@@ -222,7 +237,8 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
-                if response['code'] == 200:
+                if response['code'] == None or response['code'] == 200:
+                    ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.quantidade_venda = float(response['data']['amount'])
                     ordemRetorno.preco_venda = float(response['data']['unit_price'])
@@ -255,7 +271,7 @@ class Corretora:
             ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
                 if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelar_ordem(ordem['id'])
+                    self.cancelar_ordem(ordem['code'])
 
     def transferir_crypto(self, ordem:Ordem):      
         if self.nome == 'MercadoBitcoin':
