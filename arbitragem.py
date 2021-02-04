@@ -92,7 +92,7 @@ class Arbitragem:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: processar.', erro)
             raise Exception(msg_erro)
         
-if __name__ = "__main__":
+if __name__ == "__main__":
 
     from datetime import datetime, timedelta
     from caixa import Caixa
