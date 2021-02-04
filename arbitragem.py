@@ -99,7 +99,7 @@ if __name__ == "__main__":
     from arbitragem import Arbitragem
     
 
-    logging.basicConfig(filename='main.log', level=logging.INFO,
+    logging.basicConfig(filename='arbitragem.log', level=logging.INFO,
                         format='[%(asctime)s][%(levelname)s][%(message)s]')
     console = logging.StreamHandler()
     console.setLevel(logging.WARNING)
