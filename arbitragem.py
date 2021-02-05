@@ -1,3 +1,4 @@
+
 import requests
 import time
 import logging
@@ -92,4 +93,59 @@ class Arbitragem:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: processar.', erro)
             raise Exception(msg_erro)
         
- 
+if __name__ == "__main__":
+
+    from datetime import datetime, timedelta
+    from caixa import Caixa
+    from arbitragem import Arbitragem
+    
+
+    logging.basicConfig(filename='arbitragem.log', level=logging.INFO,
+                        format='[%(asctime)s][%(levelname)s][%(message)s]')
+    console = logging.StreamHandler()
+    console.setLevel(logging.WARNING)
+    logging.getLogger().addHandler(console)
+
+    #essa parte executa apenas uma vez
+    lista_de_moedas = Util.obter_lista_de_moedas()
+    corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
+    corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
+
+
+    #atualiza saldo inicial nesse dicionario
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
+
+    hour = 1
+    while hour <= 720:
+        #essa parte executa uma vez por hora
+        agora = datetime.now() 
+        proxima_hora = agora + timedelta(hours=1)
+        logging.warning('proxima atualizacao: {}'.format(proxima_hora))
+        
+        while agora < proxima_hora:
+            #essa parte executa diversas vezes
+
+            for moeda in lista_de_moedas:
+                try:
+                    # Instancia das corretoras por ativo
+                    CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
+                    CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+                    # Atualiza o saldo de crypto e de BRL nas corretoras
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    CorretoraMenosLiquida.atualizar_saldo()
+
+                    # Roda a arbitragem nas 2 corretoras
+                    Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                    Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+                                   
+                except Exception as erro:        
+                    logging.error(erro) 
+                
+                time.sleep(Util.frequencia())
+
+            agora = datetime.now() 
+
+        hour = hour+1
+        
+        Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)

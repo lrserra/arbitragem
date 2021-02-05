@@ -71,8 +71,7 @@ while hour <= 720:
 
                 #verifica se fui executado e se necessario cancelar ordens abertas            
                 dict_leilao_compra[moeda]['zeragem'], dict_leilao_compra[moeda]['foi_cancelado'] = Leilao.cancela_ordens_e_compra_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_compra[moeda]['ordem'])
-                dict_leilao_venda[moeda]['zeragem'], dict_leilao_venda[moeda]['foi_cancelado'] = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_venda[moeda]['ordem'])
-
+                
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if dict_leilao_compra[moeda]['zeragem'].id != 0:
                     
@@ -92,7 +91,11 @@ while hour <= 720:
 
                 elif dict_leilao_compra[moeda]['ordem'].id == 0 or dict_leilao_compra[moeda]['foi_cancelado']: #se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
                     dict_leilao_compra[moeda]['ordem']  = Leilao.compra(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    time.sleep(Util.frequencia())
             
+
+                dict_leilao_venda[moeda]['zeragem'], dict_leilao_venda[moeda]['foi_cancelado'] = Leilao.cancela_ordens_e_vende_na_mercado(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_venda[moeda]['ordem'])
+
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
@@ -112,12 +115,11 @@ while hour <= 720:
 
                 elif dict_leilao_venda[moeda]['ordem'].id == 0 or  dict_leilao_venda[moeda]['foi_cancelado']:#se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
                     dict_leilao_venda[moeda]['ordem'] = Leilao.venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    time.sleep(Util.frequencia())
                    
             except Exception as erro:        
                 logging.error(erro) 
             
-            time.sleep(Util.frequencia())
-
         agora = datetime.now() 
 
     #zerar o pnl e reiniciar a bagaça
