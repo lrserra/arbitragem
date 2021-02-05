@@ -83,6 +83,9 @@ while hour <= 720:
                     pnl = round(((vendi_a * 0.998) - (comprei_a * 1.007)) * quantidade,2)
 
                     logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
+                    Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}'.format(datetime.now(),moeda,corretora_mais_liquida,comprei_a,quantidade,pnl))
+                    Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}'.format(datetime.now(),moeda,corretora_menos_liquida,vendi_a,quantidade,pnl))
+                    
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo()
                     dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
@@ -100,6 +103,9 @@ while hour <= 720:
                     pnl = round(((vendi_a*0.993)-(comprei_a*1.002)) * quantidade,2)
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
+                    Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}'.format(datetime.now(),moeda,corretora_mais_liquida,vendi_a,quantidade,pnl))
+                    Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}'.format(datetime.now(),moeda,corretora_menos_liquida,comprei_a,quantidade,pnl))
+                    
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo() 
                     dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens   

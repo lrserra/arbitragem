@@ -56,12 +56,13 @@ class Arbitragem:
                                 logging.error('arbitragem NAO zerou na {}'.format(corretoraCompra.nome))
                             else:
                                 logging.warning('operou arb de {}! + {}brl de pnl com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome))
-                            
+                                Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}'.format(datetime.now(),ativo,corretoraCompra.nome,comprei_a,round(qtdNegociada,4),pnl))
+
                             if retorno_venda.status != 'filled':
                                 logging.error('arbitragem NAO zerou na {}'.format(corretoraVenda.nome))
                             else: 
                                 logging.warning('operou arb de {}! + {}brl de pnl com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,vendi_a,corretoraVenda.nome))
-
+                                Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}'.format(datetime.now(),ativo,corretoraVenda.nome,vendi_a,round(qtdNegociada,4),pnl))
                             
                             corretoraCompra.atualizar_saldo()
                             corretoraVenda.atualizar_saldo()

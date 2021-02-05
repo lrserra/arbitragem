@@ -5,9 +5,7 @@ class Util:
     
     def adicionar_linha_no_relatorio(self,nomeArquivo, linhaRegistro, header):
         
-        raiz = "E:\\rhyno\\"
-
-        #raiz = self.obter_caminho_para_relatorios()
+        raiz = self.obter_caminho_para_relatorios()
         
         arquivo = open(raiz+nomeArquivo, 'w+')
         conteudo = arquivo.readlines()
@@ -25,7 +23,7 @@ class Util:
         self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
     def adicionar_linha_em_operacoes(self,linhaRegistro):
-        header = 'DATA|MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNLBRL|'
+        header = 'DATA|MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL'
         nomeArquivo = 'Operacoes.txt'
         self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
