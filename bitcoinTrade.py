@@ -98,11 +98,6 @@ class BitcoinTrade:
             'Content-type': 'application/json',
             'x-api-key': config["BitcoinTrade"]["Authentication"]
         }
-        # requisição básica com módulo requests
-
-        # if requestMethod == 'DELETE':
-        #     res = requests.delete(url=self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
-        # else:
         
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
         
