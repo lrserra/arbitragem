@@ -85,7 +85,7 @@ class BitcoinTrade:
             "id": idOrdem
         }
         
-        return self.executarRequestBTCTrade('DELETE', payload, 'v3/market/user_orders/')
+        return self.executarRequestBTCTrade('DELETE', json.dumps(payload), 'v3/market/user_orders/')
 
     def obterOrdensAbertas(self):
         # objeto que será postado para o endpoint
@@ -99,5 +99,11 @@ class BitcoinTrade:
             'x-api-key': config["BitcoinTrade"]["Authentication"]
         }
         # requisição básica com módulo requests
+
+        # if requestMethod == 'DELETE':
+        #     res = requests.delete(url=self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
+        # else:
+        
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
+        
         return json.loads(res.text.encode('utf8'))

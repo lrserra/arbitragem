@@ -267,11 +267,11 @@ class Corretora:
             for ordem in ordens_abertas:
                 if str(ativo).upper() == str(ordem['coin']).upper():
                     self.cancelar_ordem(ordem['id'])
-        elif self.nome == 'BitcoinTrade': # precisa desenvolver o retorno
+        elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
                 if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelar_ordem(ordem['code'])
+                    self.cancelar_ordem(ordem['id'])
 
     def transferir_crypto(self, ordem:Ordem):      
         if self.nome == 'MercadoBitcoin':
