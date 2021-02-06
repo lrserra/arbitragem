@@ -53,12 +53,12 @@ class Arbitragem:
                             retorno_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem)
                             
 
-                            if retorno_compra.status != 'filled':
+                            if retorno_compra.status != retorno_compra.descricao_status_executado:
                                 logging.error('arbitragem NAO zerou na {}'.format(corretoraCompra.nome))
                             else:
                                 logging.warning('operou arb de {}! + {}brl de pnl com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,comprei_a,corretoraCompra.nome))
                             
-                            if retorno_venda.status != 'filled':
+                            if retorno_venda.status != retorno_venda.descricao_status_executado:
                                 logging.error('arbitragem NAO zerou na {}'.format(corretoraVenda.nome))
                             else: 
                                 logging.warning('operou arb de {}! + {}brl de pnl com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,vendi_a,corretoraVenda.nome))
