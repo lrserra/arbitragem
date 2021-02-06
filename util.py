@@ -18,7 +18,7 @@ class Util:
         arquivo.close()
 
     def adicionar_linha_no_saldo(self,linhaRegistro):
-        header = 'DATA|MOEDA|CORRETORA|SALDOBRL|SALDOCRYPTO|PNLBRL'
+        header = 'DATA|MOEDA|SALDOBRL|SALDOCRYPTO'
         nomeArquivo = 'Saldo.txt'
         self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
@@ -52,7 +52,7 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)["corretora_de_menor_liquidez"]
 
-    def obter_caminho_para_relatorios():
+    def obter_caminho_para_relatorios(self):
         '''
         retorna o caminho onde os relatorios devem ser salvos
         '''
