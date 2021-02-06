@@ -22,6 +22,7 @@ class Corretora:
         self.corretagem = 0.0
         self.saldoBRL = 0.0
         self.saldoCrypto = 0.0
+        self.descricao_status_executado = ''
         self.book = []
         self.ordem = self.obter_ordem_book_por_indice(0)
 
@@ -37,6 +38,7 @@ class Corretora:
                 ordem.preco_venda = float(self.book['bids'][indice][0])
                 ordem.quantidade_venda = float(self.book['bids'][indice][1])
                 self.corretagem = 0.007
+                self.descricao_status_executado = 'filled'
 
             elif self.nome == 'BrasilBitcoin':
                 ordem.preco_compra = float(self.book['sell'][indice]['preco'])
@@ -44,6 +46,7 @@ class Corretora:
                 ordem.preco_venda = float(self.book['buy'][indice]['preco'])
                 ordem.quantidade_venda = float(self.book['buy'][indice]['quantidade'])
                 self.corretagem = 0.005
+                self.descricao_status_executado = 'filled'
 
             elif self.nome == 'BitcoinTrade':
                 ordem.preco_compra = float(self.book['data']['asks'][indice]['unit_price'])
@@ -51,6 +54,7 @@ class Corretora:
                 ordem.preco_venda = float(self.book['data']['bids'][indice]['unit_price'])
                 ordem.quantidade_venda = float(self.book['data']['bids'][indice]['amount'])
                 self.corretagem = 0.005
+                self.descricao_status_executado = 'executed_completely'
             
             self.amountCompra = ordem.preco_compra * ordem.quantidade_compra
             self.amountVenda = ordem.preco_venda * ordem.quantidade_venda
