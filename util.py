@@ -8,26 +8,30 @@ class Util:
         header = 'MOEDA|SALDO|DATA'
         nomeArquivo = 'Saldo.txt'
         
-        if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
-            arquivo = open(nomeArquivo, 'w')
+        if os.path.exists(nomeArquivo):
+            append_write = 'a' # append if already exists
+            arquivo = open(nomeArquivo,append_write)
+        else:
+            append_write = 'w' # make a new file if not
+            arquivo = open(nomeArquivo,append_write)
             arquivo.writelines(header + '\n')
-            arquivo.close()
 
-        arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
-        arquivo.writelines(linhaRegistro) 
+        arquivo.writelines(linhaRegistro + '\n')
         arquivo.close()
 
     def adicionar_linha_em_operacoes(linhaRegistro):
         header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
         
-        if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
-            arquivo = open(nomeArquivo, 'w')
+        if os.path.exists(nomeArquivo):
+            append_write = 'a' # append if already exists
+            arquivo = open(nomeArquivo,append_write)
+        else:
+            append_write = 'w' # make a new file if not
+            arquivo = open(nomeArquivo,append_write)
             arquivo.writelines(header + '\n')
-            arquivo.close()
 
-        arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
-        arquivo.writelines(linhaRegistro) 
+        arquivo.writelines(linhaRegistro + '\n')
         arquivo.close()
 
     def obterCredenciais():
