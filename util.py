@@ -1,3 +1,4 @@
+import os
 import json
 from datetime import datetime
 
@@ -7,7 +8,10 @@ class Util:
         header = 'MOEDA|SALDO|DATA'
         nomeArquivo = 'Saldo.txt'
         
-        arquivo = open(nomeArquivo, 'r+')
+        if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
+            open(nomeArquivo, 'w').close()
+
+        arquivo = open(nomeArquivo, 'r+')#le para ver se esta vazio
         
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
@@ -15,7 +19,7 @@ class Util:
         conteudo.append(linhaRegistro + '\n')
         arquivo.close()
         
-        arquivo = open(nomeArquivo, 'a+')
+        arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
         arquivo.writelines(conteudo) 
         arquivo.close()
 
@@ -23,14 +27,17 @@ class Util:
         header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
         
-        arquivo = open(nomeArquivo, 'r+')
+        if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
+            open(nomeArquivo, 'w').close()
+        
+        arquivo = open(nomeArquivo, 'r+')#le para ver se esta vazio
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
         arquivo.close()
         
-        arquivo = open(nomeArquivo, 'a+')
+        arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
         arquivo.writelines(conteudo) 
         arquivo.close()
 
