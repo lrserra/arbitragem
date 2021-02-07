@@ -13,6 +13,7 @@ class Util:
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
+        arquivo.close()
         
         arquivo = open(nomeArquivo, 'a+')
         arquivo.writelines(conteudo) 
@@ -27,6 +28,7 @@ class Util:
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
+        arquivo.close()
         
         arquivo = open(nomeArquivo, 'a+')
         arquivo.writelines(conteudo) 
