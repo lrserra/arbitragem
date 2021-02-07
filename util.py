@@ -5,25 +5,23 @@ class Util:
     
     def adicionar_linha_no_relatorio(self,nomeArquivo, linhaRegistro, header):
         
-        raiz = self.obter_caminho_para_relatorios()
-        
-        arquivo = open(raiz+nomeArquivo, 'w+')
+        arquivo = open(nomeArquivo, 'w+')
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
         
-        arquivo = open(raiz+nomeArquivo, 'w')
+        arquivo = open(nomeArquivo, 'w')
         arquivo.writelines(conteudo) 
         arquivo.close()
 
     def adicionar_linha_no_saldo(self,linhaRegistro):
-        header = 'DATA|MOEDA|SALDOBRL|SALDOCRYPTO'
+        header = 'MOEDA|SALDO|DATA'
         nomeArquivo = 'Saldo.txt'
         self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
     def adicionar_linha_em_operacoes(self,linhaRegistro):
-        header = 'DATA|MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL'
+        header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
         self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
@@ -51,13 +49,6 @@ class Util:
         '''
         with open('appsettings.json') as f:
             return json.load(f)["corretora_de_menor_liquidez"]
-
-    def obter_caminho_para_relatorios(self):
-        '''
-        retorna o caminho onde os relatorios devem ser salvos
-        '''
-        with open('appsettings.json') as f:
-            return json.load(f)["caminho_relatorios"]
 
     def frequencia():
         '''
