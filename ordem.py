@@ -14,4 +14,4 @@ class Ordem:
        self.status = ''
        self.tipo_ordem = ''
        self.mensagem = ''
-       
+       self.descricao_status_executado ='filled'
