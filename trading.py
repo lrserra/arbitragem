@@ -2,17 +2,18 @@ import requests
 import time
 from datetime import datetime
 from corretora import Corretora
+from ordem import Ordem
 from util import Util
-from coreTelegram import Telegram
+from coinext import Coinext
 
-mercadoBitcoin = Corretora('MercadoBitcoin', 'eth')
-brasilBitcoin = Corretora('BrasilBitcoin', 'eth')
+# -------------------------- COIN NEXT ----------------------------------#
 
-mercadoBitcoin.atualizarSaldo()
-brasilBitcoin.atualizarSaldo()
+# coin = Coinext('btc')
+# token = coin.obterBooks()
+# print(token)
 
-msg = 'Saldo em Reais na Mercado BTC: ' + str(mercadoBitcoin.saldoBRL)
 
-Telegram.enviarMensagem(msg)
+
+
 
 
