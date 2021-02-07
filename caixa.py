@@ -29,9 +29,10 @@ class Caixa:
             saldo_inicial[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
             
             logging.warning('saldo inicial em {}: {}'.format(moeda,round(saldo_inicial[moeda],4)))
+            Util.adicionar_linha_no_saldo('{}|{}|{}'.format(moeda,round(saldo_inicial[moeda],4),datetime.now()))
 
         logging.warning('saldo inicial em reais: {}'.format(round(saldo_inicial['brl']/len(lista_de_moedas),2)))
-        Util().adicionar_linha_no_saldo('{}|{}|{}|{}'.format(datetime.now(),moeda,round(saldo_inicial['brl']/len(lista_de_moedas),2),round(saldo_inicial[moeda],4)))
+        Util.adicionar_linha_no_saldo('{}|{}|{}'.format('BRL',round(saldo_inicial['brl']/len(lista_de_moedas),2),datetime.now()))
 
         return saldo_inicial
 

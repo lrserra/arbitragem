@@ -3,29 +3,34 @@ from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_relatorio(self,nomeArquivo, linhaRegistro, header):
+    def adicionar_linha_no_saldo(linhaRegistro):
+        header = 'MOEDA|SALDO|DATA'
+        nomeArquivo = 'Saldo.txt'
         
-        raiz = self.obter_caminho_para_relatorios()
+        arquivo = open(nomeArquivo, 'w+')
         
-        arquivo = open(raiz+nomeArquivo, 'w+')
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
         
-        arquivo = open(raiz+nomeArquivo, 'w')
+        arquivo = open(nomeArquivo, 'a+')
         arquivo.writelines(conteudo) 
         arquivo.close()
 
-    def adicionar_linha_no_saldo(self,linhaRegistro):
-        header = 'DATA|MOEDA|SALDOBRL|SALDOCRYPTO'
-        nomeArquivo = 'Saldo.txt'
-        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
-
-    def adicionar_linha_em_operacoes(self,linhaRegistro):
-        header = 'DATA|MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL'
+    def adicionar_linha_em_operacoes(linhaRegistro):
+        header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
-        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
+        
+        arquivo = open(nomeArquivo, 'w+')
+        conteudo = arquivo.readlines()
+        if len(conteudo) == 0:
+                conteudo.append(header + '\n')
+        conteudo.append(linhaRegistro + '\n')
+        
+        arquivo = open(nomeArquivo, 'a+')
+        arquivo.writelines(conteudo) 
+        arquivo.close()
 
     def obterCredenciais():
         with open('appsettings.json') as f:
@@ -51,13 +56,6 @@ class Util:
         '''
         with open('appsettings.json') as f:
             return json.load(f)["corretora_de_menor_liquidez"]
-
-    def obter_caminho_para_relatorios(self):
-        '''
-        retorna o caminho onde os relatorios devem ser salvos
-        '''
-        with open('appsettings.json') as f:
-            return json.load(f)["caminho_relatorios"]
 
     def frequencia():
         '''
