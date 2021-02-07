@@ -3,24 +3,29 @@ from datetime import datetime
 
 class Util:
     
-    def escreverArquivoComQuebraDeLinha(nomeArquivo, linhaRegistro, header):
-        arquivo = open(nomeArquivo, 'r')
+    def adicionar_linha_no_relatorio(self,nomeArquivo, linhaRegistro, header):
+        
+        raiz = self.obter_caminho_para_relatorios()
+        
+        arquivo = open(raiz+nomeArquivo, 'w+')
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
         conteudo.append(linhaRegistro + '\n')
-        arquivo = open(nomeArquivo, 'w')
+        
+        arquivo = open(raiz+nomeArquivo, 'w')
         arquivo.writelines(conteudo) 
         arquivo.close()
 
-    def escreverArquivoCashList(self, linhaRegistro):
-        header = 'COIN|BROKER|SALDOBRL|SALDOCRYPTO|TIMESTAMP'
-        nomeArquivo = 'CashList.txt'
-        self.escreverArquivoComQuebraDeLinha(nomeArquivo, linhaRegistro, header)
+    def adicionar_linha_no_saldo(self,linhaRegistro):
+        header = 'DATA|MOEDA|SALDOBRL|SALDOCRYPTO'
+        nomeArquivo = 'Saldo.txt'
+        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
-    def escreverArquivoOperacao(self, nomeArquivo, linhaRegistro):
-        header = 'COIN|BROKER|C/V|BID|QUANTITY|FINCORRETAGEM|PNL|TIMESTAMP'
-        self.escreverArquivoComQuebraDeLinha(nomeArquivo, linhaRegistro, header)
+    def adicionar_linha_em_operacoes(self,linhaRegistro):
+        header = 'DATA|MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL'
+        nomeArquivo = 'Operacoes.txt'
+        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
 
     def obterCredenciais():
         with open('appsettings.json') as f:
@@ -46,6 +51,13 @@ class Util:
         '''
         with open('appsettings.json') as f:
             return json.load(f)["corretora_de_menor_liquidez"]
+
+    def obter_caminho_para_relatorios(self):
+        '''
+        retorna o caminho onde os relatorios devem ser salvos
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)["caminho_relatorios"]
 
     def frequencia():
         '''
