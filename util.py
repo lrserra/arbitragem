@@ -9,18 +9,12 @@ class Util:
         nomeArquivo = 'Saldo.txt'
         
         if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
-            open(nomeArquivo, 'w').close()
+            arquivo = open(nomeArquivo, 'w')
+            arquivo.writelines(header + '\n')
+            arquivo.close()
 
-        arquivo = open(nomeArquivo, 'r+')#le para ver se esta vazio
-        
-        conteudo = arquivo.readlines()
-        if len(conteudo) == 0:
-                conteudo.append(header + '\n')
-        conteudo.append(linhaRegistro + '\n')
-        arquivo.close()
-        
         arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
-        arquivo.writelines(conteudo) 
+        arquivo.writelines(linhaRegistro) 
         arquivo.close()
 
     def adicionar_linha_em_operacoes(linhaRegistro):
@@ -28,17 +22,12 @@ class Util:
         nomeArquivo = 'Operacoes.txt'
         
         if not os.path.exists(nomeArquivo):#cria o arquivo se ele não existe
-            open(nomeArquivo, 'w').close()
-        
-        arquivo = open(nomeArquivo, 'r+')#le para ver se esta vazio
-        conteudo = arquivo.readlines()
-        if len(conteudo) == 0:
-                conteudo.append(header + '\n')
-        conteudo.append(linhaRegistro + '\n')
-        arquivo.close()
-        
+            arquivo = open(nomeArquivo, 'w')
+            arquivo.writelines(header + '\n')
+            arquivo.close()
+
         arquivo = open(nomeArquivo, 'a+')#escreve conteudo em modo append
-        arquivo.writelines(conteudo) 
+        arquivo.writelines(linhaRegistro) 
         arquivo.close()
 
     def obterCredenciais():
