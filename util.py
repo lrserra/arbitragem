@@ -7,7 +7,7 @@ class Util:
         header = 'MOEDA|SALDO|DATA'
         nomeArquivo = 'Saldo.txt'
         
-        arquivo = open(nomeArquivo, 'w+')
+        arquivo = open(nomeArquivo, 'r+')
         
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
@@ -23,7 +23,7 @@ class Util:
         header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
         
-        arquivo = open(nomeArquivo, 'w+')
+        arquivo = open(nomeArquivo, 'r+')
         conteudo = arquivo.readlines()
         if len(conteudo) == 0:
                 conteudo.append(header + '\n')
