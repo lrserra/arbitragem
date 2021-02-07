@@ -19,6 +19,9 @@ class Caixa:
             CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
+            #inicialmente cancela todas ordens abertas na brasil
+            CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
+
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
 
@@ -48,7 +51,7 @@ class Caixa:
             CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
             CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
 
-            #incialmente cancela todas ordens abertas na brasil
+            #inicialmente cancela todas ordens abertas na brasil
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
 
             CorretoraMaisLiquida.atualizar_saldo()
