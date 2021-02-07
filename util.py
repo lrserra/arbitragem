@@ -3,7 +3,9 @@ from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_relatorio(self,nomeArquivo, linhaRegistro, header):
+    def adicionar_linha_no_saldo(linhaRegistro):
+        header = 'MOEDA|SALDO|DATA'
+        nomeArquivo = 'Saldo.txt'
         
         arquivo = open(nomeArquivo, 'w+')
         conteudo = arquivo.readlines()
@@ -15,15 +17,19 @@ class Util:
         arquivo.writelines(conteudo) 
         arquivo.close()
 
-    def adicionar_linha_no_saldo(self,linhaRegistro):
-        header = 'MOEDA|SALDO|DATA'
-        nomeArquivo = 'Saldo.txt'
-        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
-
-    def adicionar_linha_em_operacoes(self,linhaRegistro):
+    def adicionar_linha_em_operacoes(linhaRegistro):
         header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
-        self.adicionar_linha_no_relatorio(nomeArquivo, linhaRegistro, header)
+        
+        arquivo = open(nomeArquivo, 'w+')
+        conteudo = arquivo.readlines()
+        if len(conteudo) == 0:
+                conteudo.append(header + '\n')
+        conteudo.append(linhaRegistro + '\n')
+        
+        arquivo = open(nomeArquivo, 'w')
+        arquivo.writelines(conteudo) 
+        arquivo.close()
 
     def obterCredenciais():
         with open('appsettings.json') as f:
