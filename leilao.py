@@ -1,11 +1,9 @@
- 
 import time
 import logging
 from datetime import datetime
 from corretora import Corretora
 from util import Util
 from ordem import Ordem
-
 class Leilao:
 
     def compra(corretoraParte, corretoraContraparte, ativo, executarOrdens = False):
@@ -82,7 +80,6 @@ class Leilao:
         
         return retorno_compra_corretora_parte
 
-    #def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens = False, idOrdem = 0, status='new'):
     def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_compra):
 
         retorno_compra = Ordem()
@@ -104,7 +101,7 @@ class Leilao:
                 
             elif ordem_leilao_compra.id != 0:
 
-                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_compra.id)
+                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_compra)
                 
                 if (ordem_leilao_compra.preco_venda != corretoraParte.ordem.preco_compra):
                     
@@ -155,10 +152,7 @@ class Leilao:
         
             elif ordem_leilao_venda.id != 0:
                 
-                if corretoraParte.nome == 'BitcoinTrade':
-                    ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.code)
-                else:
-                    ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.id)             
+                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda)             
                 qtd_executada = ordem.quantidade_executada
                 preco_executado = ordem_leilao_venda.preco_executado
             
@@ -168,7 +162,7 @@ class Leilao:
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
                     cancelou = True
                 
-                elif (ordem.quantidade_executada >0):
+                elif (ordem.quantidade_executada > 0):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_venda.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
