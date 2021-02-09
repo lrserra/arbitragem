@@ -18,7 +18,7 @@ class Arbitragem:
         
         # Obtendo a maior e menor quantidade de compra e venda entre as corretoras
         maiorQtd = max(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda)
-        menorQtd = min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda)
+        menorQtd = min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda,corretoraCompra.saldoBRL/corretoraCompra.ordem.preco_venda)
         
         # Na estratégia, consideramos negociar a partir da menor quantidade
         qtdNegociada = menorQtd
@@ -37,7 +37,6 @@ class Arbitragem:
                 if financeiroCorretagem < pnl:
                     # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                     if (corretoraCompra.saldoBRL >= corretoraCompra.obter_amount_compra(qtdNegociada) and corretoraCompra.obter_amount_compra(qtdNegociada) > Util.retorna_menor_valor_compra(ativo)) and (corretoraVenda.saldoCrypto >= qtdNegociada and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
-
                         if executarOrdens:
                             # Atualiza a quantidade negociada e o tipo de ordem 
                             corretoraCompra.ordem.quantidade_negociada = qtdNegociada

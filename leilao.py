@@ -102,7 +102,7 @@ class Leilao:
                 corretoraContraparte.ordem.tipo_ordem = 'market'
                 retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
                 
-            elif ordem_leilao_compra.id > 0:
+            elif ordem_leilao_compra.id != 0:
 
                 ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_compra.id)
                 
@@ -153,9 +153,12 @@ class Leilao:
                 corretoraContraparte.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
         
-            elif ordem_leilao_venda.id > 0:
+            elif ordem_leilao_venda.id != 0:
                 
-                ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.id)             
+                if corretoraParte.nome == 'BitcoinTrade':
+                    ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.code)
+                else:
+                    ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda.id)             
                 qtd_executada = ordem.quantidade_executada
                 preco_executado = ordem_leilao_venda.preco_executado
             

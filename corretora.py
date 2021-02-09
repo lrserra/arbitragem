@@ -273,7 +273,7 @@ class Corretora:
                     self.cancelar_ordem(ordem['id'])
         elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
-            for ordem in ordens_abertas:
+            for ordem in ordens_abertas['data']['orders']:
                 if str(ativo).upper() == str(ordem['coin']).upper():
                     self.cancelar_ordem(ordem['id'])
 
