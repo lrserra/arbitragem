@@ -96,30 +96,30 @@ class Corretora:
             return self.ordem.preco_venda * self.ordem.quantidade_venda
         return self.ordem.preco_venda * quantidade_venda
 
-    def obter_ordem_por_id(self, ordem):
+    def obter_ordem_por_id(self, obterOrdem):
         ordem = Ordem()
         try:
             if self.nome == 'MercadoBitcoin':
                 pass
             elif self.nome == 'BrasilBitcoin':
-                response = BrasilBitcoin(self.ativo).obterOrdemPorId(ordem.id)
+                response = BrasilBitcoin(self.ativo).obterOrdemPorId(obterOrdem.id)
                 ordem.status = response['data']['status']
                 ordem.quantidade_executada = response['data']['executed']
                 ordem.preco_executado = response['data']['price']
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(self.ativo).obterOrdemPorId(ordem.code)
+                response = BitcoinTrade(self.ativo).obterOrdemPorId(obterOrdem.code)
                 if 'orders' in response['data']:
                     for ativo in response['data']['orders']:
-                        if ativo['code'] == ordem.code:
+                        if ativo['code'] == obterOrdem.code:
                             ordem.status = ativo['status']
                             ordem.code = ativo['code']
                             ordem.id = ativo['id']
                             ordem.quantidade_executada = ativo['executed_amount']
                             ordem.preco_executado = ativo['unit_price']
                 if ordem.id == 0:
-                    response = BitcoinTrade(self.ativo).obterOrdemPorIdStatusExecuted(ordem.code)
+                    response = BitcoinTrade(self.ativo).obterOrdemPorIdStatusExecuted(obterOrdem.code)
                     for ativo in response['data']['orders']: 
-                        if ativo['code'] == ordem.code:
+                        if ativo['code'] == obterOrdem.code:
                             ordem.status = ativo['status']
                             ordem.code = ativo['code']
                             ordem.id = ativo['id']
