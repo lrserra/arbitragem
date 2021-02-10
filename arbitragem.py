@@ -17,8 +17,7 @@ class Arbitragem:
         retorno_venda = Ordem()
         
         # Obtendo a maior e menor quantidade de compra e venda entre as corretoras
-        maiorQtd = max(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda)
-        menorQtd = min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda,corretoraCompra.saldoBRL/corretoraCompra.ordem.preco_venda)
+        menorQtd = min(corretoraCompra.ordem.quantidade_compra, corretoraVenda.ordem.quantidade_venda,corretoraCompra.saldoBRL/corretoraCompra.ordem.preco_venda,corretoraVenda.saldoCrypto)
         
         # Na estratégia, consideramos negociar a partir da menor quantidade
         qtdNegociada = menorQtd
