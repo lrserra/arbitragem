@@ -109,6 +109,12 @@ class Leilao:
                     corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
                     cancelou = True
 
+                elif (corretoraContraparte.saldoBRL < ordem.quantidade_negociada*ordem.preco_venda):
+                    
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq nao tenho mais saldo brl para comprar tudo isso'.format(ordem_leilao_compra.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_compra.id)
+                    cancelou = True
+
                 elif (ordem.quantidade_executada > 0):
                     
                     logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_compra.id,ativo))
@@ -161,7 +167,13 @@ class Leilao:
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
                     corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
                     cancelou = True
-                
+
+                elif (corretoraContraparte.saldoCrypto < ordem.quantidade_negociada):
+                    
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq nao tenho mais saldo para vender tudo isso'.format(ordem_leilao_venda.id,ativo))
+                    corretoraParte.cancelar_ordem(ordem_leilao_venda.id)
+                    cancelou = True
+
                 elif (ordem.quantidade_executada > 0):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_venda.id,ativo))
