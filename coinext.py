@@ -7,15 +7,29 @@ class Coinext:
 
     def __init__(self, ativo):
         self.ativo = ativo
-        self.urlCoinext = 'https://api.coinext.com.br:8443/AP/'
+        self.urlCoinext = 'https://api.coinext.com.br:8443/AP/'       
+
+    def service_url(self, service_name):
+        return 'https://api.coinext.com.br:8443/AP/%s' % service_name
+
+    def call_get(self, service_name):
+        res = requests.get(self.service_url(service_name))
+        return json.loads(res.content)        
+
+    def call_post(self, service_name, payload):
+        res = requests.post(self.service_url(service_name), data=json.dumps(payload))
+        return json.loads(res.content)
 
     def obterBooks(self):
         payload = {
-            'OMSId': 0,
-            'AccountId': 0,
-            'InstrumentId': 0
+            'OMSId': 1,
+            'AccountId': 1,
+            'InstrumentId': 1
         }
-        return self.executarRequestCoinext('GET', payload, 'GetOpenQuotes')
+
+        return self.call_post('GetL2Snapshot', payload)
+
+        #return self.executarRequestCoinext('GET', payload, 'GetL2Snapshot')
 
     def obterSaldo(self):
         return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
