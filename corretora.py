@@ -250,7 +250,7 @@ class Corretora:
                     ordemRetorno.quantidade_venda = float(response['data']['amount'])
                     ordemRetorno.preco_venda = float(response['data']['unit_price'])
                 else:
-                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
         except Exception as erro:
