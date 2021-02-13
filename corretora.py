@@ -141,6 +141,9 @@ class Corretora:
                 self.saldoCrypto = float(response_json[self.ativo])
             elif self.nome == 'BitcoinTrade':
                 response_json = BitcoinTrade(self.ativo).obterSaldo()
+                while response_json['message'] == 'Too Many Requests':
+                    time.sleep(1)
+                    response_json = BitcoinTrade(self.ativo).obterSaldo()
                 for ativo in response_json['data']:
                     if ativo['currency_code'] == 'BRL':
                         self.saldoBRL = float(ativo['available_amount'])
