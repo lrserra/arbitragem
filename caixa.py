@@ -93,3 +93,17 @@ class Caixa:
                 logging.info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
 
         return True
+
+
+if __name__ == "__main__":
+
+        
+    from caixa import Caixa
+
+    #essa parte executa apenas uma vez
+    lista_de_moedas = Util.obter_lista_de_moedas()
+    corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
+    corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
+
+    Caixa.zera_o_pnl_em_cripto(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
+    
