@@ -2,6 +2,7 @@ import logging
 from corretora import Corretora
 from datetime import datetime
 from util import Util
+import time
 
 class Caixa:
     
@@ -37,11 +38,11 @@ class Caixa:
         return saldo_inicial
 
 
-    def zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida):
+    def zera_o_pnl_em_cripto(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida):
         '''
-        ao longo do dia, nós pagamos corretagem em cripto, então uma vez ao dia vamos comprar essa quantidade novamente
+        ao longo do dia, nós pagamos corretagem em cripto, então uma vez ao dia é bom comprar essa quantidade novamente
         '''
-
+        saldo_inicial = Util.obter_saldo_inicial()
         saldo_final = {}
 
         #verifica saldo final, para comparar com inicial
@@ -53,6 +54,7 @@ class Caixa:
 
             #inicialmente cancela todas ordens abertas na brasil
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
+            time.sleep(1)
 
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
