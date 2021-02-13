@@ -38,6 +38,13 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)
 
+    def obter_saldo_inicial():
+        '''
+        retorna dicionario com saldo inicial de cada moeda
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)["saldo_inicial"]
+
     def obter_lista_de_moedas():
         '''
         retorna a lista de moedas que nosso script vai negociar

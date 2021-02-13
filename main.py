@@ -40,12 +40,11 @@ for moeda in lista_de_moedas:
     dict_leilao_compra[moeda]['foi_cancelado'] = False
     dict_leilao_venda[moeda]['foi_cancelado'] = False
 
-#atualiza saldo inicial nesse dicionario
-saldo_inicial = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-
 hour = 1
 while hour <= 720:
     #essa parte executa uma vez por hora
+    #atualiza saldo inicial
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
     agora = datetime.now() 
     proxima_hora = agora + timedelta(hours=1)
     logging.warning('proxima atualizacao: {}'.format(proxima_hora))
@@ -122,14 +121,10 @@ while hour <= 720:
             
         agora = datetime.now() 
 
-    #zerar o pnl e reiniciar a bagaça
-    Caixa.zera_o_pnl_em_cripto(lista_de_moedas,saldo_inicial,corretora_mais_liquida,corretora_menos_liquida)
     retorno_ordem_leilao_compra = Ordem()
     retorno_ordem_leilao_venda = Ordem()
 
     hour = hour+1
     
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-
     
 
