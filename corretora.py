@@ -286,11 +286,11 @@ class Corretora:
                     self.cancelar_ordem(ordem['id'])
         elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
-            if response['message'] == 'Too Many Requests':
+            if ordens_abertas['message'] == 'Too Many Requests':
                 time.sleep(1)
                 ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
-            elif 'data' not in response.keys():
-                logging.info(str(response))
+            elif 'data' not in ordens_abertas.keys():
+                logging.info(str(ordens_abertas))
             for ordem in ordens_abertas['data']['orders']:
                 if str(ativo).upper() == str(ordem['coin']).upper():
                     self.cancelar_ordem(ordem['id'])
