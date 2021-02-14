@@ -190,6 +190,11 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                if response['message'] == 'Too Many Requests':
+                    time.sleep(1)
+                    response = BitcoinTrade(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                elif 'data' not in response.keys():
+                    logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
                     ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
@@ -244,6 +249,11 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                if response['message'] == 'Too Many Requests':
+                    time.sleep(1)
+                    response = BitcoinTrade(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                elif 'data' not in response.keys():
+                    logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
                     ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
@@ -276,6 +286,11 @@ class Corretora:
                     self.cancelar_ordem(ordem['id'])
         elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
+            if response['message'] == 'Too Many Requests':
+                time.sleep(1)
+                ordens_abertas = BitcoinTrade(self.ativo).obterOrdensAbertas()
+            elif 'data' not in response.keys():
+                logging.info(str(response))
             for ordem in ordens_abertas['data']['orders']:
                 if str(ativo).upper() == str(ordem['coin']).upper():
                     self.cancelar_ordem(ordem['id'])
