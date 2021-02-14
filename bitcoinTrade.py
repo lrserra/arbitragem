@@ -50,7 +50,7 @@ class BitcoinTrade:
             'subtype': tipoOrdem,
             'type': 'sell',
             'amount': quantity,
-            'unitprice': precoVenda
+            'unit_price': precoVenda
         }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada

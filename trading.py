@@ -61,4 +61,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from corretora import Corretora
+    from ordem import Ordem
+    corretoraParte = Corretora("BitcoinTrade", "ltc")
+
+    qtdNegociada = 0.01
+    
+    corretoraParte.ordem.preco_venda = 10000
+    corretoraParte.ordem.quantidade_negociada = qtdNegociada
+    corretoraParte.ordem.tipo_ordem = 'limited'
+    retorno_venda_corretora_parte = corretoraParte.enviar_ordem_venda(corretoraParte.ordem)  
