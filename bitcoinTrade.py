@@ -57,7 +57,7 @@ class BitcoinTrade:
         retorno = self.executarRequestBTCTrade('POST', json.dumps(payload), 'v3/market/create_order')
         return retorno
 
-    def TransferirCrypto(self, quantity):      
+    def TransferirCrypto(self, quantity,destino):      
         config = Util.obterCredenciais()
         api = ''
         if self.ativo == 'btc':
@@ -72,9 +72,12 @@ class BitcoinTrade:
         # objeto que será postado para o endpoint
         payload = {
             'amount': quantity,
-            'destination': config["MercadoBitcoin"]["Address"],
-            "fee_type": "regular"
+            'destination': config[destino]["Address"][self.ativo],
+            "fee_type": "fast"
         }
+        
+        if self.ativo=='xrp':
+            payload['tag'] = config[destino]["Address"]["xrp_tag"] 
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         return self.executarRequestBTCTrade('POST', json.dumps(payload), api)

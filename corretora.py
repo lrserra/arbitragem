@@ -280,10 +280,21 @@ class Corretora:
                 if str(ativo).upper() == str(ordem['coin']).upper():
                     self.cancelar_ordem(ordem['id'])
 
-    def transferir_crypto(self, ordem:Ordem):      
+    def transferir_crypto(self, ordem:Ordem, destino):      
+        '''
+        metodo que transfere cripto entre duas corretoras
+        argumentos:
+        1 - ordem.quantidade_transferencia : quantidade de cripto a transferir
+        2 - destino: nome da corretora que vai receber os recursos
+        '''        
         if self.nome == 'MercadoBitcoin':
-            return MercadoBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia)
+            retorno = MercadoBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
         elif self.nome == 'BrasilBitcoin':
-            return BrasilBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia)
+            retorno = BrasilBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
+        elif self.nome == 'BitcoinTrade':
+            retorno = BitcoinTrade(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
 
 

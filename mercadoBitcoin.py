@@ -65,18 +65,23 @@ class MercadoBitcoin:
         retorno = self.executarRequestMercadoBTC(params)
         return retorno
 
-    def TransferirCrypto(self, quantity):
+    def TransferirCrypto(self, quantity, destino):
         config = Util.obterCredenciais()
-        
+        tx_fee = {'xrp':0.01,'btc':0.0004,'ltc':0.001,'bch':0.001}
+
         tapi_nonce = str(int(time.time()))
         params = {
             'tapi_method': 'withdraw_coin',
             'tapi_nonce': tapi_nonce,
             'coin': str.upper(self.ativo),
-            'address': config["BrasilBitcoin"]["Address"],
+            'address': config[destino]["Address"][self.ativo],
             'quantity': quantity,
-            'tx_fee': '0.0005'
+            'tx_fee': tx_fee[self.ativo]
         }
+
+        if self.ativo=='xrp':
+            params['destination_tag']= config[destino]["Address"]["xrp_tag"] 
+
         params = urlencode(params)
         return self.executarRequestMercadoBTC(params)
 

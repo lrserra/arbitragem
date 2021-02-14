@@ -45,6 +45,13 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)["saldo_inicial"]
 
+    def obter_balancear_carteira():
+        '''
+        retorna dicionario com moedas a balancear cripto
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)["balancear_carteira"]
+
     def obter_lista_de_moedas():
         '''
         retorna a lista de moedas que nosso script vai negociar
