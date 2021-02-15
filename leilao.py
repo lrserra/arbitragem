@@ -289,8 +289,8 @@ if __name__ == "__main__":
                         pnl = round(((vendi_a*0.993)-(comprei_a*1.002)) * quantidade,2)
 
                         logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
                         
                         CorretoraMaisLiquida.atualizar_saldo()
                         CorretoraMenosLiquida.atualizar_saldo() 
