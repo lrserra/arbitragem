@@ -6,7 +6,7 @@ from util import Util
 from ordem import Ordem
 class Leilao:
 
-    def compra(corretoraParte, corretoraContraparte, ativo, executarOrdens = False):
+    def compra(corretoraParte:Corretora, corretoraContraparte:Corretora, ativo, executarOrdens = False):
 
         retorno_venda_corretora_parte = Ordem()
         
@@ -14,9 +14,6 @@ class Leilao:
             # Lista de moedas que está rodando de forma parametrizada
             qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
-            # Soma do saldo total em reais
-            saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
-            
             # Valida se existe oportunidade de leilão
             if ((corretoraParte.ordem.preco_compra-0.01) >= 1.01 * corretoraContraparte.ordem.preco_compra):
                 
@@ -44,15 +41,13 @@ class Leilao:
 
         return retorno_venda_corretora_parte
 
-    def venda(corretoraParte, corretoraContraparte, ativo, executarOrdens = False):
+    def venda(corretoraParte:Corretora, corretoraContraparte:Corretora, ativo, executarOrdens = False):
 
         retorno_compra_corretora_parte = Ordem()
 
         try:
             qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
-            saldoTotalBRL = corretoraParte.saldoBRL + corretoraContraparte.saldoBRL
-            
             # 0.99 = 1 - Soma das corretagens
             if ((corretoraParte.ordem.preco_venda+0.01) <= 0.99 * corretoraContraparte.ordem.preco_venda):
                 
@@ -80,7 +75,7 @@ class Leilao:
         
         return retorno_compra_corretora_parte
 
-    def cancela_ordens_e_compra_na_mercado(corretoraParte, corretoraContraparte, ativo, executarOrdens, ordem_leilao_compra):
+    def cancela_ordens_e_compra_na_mercado(corretoraParte:Corretora, corretoraContraparte:Corretora, ativo, executarOrdens, ordem_leilao_compra):
 
         retorno_compra = Ordem()
         cancelou = False
@@ -91,8 +86,6 @@ class Leilao:
             corretoraContraparte.carregar_ordem_books()
         
             if ordem_leilao_compra.status == corretoraParte.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
-                
-                preco_executado = ordem_leilao_compra.preco_executado
                 
                 logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
                 corretoraContraparte.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)
@@ -133,6 +126,7 @@ class Leilao:
                     corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
+                    retorno_compra.preco_executado = corretoraContraparte.obter_preco_medio_de_compra(corretoraContraparte.ordem.quantidade_negociada)
                                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
@@ -159,9 +153,7 @@ class Leilao:
             elif ordem_leilao_venda.id != 0:
                 
                 ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda)             
-                qtd_executada = ordem.quantidade_executada
-                preco_executado = ordem_leilao_venda.preco_executado
-            
+                
                 if (ordem_leilao_venda.preco_compra != corretoraParte.ordem.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
@@ -192,6 +184,7 @@ class Leilao:
                     corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
+                    retorno_venda.preco_executado = corretoraContraparte.obter_preco_medio_de_venda(corretoraContraparte.ordem.quantidade_negociada)
                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
@@ -265,15 +258,15 @@ if __name__ == "__main__":
                     # Se Id diferente de zero, significa que operou leilão (fui executado)
                     if dict_leilao_compra[moeda]['zeragem'].id != 0:
                         
-                        comprei_a = round(dict_leilao_compra[moeda]['zeragem'].preco_executado,2)
-                        vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_venda,2)#a revisar!
+                        comprei_a = round(dict_leilao_compra[moeda]['zeragem'].preco_executado,2)#a revisar!
+                        vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_venda,2)
                         quantidade = round(dict_leilao_compra[moeda]['zeragem'].quantidade_executada,4)
 
                         pnl = round(((vendi_a * 0.998) - (comprei_a * 1.007)) * quantidade,2)
 
                         logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,comprei_a,quantidade,'LEILAO',pnl,datetime.now()))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,vendi_a,quantidade,'LEILAO',pnl,datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
                         
                         CorretoraMaisLiquida.atualizar_saldo()
                         CorretoraMenosLiquida.atualizar_saldo()
@@ -289,15 +282,15 @@ if __name__ == "__main__":
                     # Se Id diferente de zero, significa que operou leilão (fui executado)
                     if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
-                        vendi_a = round(dict_leilao_venda[moeda]['zeragem'].preco_executado,2)
+                        vendi_a = round(dict_leilao_venda[moeda]['zeragem'].preco_executado,2)#a revisar!
                         comprei_a = round(dict_leilao_venda[moeda]['ordem'].preco_compra,2)
                         quantidade = round(dict_leilao_venda[moeda]['zeragem'].quantidade_executada,4)
 
                         pnl = round(((vendi_a*0.993)-(comprei_a*1.002)) * quantidade,2)
 
                         logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,vendi_a,quantidade,'LEILAO',pnl,datetime.now()))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,'LEILAO',pnl,datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
                         
                         CorretoraMaisLiquida.atualizar_saldo()
                         CorretoraMenosLiquida.atualizar_saldo() 
