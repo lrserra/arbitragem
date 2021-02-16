@@ -189,5 +189,5 @@ if __name__ == "__main__":
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
     Caixa.zera_o_pnl_em_cripto(corretora_mais_liquida,corretora_menos_liquida)
-    Caixa.rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida)
+   # Caixa.rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida)
     
