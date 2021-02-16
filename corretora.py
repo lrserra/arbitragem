@@ -339,7 +339,7 @@ class Corretora:
             elif 'data' not in ordens_abertas.keys():
                 logging.info(str(ordens_abertas))
             for ordem in ordens_abertas['data']['orders']:
-                if str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
+                if 'pair_code' in ordem.keys() and str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
                     self.cancelar_ordem(ordem['id'])
 
     def transferir_crypto(self, ordem:Ordem, destino):      
