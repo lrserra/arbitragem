@@ -51,16 +51,19 @@ class BrasilBitcoin:
         retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
         return retorno
 
-    def TransferirCrypto(self, quantity):      
+    def TransferirCrypto(self, quantity, destino):      
         config = Util.obterCredenciais()
         
         # objeto que será postado para o endpoint
         payload = {
             'coin': self.ativo,
             'amount': quantity,
-            'address': config["MercadoBitcoin"]["Address"],
-            'priority': 'medium'
+            'address': config[destino]["Address"][self.ativo],
+            'priority': 'high'
         }
+        
+        if self.ativo=='xrp':
+            payload['tag'] = config[destino]["Address"]["xrp_tag"]         
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         return self.executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')

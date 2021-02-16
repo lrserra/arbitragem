@@ -75,6 +75,53 @@ class Corretora:
                 self.book = BitcoinTrade(self.ativo).obterBooks()
         except Exception as erro:
             raise Exception(erro)
+    
+    def obter_preco_medio_de_venda(self,qtd_a_vender):
+        try:
+            if self.nome == 'MercadoBitcoin':
+                precos = self.book
+                qtd_vendida = 0
+                preco_medio = 0
+                linha = 0
+                lista_de_precos = precos['bids']
+                while qtd_vendida <qtd_a_vender:
+                    vou_vender_nessa_linha = min(lista_de_precos[linha][1],qtd_a_vender-qtd_vendida)
+                    qtd_vendida += vou_vender_nessa_linha
+                    preco_medio += lista_de_precos[linha][0]*vou_vender_nessa_linha
+                    #print('vendi {} a {} na linha {}'.format(vou_vender_nessa_linha,lista_de_precos[linha][0],linha))
+                    linha +=1
+                return round(preco_medio/qtd_vendida,4)
+            
+            elif self.nome == 'BrasilBitcoin':
+                pass
+            elif self.nome == 'BitcoinTrade':
+                pass   
+        except Exception as erro:
+            raise Exception(erro)
+    
+    def obter_preco_medio_de_compra(self,qtd_a_comprar):
+        try:
+            if self.nome == 'MercadoBitcoin':
+                precos = self.book
+                qtd_a_comprar = 2
+                qtd_comprada = 0
+                preco_medio = 0
+                linha = 0
+                lista_de_precos = precos['asks']
+                while qtd_comprada <qtd_a_comprar:
+                        
+                        vou_comprar_nessa_linha = min(lista_de_precos[linha][1],qtd_a_comprar-qtd_comprada)
+                        qtd_comprada += vou_comprar_nessa_linha
+                        preco_medio += lista_de_precos[linha][0]*vou_comprar_nessa_linha
+                        linha +=1
+                return round(preco_medio/qtd_comprada,4)
+            
+            elif self.nome == 'BrasilBitcoin':
+                pass
+            elif self.nome == 'BitcoinTrade':
+                pass   
+        except Exception as erro:
+            raise Exception(erro)
 
     def obter_financeiro_corretagem_compra_por_corretora(self, quantidade_compra = 0):
         if quantidade_compra == 0:
@@ -295,10 +342,21 @@ class Corretora:
                 if str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
                     self.cancelar_ordem(ordem['id'])
 
-    def transferir_crypto(self, ordem:Ordem):      
+    def transferir_crypto(self, ordem:Ordem, destino):      
+        '''
+        metodo que transfere cripto entre duas corretoras
+        argumentos:
+        1 - ordem.quantidade_transferencia : quantidade de cripto a transferir
+        2 - destino: nome da corretora que vai receber os recursos
+        '''        
         if self.nome == 'MercadoBitcoin':
-            return MercadoBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia)
+            retorno = MercadoBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
         elif self.nome == 'BrasilBitcoin':
-            return BrasilBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia)
+            retorno = BrasilBitcoin(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
+        elif self.nome == 'BitcoinTrade':
+            retorno = BitcoinTrade(self.ativo).TransferirCrypto(ordem.quantidade_transferencia,destino)
+            return retorno
 
 

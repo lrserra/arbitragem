@@ -22,6 +22,7 @@ class Caixa:
 
             #inicialmente cancela todas ordens abertas na brasil
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
+            time.sleep(1)
 
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
@@ -59,7 +60,6 @@ class Caixa:
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
 
-            saldo_final['brl'] = (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL)/len(saldo_inicial.keys()) #para não contar duas vezes esse cara
             saldo_final[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
 
             pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],4)
@@ -94,15 +94,100 @@ class Caixa:
 
         return True
 
+    
+    def rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida):
+        '''
+        esse metodo vai transferir cripto entre as carteiras, para balancear novamente as quantidades
+        '''
+        balancear_carteira = Util.obter_balancear_carteira()
+        quantidade_de_cripto = {}
+
+        for moeda in balancear_carteira.keys():
+        
+            # Instancia das corretoras por ativo
+            CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
+            CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+
+            CorretoraMaisLiquida.atualizar_saldo()
+            CorretoraMenosLiquida.atualizar_saldo()
+
+            quantidade_de_cripto[moeda] = round(CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto,4)
+            
+            if balancear_carteira[moeda] == 'sempre': #a transferencia de cripto é barata, então toca o barco
+
+                if CorretoraMaisLiquida.saldoCrypto < 0.1*quantidade_de_cripto[moeda]:
+                    #a quantidade a transferir é o minimo entre 50% da posição em cripto ou oq consigo recomprar
+                    quantidade_a_transferir = round(min(0.5*quantidade_de_cripto[moeda],CorretoraMenosLiquida.saldoBRL/CorretoraMaisLiquida.ordem.preco_venda),4)
+                    logging.warning('tenho menos de 10% de {} na {}, vou sacar {} da {}'.format(moeda,CorretoraMaisLiquida.nome,quantidade_a_transferir,CorretoraMenosLiquida.nome))
+                    CorretoraMenosLiquida.ordem.quantidade_transferencia = quantidade_a_transferir
+                    retorno = CorretoraMenosLiquida.transferir_crypto(CorretoraMenosLiquida.ordem,CorretoraMaisLiquida.nome)
+
+                elif CorretoraMenosLiquida.saldoCrypto < 0.1*quantidade_de_cripto[moeda]:
+                    #a quantidade a transferir é o minimo entre 50% da posição em cripto ou oq consigo recomprar
+                    quantidade_a_transferir = round(min(0.5*quantidade_de_cripto[moeda],CorretoraMaisLiquida.saldoBRL/CorretoraMenosLiquida.ordem.preco_venda),4)
+                    logging.warning('tenho menos de 10% de {} na {}, vou sacar {} da {}'.format(moeda,CorretoraMenosLiquida.nome,quantidade_a_transferir,CorretoraMaisLiquida.nome))
+                    CorretoraMaisLiquida.ordem.quantidade_transferencia = quantidade_a_transferir
+                    retorno = CorretoraMaisLiquida.transferir_crypto(CorretoraMaisLiquida.ordem,CorretoraMenosLiquida.nome)
+                
+                else:
+                    logging.info('nao preciso transferir {} ainda'.format(moeda))
+
+            elif balancear_carteira[moeda] == 'quando_ha_arbitragem': #apenas se realmente necessario
+
+                if CorretoraMaisLiquida.saldoCrypto < 0.1*quantidade_de_cripto[moeda]:
+                    
+                    if CorretoraMenosLiquida.ordem.preco_compra < CorretoraMaisLiquida.ordem.preco_venda: #ta rolando arbitragem
+                        #a quantidade a transferir é o minimo entre 50% da posição em cripto ou oq consigo recomprar
+                        quantidade_a_transferir = round(min(0.5*quantidade_de_cripto[moeda],CorretoraMenosLiquida.saldoBRL/CorretoraMaisLiquida.ordem.preco_venda),4)
+                        # Verifica em termos financeiros levando em conta as corretagens de compra e venda, se a operação vale a pena
+                        financeiroCorretagem = CorretoraMenosLiquida.obter_financeiro_corretagem_compra_por_corretora(quantidade_a_transferir) + CorretoraMaisLiquida.obter_financeiro_corretagem_venda_por_corretora(quantidade_a_transferir)
+                        pnl = CorretoraMaisLiquida.obter_amount_venda(quantidade_a_transferir) - CorretoraMenosLiquida.obter_amount_compra(quantidade_a_transferir)
+                        # Teste se o financeiro com a corretagem é menor que o pnl da operação
+                        if financeiroCorretagem < pnl:
+                            
+                            logging.warning('tenho menos de 10% de {} na {}, vou sacar {} da {}'.format(moeda,CorretoraMaisLiquida.nome,quantidade_a_transferir,CorretoraMenosLiquida.nome))
+                            CorretoraMenosLiquida.ordem.quantidade_transferencia = quantidade_a_transferir
+                            retorno = CorretoraMenosLiquida.transferir_crypto(CorretoraMenosLiquida.ordem,CorretoraMaisLiquida.nome)
+                    else:
+                        logging.info('tem pouca {}, mas apenas transferimos cripto quando ha arbitragem'.format(moeda))
+                elif CorretoraMenosLiquida.saldoCrypto < 0.1*quantidade_de_cripto[moeda]:
+                    
+                    if CorretoraMaisLiquida.ordem.preco_compra < CorretoraMenosLiquida.ordem.preco_venda: #ta rolando arbitragem
+                        #a quantidade a transferir é o minimo entre 50% da posição em cripto ou oq consigo recomprar
+                        quantidade_a_transferir = round(min(0.5*quantidade_de_cripto[moeda],CorretoraMaisLiquida.saldoBRL/CorretoraMenosLiquida.ordem.preco_venda),4)
+                        # Verifica em termos financeiros levando em conta as corretagens de compra e venda, se a operação vale a pena
+                        financeiroCorretagem = CorretoraMaisLiquida.obter_financeiro_corretagem_compra_por_corretora(quantidade_a_transferir) + CorretoraMenosLiquida.obter_financeiro_corretagem_venda_por_corretora(quantidade_a_transferir)
+                        pnl = CorretoraMenosLiquida.obter_amount_venda(quantidade_a_transferir) - CorretoraMaisLiquida.obter_amount_compra(quantidade_a_transferir)
+                        # Teste se o financeiro com a corretagem é menor que o pnl da operação
+                        if financeiroCorretagem < pnl:
+                        
+                            logging.warning('tenho menos de 10% de {} na {}, vou sacar {} da {}'.format(moeda,CorretoraMenosLiquida.nome,quantidade_a_transferir,CorretoraMaisLiquida.nome))
+                            CorretoraMaisLiquida.ordem.quantidade_transferencia = quantidade_a_transferir
+                            retorno = CorretoraMaisLiquida.transferir_crypto(CorretoraMaisLiquida.ordem,CorretoraMenosLiquida.nome)
+                    
+                    else:
+                        logging.info('tem pouca {}, mas apenas transferimos essa cripto quando ha arbitragem'.format(moeda))
+                else:
+                    logging.info('nao preciso transferir {} ainda'.format(moeda))
+
+
+        return retorno
 
 if __name__ == "__main__":
 
         
     from caixa import Caixa
 
+    logging.basicConfig(filename='caixa.log', level=logging.INFO,
+                        format='[%(asctime)s][%(levelname)s][%(message)s]')
+    console = logging.StreamHandler()
+    console.setLevel(logging.WARNING)
+    logging.getLogger().addHandler(console)
+
     #essa parte executa apenas uma vez
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
     Caixa.zera_o_pnl_em_cripto(corretora_mais_liquida,corretora_menos_liquida)
+   # Caixa.rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida)
     
