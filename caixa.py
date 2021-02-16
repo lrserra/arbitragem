@@ -22,6 +22,7 @@ class Caixa:
 
             #inicialmente cancela todas ordens abertas na brasil
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
+            time.sleep(1)
 
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
