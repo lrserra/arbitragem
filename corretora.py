@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from mercadoBitcoin import MercadoBitcoin
 from brasilBitcoin import BrasilBitcoin
 from bitcoinTrade import BitcoinTrade
+from novadaxCorretora import Novadax
 from ordem import Ordem
 
 class Corretora:
@@ -55,6 +56,13 @@ class Corretora:
                 ordem.quantidade_venda = float(self.book['data']['bids'][indice]['amount'])
                 self.corretagem = 0.005
                 self.descricao_status_executado = 'executed_completely'
+            elif self.nome == 'Novadax':
+                ordem.preco_compra = float(self.book['data']['asks'][indice][0])
+                ordem.quantidade_compra = float(self.book['data']['asks'][indice][1])
+                ordem.preco_venda = float(self.book['data']['bids'][indice][0])
+                ordem.quantidade_venda = float(self.book['data']['bids'][indice][1])
+                self.corretagem = 0.005
+                self.descricao_status_executado = 'filled'
             
             self.amountCompra = ordem.preco_compra * ordem.quantidade_compra
             self.amountVenda = ordem.preco_venda * ordem.quantidade_venda
@@ -73,6 +81,9 @@ class Corretora:
 
             elif self.nome == 'BitcoinTrade':
                 self.book = BitcoinTrade(self.ativo).obterBooks()
+             
+            elif self.nome == 'Novadax':
+                self.book = Novadax(self.ativo).obterBooks()
         except Exception as erro:
             raise Exception(erro)
     
