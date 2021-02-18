@@ -119,8 +119,17 @@ if __name__ == "__main__":
                     CorretoraMaisLiquida.atualizar_saldo()
                     CorretoraMenosLiquida.atualizar_saldo()
 
+                    #antes de entrar no metodo arbitragem, da uma ultima carregada nas melhores ordems dos books
+                    CorretoraMaisLiquida.obter_ordem_book_por_indice(0)
+                    CorretoraMenosLiquida.obter_ordem_book_por_indice(0)
+
                     # Roda a arbitragem nas 2 corretoras
                     Arbitragem.processar(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+
+                    #antes de entrar no metodo arbitragem, da uma ultima carregada nas melhores ordems dos books
+                    CorretoraMaisLiquida.obter_ordem_book_por_indice(0)
+                    CorretoraMenosLiquida.obter_ordem_book_por_indice(0)
+
                     Arbitragem.processar(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
                                    
                 except Exception as erro:        
