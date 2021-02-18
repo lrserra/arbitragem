@@ -166,23 +166,24 @@ class Corretora:
                 ordem.preco_executado = response['data']['price']
             elif self.nome == 'BitcoinTrade':
                 response = BitcoinTrade(self.ativo).obterOrdemPorId(obterOrdem.code)
-                if 'orders' in response['data']:
-                    for ativo in response['data']['orders']:
-                        if ativo['code'] == obterOrdem.code:
-                            ordem.status = ativo['status']
-                            ordem.code = ativo['code']
-                            ordem.id = ativo['id']
-                            ordem.quantidade_executada = ativo['executed_amount']
-                            ordem.preco_executado = ativo['unit_price']
-                if ordem.id == 0:
-                    response = BitcoinTrade(self.ativo).obterOrdemPorIdStatusExecuted(obterOrdem.code)
-                    for ativo in response['data']['orders']: 
-                        if ativo['code'] == obterOrdem.code:
-                            ordem.status = ativo['status']
-                            ordem.code = ativo['code']
-                            ordem.id = ativo['id']
-                            ordem.quantidade_executada = ativo['executed_amount']
-                            ordem.preco_executado = ativo['unit_price']
+                if 'data' in response.keys():
+                    if 'orders' in response['data']:
+                        for ativo in response['data']['orders']:
+                            if ativo['code'] == obterOrdem.code:
+                                ordem.status = ativo['status']
+                                ordem.code = ativo['code']
+                                ordem.id = ativo['id']
+                                ordem.quantidade_executada = ativo['executed_amount']
+                                ordem.preco_executado = ativo['unit_price']
+                    if ordem.id == 0:
+                        response = BitcoinTrade(self.ativo).obterOrdemPorIdStatusExecuted(obterOrdem.code)
+                        for ativo in response['data']['orders']: 
+                            if ativo['code'] == obterOrdem.code:
+                                ordem.status = ativo['status']
+                                ordem.code = ativo['code']
+                                ordem.id = ativo['id']
+                                ordem.quantidade_executada = ativo['executed_amount']
+                                ordem.preco_executado = ativo['unit_price']
             elif self.nome == 'Novadax':
                 response = Novadax(self.ativo).obterOrdemPorId(obterOrdem.id)
                 if response['message'] == 'Success':
@@ -190,6 +191,7 @@ class Corretora:
                     ordem.quantidade_executada = response['data']['filledAmount']
                     ordem.preco_executado = response['data']['averagePrice']
         except Exception as erro:
+            print('erro na classe corretora metodo obter_ordem_por_id. corretora {} - ativo {}'.format(self.nome,self.ativo))
             raise Exception(erro)
         return ordem
 
