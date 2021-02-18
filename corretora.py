@@ -389,7 +389,8 @@ class Corretora:
         elif self.nome == 'Novadax':
             return Novadax(self.ativo).cancelarOrdem(idOrdem)
 
-    def cancelar_todas_ordens(self):
+    def cancelar_todas_ordens(self, ativo=''):
+        ativo = self.ativo
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':
