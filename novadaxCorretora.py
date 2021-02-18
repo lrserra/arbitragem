@@ -9,75 +9,52 @@ class Novadax:
     def __init__(self, ativo):
         self.ativo = ativo
         self.urlNovadax = 'https://api.novadax.com/'
+        self.nome_corretora = 'Novadax'
     
     def obterBooks(self):
         nova_client = novadax.RequestClient()
         return nova_client.get_depth('{}_BRL'.format(self.ativo.upper()))
 
     def obterSaldo(self):
-        return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
+        config = Util.obterCredenciais()
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        return nova_client.get_account_balance()
 
     def obterOrdemPorId(self, idOrdem):
-        return self.executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
+        config = Util.obterCredenciais()
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        return nova_client.get_order(idOrdem)
 
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
-        payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
-            'order_type': tipoOrdem,
-            'type': 'buy',
-            'amount': quantity,
-            'price': precoCompra
-        }
-
-        # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
-        return retorno
+        config = Util.obterCredenciais()
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        if tipoOrdem.upper() == 'MARKET':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'BUY', value=round((quantity*precoCompra),2))
+        elif tipoOrdem.upper() == 'LIMIT':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'BUY', precoCompra, quantity)
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
-        # objeto que será postado para o endpoint
-        payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
-            'order_type': tipoOrdem,
-            'type': 'sell',
-            'amount': quantity,
-            'price': precoVenda
-        }
-
-        # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
-        return retorno
-
-    def TransferirCrypto(self, quantity, destino):      
+       # objeto que será postado para o endpoint
         config = Util.obterCredenciais()
-        
-        # objeto que será postado para o endpoint
-        payload = {
-            'coin': self.ativo,
-            'amount': quantity,
-            'address': config[destino]["Address"][self.ativo],
-            'priority': 'high'
-        }
-        
-        if self.ativo=='xrp':
-            payload['tag'] = config[destino]["Address"]["xrp_tag"]         
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        if tipoOrdem.upper() == 'MARKET':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'SELL', amount=quantity)
+        elif tipoOrdem.upper() == 'LIMIT':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'SELL', precoVenda, quantity)
 
-        # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        return self.executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')
+    def TransferirCrypto(self, quantity, destino, crypto_tag=''):
+        config = Util.obterCredenciais()
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        return nova_client.withdraw_coin(self.ativo.upper(),quantity, destino, crypto_tag)
 
     def cancelarOrdem(self, idOrdem):
-        return self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
+        config = Util.obterCredenciais()
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        return nova_client.cancle_order(idOrdem)
 
     def obterOrdensAbertas(self):
-        return self.executarRequestBrasilBTC('GET', '','/api/my_orders')
-
-    def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
-        
-        headers ={
-            'Authentication': config["BrasilBitcoin"]["Authentication"],
-            'Content-type': 'application/json'
-        }
-        # requisição básica com módulo requests
-        res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
-        return json.loads(res.text.encode('utf8'))
+        nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        return nova_client.list_orders('{}_BRL'.format(self.ativo.upper()), 'UNFINISHED')
+  

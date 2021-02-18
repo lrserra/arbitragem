@@ -119,12 +119,12 @@ class Corretora:
                 preco_medio = 0
                 linha = 0
                 lista_de_precos = precos['asks']
+                
                 while qtd_comprada <qtd_a_comprar:
-                        
-                        vou_comprar_nessa_linha = min(lista_de_precos[linha][1],qtd_a_comprar-qtd_comprada)
-                        qtd_comprada += vou_comprar_nessa_linha
-                        preco_medio += lista_de_precos[linha][0]*vou_comprar_nessa_linha
-                        linha +=1
+                    vou_comprar_nessa_linha = min(lista_de_precos[linha][1],qtd_a_comprar-qtd_comprada)
+                    qtd_comprada += vou_comprar_nessa_linha
+                    preco_medio += lista_de_precos[linha][0]*vou_comprar_nessa_linha
+                    linha +=1
                 return round(preco_medio/qtd_comprada,4)
             
             elif self.nome == 'BrasilBitcoin':
@@ -183,6 +183,12 @@ class Corretora:
                             ordem.id = ativo['id']
                             ordem.quantidade_executada = ativo['executed_amount']
                             ordem.preco_executado = ativo['unit_price']
+            elif self.nome == 'Novadax':
+                response = Novadax(self.ativo).obterOrdemPorId(obterOrdem.id)
+                if response['message'] == 'Success':
+                    ordem.status = response['data']['status']
+                    ordem.quantidade_executada = response['data']['filledAmount']
+                    ordem.preco_executado = response['data']['averagePrice']
         except Exception as erro:
             raise Exception(erro)
         return ordem
@@ -191,8 +197,8 @@ class Corretora:
         try:
             if self.nome == 'MercadoBitcoin':
                 response_json = MercadoBitcoin(self.ativo).obterSaldo()
-                self.saldoBRL = float(response_json['response_data']['balance']['brl']['available'])
-                self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['available'])
+                self.saldoBRL = float(response_json['response_data']['balance']['brl']['total'])
+                self.saldoCrypto = float(response_json['response_data']['balance'][self.ativo]['total'])
             elif self.nome == 'BrasilBitcoin':
                 response_json = BrasilBitcoin(self.ativo).obterSaldo()
                 self.saldoBRL = float(response_json['brl'])
@@ -204,9 +210,16 @@ class Corretora:
                     response_json = BitcoinTrade(self.ativo).obterSaldo()
                 for ativo in response_json['data']:
                     if ativo['currency_code'] == 'BRL':
-                        self.saldoBRL = float(ativo['available_amount'])
+                        self.saldoBRL = float(ativo['available_amount']) + float(ativo['locked_amount'])
                     elif ativo['currency_code'] == self.ativo.upper():
-                        self.saldoCrypto = float(ativo['available_amount'])
+                        self.saldoCrypto = float(ativo['available_amount']) + float(ativo['locked_amount'])
+            elif self.nome == 'Novadax':
+                response_json = Novadax(self.ativo).obterSaldo()
+                for ativo in response_json['data']:
+                    if ativo['currency'] == 'BRL':
+                        self.saldoBRL = float(ativo['balance'])
+                    elif ativo['currency'] == self.ativo.upper():
+                        self.saldoCrypto = float(ativo['balance'])
         except Exception as erro:
             raise Exception(erro)
 
@@ -263,6 +276,25 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
+            elif self.nome == 'Novadax':
+                response = Novadax(self.ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                if response['message'] == "Success":
+                    ordem_response = Novadax(self.ativo).obterOrdemPorId(response['data']['id'])
+                    
+                    ordemRetorno.id = response['data']['id']
+                    ordemRetorno.status = ordem_response['data']['status']
+                    ordemRetorno.quantidade_compra = float(ordem_response['data']['value'])
+                    
+                    if ordemRetorno.status == 'FILLED':
+                        ordemRetorno.preco_compra = float(ordem_response['data']['averagePrice'])
+                    else:
+                        ordemRetorno.preco_compra = float(ordem_response['data']['price'])
+                    
+                    ordemRetorno.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
+                    ordemRetorno.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
+                else:
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+                    print(mensagem)
         except Exception as erro:
             raise Exception(erro)
 
@@ -323,6 +355,25 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
+            elif self.nome == 'Novadax':
+                response = Novadax(self.ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                if response['message'] == "Success":
+                    ordem_response = Novadax(self.ativo).obterOrdemPorId(response['data']['id'])
+                    
+                    ordemRetorno.id = response['data']['id']
+                    ordemRetorno.status = ordem_response['data']['status']
+                    ordemRetorno.quantidade_compra = float(ordem_response['data']['amount'])
+                    
+                    if ordemRetorno.status == 'FILLED':
+                        ordemRetorno.preco_compra = float(ordem_response['data']['averagePrice'])
+                    else:
+                        ordemRetorno.preco_compra = float(ordem_response['data']['price'])
+                    
+                    ordemRetorno.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
+                    ordemRetorno.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
+                else:
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+                    print(mensagem)
         except Exception as erro:
                 raise Exception(erro)
 
@@ -335,8 +386,10 @@ class Corretora:
             return BrasilBitcoin(self.ativo).cancelarOrdem(idOrdem)
         elif self.nome == 'BitcoinTrade':
             return BitcoinTrade(self.ativo).cancelarOrdem(idOrdem)
+        elif self.nome == 'Novadax':
+            return Novadax(self.ativo).cancelarOrdem(idOrdem)
 
-    def cancelar_todas_ordens(self,ativo):
+    def cancelar_todas_ordens(self):
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':
@@ -353,6 +406,11 @@ class Corretora:
                 logging.info(str(ordens_abertas))
             for ordem in ordens_abertas['data']['orders']:
                 if 'pair_code' in ordem.keys() and str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
+                    self.cancelar_ordem(ordem['id'])
+        elif self.nome == 'Novadax':            
+            ordens_abertas = Novadax(self.ativo).obterOrdensAbertas()
+            if 'data' in ordens_abertas.keys():
+                for ordem in ordens_abertas['data']:
                     self.cancelar_ordem(ordem['id'])
 
     def transferir_crypto(self, ordem:Ordem, destino):      
