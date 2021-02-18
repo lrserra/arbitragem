@@ -269,7 +269,8 @@ class Corretora:
                 elif 'data' not in response.keys():
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
-                    ordemRetorno.status == "filled"
+                    if response['message'] is None:
+                        ordemRetorno.status = "filled"
                     ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.quantidade_compra = float(response['data']['amount'])
@@ -348,7 +349,8 @@ class Corretora:
                 elif 'data' not in response.keys():
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
-                    ordemRetorno.status == "filled"
+                    if response['message'] is None:
+                        ordemRetorno.status = "filled"
                     ordemRetorno.code = response['data']['code']
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.quantidade_venda = float(response['data']['amount'])
