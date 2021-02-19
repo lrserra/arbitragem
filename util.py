@@ -20,7 +20,7 @@ class Util:
         arquivo.close()
 
     def adicionar_linha_em_operacoes(linhaRegistro):
-        header = 'MOEDA|CORRETORA|C/V|PRECO|QUANTIDADE|PNL|ESTRATEGIA|DATA'
+        header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         nomeArquivo = 'Operacoes.txt'
         
         if os.path.exists(nomeArquivo):
