@@ -132,7 +132,7 @@ class Corretora:
                 if response['status_code'] == 100: 
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
-                        ordemRetorno.status = 'filled'
+                        ordem.status = 'filled'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
