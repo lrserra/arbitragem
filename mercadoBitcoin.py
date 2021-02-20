@@ -12,6 +12,7 @@ class MercadoBitcoin:
 
     def __init__(self, ativo_parte,ativo_contraparte= 'brl'):
         self.ativo_parte = ativo_parte
+        self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
 
     def obterBooks(self):

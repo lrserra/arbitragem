@@ -125,19 +125,16 @@ class Corretora:
         return ordem
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
-        ordemRetorno = Ordem()
         
         try:
             if self.nome == 'MercadoBitcoin':
                 response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['status_code'] == 100: 
-                    ordemRetorno.id = response['response_data']['order']['order_id']
+                    ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordemRetorno.status = 'filled'
-                    ordemRetorno.quantidade_compra = float(response['response_data']['order']['quantity'])
-                    ordemRetorno.preco_compra = float(response['response_data']['order']['limit_price'])
-                    ordemRetorno.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
-                    ordemRetorno.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+                    ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
+                    ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
@@ -145,16 +142,16 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
-                    ordemRetorno.id = response['data']['id']
-                    ordemRetorno.status = response['data']['status']
-                    ordemRetorno.quantidade_compra = float(response['data']['amount'])
-                    ordemRetorno.preco_compra = float(response['data']['price'])
+                    ordem.id = response['data']['id']
+                    ordem.status = response['data']['status']
+                    ordem.quantidade_executada = float(response['data']['amount'])
+                    ordem.preco_executado = float(response['data']['price'])
                     i = 0
                     qtd = len(response['data']['fills'])
                     while i < qtd:
-                        ordemRetorno.quantidade_executada += float(response['data']['fills'][i]['amount'])
+                        ordem.quantidade_executada += float(response['data']['fills'][i]['amount'])
                         valor = response['data']['fills'][i]['price'].replace('.','')
-                        ordemRetorno.preco_executado = float(valor.replace(',','.'))
+                        ordem.preco_executado = float(valor.replace(',','.'))
                         i += 1
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
@@ -164,16 +161,16 @@ class Corretora:
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == 'Too Many Requests':
                     time.sleep(1)
-                    response = BitcoinTrade(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                    response = BitcoinTrade(ativo_parte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
                     if response['message'] is None:
                         ordemRetorno.status = "filled"
-                    ordemRetorno.code = response['data']['code']
-                    ordemRetorno.id = response['data']['id']
-                    ordemRetorno.quantidade_compra = float(response['data']['amount'])
-                    ordemRetorno.preco_compra = float(response['data']['unit_price'])
+                    ordem.code = response['data']['code']
+                    ordem.id = response['data']['id']
+                    ordem.quantidade_executada = float(response['data']['amount'])
+                    ordem.preco_executado = float(response['data']['unit_price'])
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
@@ -183,24 +180,24 @@ class Corretora:
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
-                    ordemRetorno.id = response['data']['id']
-                    ordemRetorno.status = ordem_response['data']['status'].lower()
-                    ordemRetorno.quantidade_compra = float(ordem_response['data']['value'])
+                    ordem.id = response['data']['id']
+                    ordem.status = ordem_response['data']['status'].lower()
+                    ordem.quantidade_executada = float(ordem_response['data']['value'])
                     
-                    if ordemRetorno.status == 'filled':
-                        ordemRetorno.preco_compra = float(ordem_response['data']['averagePrice'])
+                    if ordem.status == 'filled':
+                        ordem.preco_executado = float(ordem_response['data']['averagePrice'])
                     else:
-                        ordemRetorno.preco_compra = float(ordem_response['data']['price'])
+                        ordem.preco_executado = float(ordem_response['data']['price'])
                     
-                    ordemRetorno.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
-                    ordemRetorno.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
+                    ordem.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
+                    ordem.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
         except Exception as erro:
             raise Exception(erro)
 
-        return ordemRetorno
+        return ordem
 
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         ordemRetorno = Ordem()
