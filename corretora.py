@@ -166,7 +166,7 @@ class Corretora:
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
                     if response['message'] is None:
-                        ordemRetorno.status = "filled"
+                        ordem.status = "filled"
                     ordem.code = response['data']['code']
                     ordem.id = response['data']['id']
                     ordem.quantidade_executada = float(response['data']['amount'])
@@ -277,7 +277,7 @@ class Corretora:
         except Exception as erro:
                 raise Exception(erro)
 
-        return ordemRetorno
+        return ordem
 
     def cancelar_ordem(self,ativo_parte,idOrdem):
         if self.nome == 'MercadoBitcoin':
