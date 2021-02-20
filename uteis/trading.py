@@ -1,6 +1,6 @@
 import json
 import requests
-from util import Util
+from uteis.util import Util
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
 
