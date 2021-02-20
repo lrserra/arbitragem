@@ -12,29 +12,27 @@ class Caixa:
         '''
 
         saldo_inicial = {}
-        saldo_inicial['brl'] = 0
-
-        for moeda in lista_de_moedas:
+        
+        for moeda in lista_de_moedas+['brl']:
             
             # Instancia das corretoras por ativo
-            CorretoraMaisLiquida = Corretora(corretora_mais_liquida, moeda)
-            CorretoraMenosLiquida = Corretora(corretora_menos_liquida, moeda)
+            CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+            CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-            #inicialmente cancela todas ordens abertas na brasil
+            #inicialmente cancela todas ordens abertas de leilao
+            CorretoraMaisLiquida.cancelar_todas_ordens(moeda)
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
             time.sleep(1)
 
-            CorretoraMaisLiquida.atualizar_saldo()
-            CorretoraMenosLiquida.atualizar_saldo()
+            CorretoraMaisLiquida.atualizar_saldo(moeda)
+            CorretoraMenosLiquida.atualizar_saldo(moeda)
 
-            saldo_inicial['brl'] = saldo_inicial['brl'] + (CorretoraMaisLiquida.saldoBRL + CorretoraMenosLiquida.saldoBRL) #para não contar duas vezes esse cara
-            saldo_inicial[moeda] = CorretoraMaisLiquida.saldoCrypto + CorretoraMenosLiquida.saldoCrypto
+            saldo_inicial[moeda] = round(CorretoraMaisLiquida.saldo + CorretoraMenosLiquida.saldo,4)
+            porcentagem_mais_liquida = round(100*CorretoraMaisLiquida.saldo/saldo_inicial[moeda],0)
+            porcentagem_menos_liquida = round(100*CorretoraMenosLiquida.saldo/saldo_inicial[moeda],0)
             
-            logging.warning('saldo inicial em {}: {}'.format(moeda,round(saldo_inicial[moeda],4)))
-            Util.adicionar_linha_no_saldo('{}|{}|{}'.format(moeda,round(saldo_inicial[moeda],4),datetime.now()))
-
-        logging.warning('saldo inicial em reais: {}'.format(round(saldo_inicial['brl']/len(lista_de_moedas),2)))
-        Util.adicionar_linha_no_saldo('{}|{}|{}'.format('BRL',round(saldo_inicial['brl']/len(lista_de_moedas),2),datetime.now()))
+            logging.warning('saldo inicial em {}: {} ({}% na {} e {}% na {})'.format(moeda,saldo_inicial[moeda],porcentagem_mais_liquida,CorretoraMaisLiquida.nome,porcentagem_menos_liquida,CorretoraMenosLiquida.nome))
+            Util.adicionar_linha_no_saldo('{}|{}|{}'.format(moeda.upper(),round(saldo_inicial[moeda],4),datetime.now()))
 
         return saldo_inicial
 
