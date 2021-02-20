@@ -22,9 +22,12 @@ from ordem import Ordem
 # nova_dax = Corretora(nome_corretora, ativo)
 # nova_dax.cancelar_todas_ordens()
 
-ativo = 'xrp'
+ativo = 'ltc'
 nome_corretora = 'Novadax'
 
 corretora_obj = Corretora(nome_corretora)
-corretora_obj.book.obter_ordem_book_por_indice(ativo)
-corretora_obj.atualizar_saldo('ltc')
+corretora_obj.book.obter_ordem_book_por_indice(ativo,'usdt')
+preco_compra = corretora_obj.book.preco_compra
+#corretora_obj.atualizar_saldo(ativo)
+#saldo = corretora_obj.saldo
+print('preco compra {} eh {}'.format(ativo,preco_compra))
