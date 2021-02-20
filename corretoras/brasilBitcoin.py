@@ -6,7 +6,7 @@ import time
 import mimetypes
 from http import client
 from urllib.parse import urlencode
-from util import Util
+from uteis.util import Util
 
 class BrasilBitcoin:
 

@@ -1,6 +1,6 @@
 import requests
 import json
-from util import Util
+from uteis.util import Util
 from datetime import date, datetime, timedelta
 
 class Coinext:

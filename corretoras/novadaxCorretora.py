@@ -2,7 +2,7 @@ import requests
 import novadax
 import json
 import time
-from util import Util
+from uteis.util import Util
 
 class Novadax:
 
