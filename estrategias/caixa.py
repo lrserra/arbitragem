@@ -1,7 +1,7 @@
 import logging
-from corretora import Corretora
 from datetime import datetime
-from util import Util
+from uteis.corretora import Corretora
+from uteis.util import Util
 import time
 
 class Caixa:

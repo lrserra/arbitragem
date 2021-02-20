@@ -1,7 +1,7 @@
-from mercadoBitcoin import MercadoBitcoin
-from brasilBitcoin import BrasilBitcoin
-from bitcoinTrade import BitcoinTrade
-from novadaxCorretora import Novadax
+from corretoras.mercadoBitcoin import MercadoBitcoin
+from corretoras.brasilBitcoin import BrasilBitcoin
+from corretoras.bitcoinTrade import BitcoinTrade
+from corretoras.novadaxCorretora import Novadax
 
 class Book:
     def __init__(self,nome):

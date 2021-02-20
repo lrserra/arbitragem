@@ -1,8 +1,8 @@
 import json
 import requests
 from util import Util
-from corretora import Corretora
-from ordem import Ordem
+from uteis.corretora import Corretora
+from uteis.ordem import Ordem
 
 
 # ---- Testar book de ordens ---- #
@@ -23,7 +23,7 @@ from ordem import Ordem
 # nova_dax.cancelar_todas_ordens()
 
 ativo = 'ltc'
-nome_corretora = 'Novadax'
+nome_corretora = 'BrasilBitcoin'
 
 corretora_obj = Corretora(nome_corretora)
 corretora_obj.book.obter_ordem_book_por_indice(ativo,'usdt')

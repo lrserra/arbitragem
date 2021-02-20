@@ -1,9 +1,9 @@
 import time
 import logging
 from datetime import datetime
-from corretora import Corretora
-from util import Util
-from ordem import Ordem
+from uteis.corretora import Corretora
+from uteis.util import Util
+from uteis.ordem import Ordem
 class Leilao:
 
     def compra(corretoraParte:Corretora, corretoraContraparte:Corretora, ativo, executarOrdens = False):
