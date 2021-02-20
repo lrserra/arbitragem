@@ -54,10 +54,12 @@ class Arbitragem:
                             if executarOrdens:
                                 # Atualiza ordem de compra
                                 ordem_compra.quantidade_enviada = qtdNegociada
+                                ordem_compra.preco_enviado = preco_de_compra
                                 ordem_compra.tipo_ordem = 'market'
 
                                 # Atualiza ordem de venda
                                 ordem_venda.quantidade_negociada = qtdNegociada
+                                ordem_venda.preco_enviado = preco_de_venda
                                 ordem_venda.tipo_ordem = 'market'
 
                                 quero_comprar_a = round(preco_de_compra,4)
@@ -66,8 +68,8 @@ class Arbitragem:
                                 logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome))
                                 
                                 #efetivamente envia as ordens
-                                ordem_compra = corretoraCompra.enviar_ordem_compra(corretoraCompra.ordem,ativo)
-                                ordem_venda = corretoraVenda.enviar_ordem_venda(corretoraVenda.ordem,ativo)
+                                ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
+                                ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
 
                                 realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                 realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
