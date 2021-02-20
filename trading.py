@@ -28,4 +28,3 @@ nome_corretora = 'Novadax'
 corretora_obj = Corretora(nome_corretora)
 corretora_obj.book.obter_ordem_book_por_indice(ativo)
 corretora_obj.atualizar_saldo('ltc')
-print(book)
