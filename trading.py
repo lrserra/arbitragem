@@ -4,8 +4,6 @@ from util import Util
 from corretora import Corretora
 from ordem import Ordem
 
-ativo = 'xrp'
-nome_corretora = 'BitcoinTrade'
 
 # ---- Testar book de ordens ---- #
 # nova_dax = Corretora(nome_corretora, ativo)
@@ -24,9 +22,10 @@ nome_corretora = 'BitcoinTrade'
 # nova_dax = Corretora(nome_corretora, ativo)
 # nova_dax.cancelar_todas_ordens()
 
-btctrade = Corretora(nome_corretora,ativo)
-ordem = Ordem()
-ordem.tipo_ordem = 'limited'
-ordem.quantidade_negociada = 10
-ordem.preco_compra = 1
-btctrade.enviar_ordem_compra(ordem)
+ativo = 'xrp'
+nome_corretora = 'Novadax'
+
+corretora_obj = Corretora(nome_corretora)
+corretora_obj.book.obter_ordem_book_por_indice(ativo)
+corretora_obj.atualizar_saldo('ltc')
+print(book)
