@@ -31,17 +31,17 @@ class Novadax:
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         if tipoOrdem.upper() == 'MARKET':
             return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'BUY', value=round((quantity*precoCompra),2))
-        elif tipoOrdem.upper() == 'LIMIT':
-            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'BUY', precoCompra, quantity)
+        elif tipoOrdem.upper() == 'LIMITED':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), 'LIMIT', 'BUY', round(precoCompra,2), round(quantity,8))
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
        # objeto que será postado para o endpoint
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         if tipoOrdem.upper() == 'MARKET':
-            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'SELL', amount=quantity)
-        elif tipoOrdem.upper() == 'LIMIT':
-            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'SELL', precoVenda, quantity)
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), tipoOrdem.upper(), 'SELL', amount=round(quantity,8))
+        elif tipoOrdem.upper() == 'LIMITED':
+            return nova_client.create_order('{}_BRL'.format(self.ativo.upper()), 'LIMIT', 'SELL', round(precoVenda,2), round(quantity,8))
 
     def TransferirCrypto(self, quantity, destino, crypto_tag=''):
         config = Util.obterCredenciais()

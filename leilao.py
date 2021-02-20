@@ -49,7 +49,7 @@ class Leilao:
             qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
             # 0.99 = 1 - Soma das corretagens
-            if ((corretoraParte.ordem.preco_venda+0.01) <= 0.99 * corretoraContraparte.ordem.preco_venda):
+            if ((corretoraParte.ordem.preco_venda+0.01) <= 0.993 * corretoraContraparte.ordem.preco_venda):
                 
                 gostaria_de_comprar = corretoraParte.saldoBRL / (qtd_de_moedas * corretoraParte.ordem.preco_venda + 0.01)
                 maximo_que_consigo_zerar = corretoraContraparte.saldoCrypto / 4
@@ -85,9 +85,9 @@ class Leilao:
             corretoraParte.carregar_ordem_books()
             corretoraContraparte.carregar_ordem_books()
         
-            if ordem_leilao_compra.status == corretoraParte.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            if ordem_leilao_compra.status == corretoraParte.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
-                logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
+                logging.info('leilao compra vai zerar ordem executada totalmente {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
                 corretoraContraparte.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)
                 corretoraContraparte.ordem.tipo_ordem = 'market'
                 retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
@@ -123,6 +123,7 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada * corretoraParte.ordem.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
                     
                     # Zera o risco na outra corretora com uma operação à mercado
+                    logging.info('leilao compra vai zerar ordem executada parcialmente {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
                     corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraContraparte.enviar_ordem_compra(corretoraContraparte.ordem)
@@ -144,14 +145,14 @@ class Leilao:
             corretoraParte.carregar_ordem_books()
             corretoraContraparte.carregar_ordem_books()
              
-            if ordem_leilao_venda.status == corretoraParte.descricao_status_executado and ordem_leilao_venda.id == False:
+            if ordem_leilao_venda.status == corretoraParte.descricao_status_executado:
 
+                logging.info('leilao venda vai zerar ordem executada totalmente {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
                 corretoraContraparte.ordem.quantidade_negociada = ordem_leilao_venda.quantidade_executada
                 corretoraContraparte.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
         
             elif ordem_leilao_venda.id != 0:
-                
                 ordem = corretoraParte.obter_ordem_por_id(ordem_leilao_venda)             
                 
                 if (ordem_leilao_venda.preco_compra != corretoraParte.ordem.preco_venda):
@@ -180,7 +181,7 @@ class Leilao:
             
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
-                    logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
+                    logging.info('leilao venda vai zerar ordem executada parcialmente {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
                     corretoraContraparte.ordem.quantidade_negociada = round(ordem.quantidade_executada,8)
                     corretoraContraparte.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraContraparte.enviar_ordem_venda(corretoraContraparte.ordem)
