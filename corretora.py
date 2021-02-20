@@ -124,12 +124,12 @@ class Corretora:
             raise Exception(erro)
         return ordem
 
-    def enviar_ordem_compra(self,ativo,ordem:Ordem):
+    def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         ordemRetorno = Ordem()
         
         try:
             if self.nome == 'MercadoBitcoin':
-                response = MercadoBitcoin(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['status_code'] == 100: 
                     ordemRetorno.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
@@ -143,7 +143,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
-                response = BrasilBitcoin(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.status = response['data']['status']
@@ -161,7 +161,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == 'Too Many Requests':
                     time.sleep(1)
                     response = BitcoinTrade(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
@@ -179,9 +179,9 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                response = Novadax(ativo).enviarOrdemCompra(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_compra)
+                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
-                    ordem_response = Novadax(ativo).obterOrdemPorId(response['data']['id'])
+                    ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.status = ordem_response['data']['status'].lower()
@@ -202,13 +202,13 @@ class Corretora:
 
         return ordemRetorno
 
-    def enviar_ordem_venda(self,ativo,ordem:Ordem):
+    def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         ordemRetorno = Ordem()
         mensagem = ''
 
         try:
             if self.nome == 'MercadoBitcoin':
-                response = MercadoBitcoin(ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['status_code'] == 100:            
                     ordemRetorno.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
@@ -223,7 +223,7 @@ class Corretora:
                     #raise Exception(mensagem)
 
             elif self.nome == 'BrasilBitcoin':
-                response = BrasilBitcoin(ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.status = response['data']['status']
@@ -241,7 +241,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == 'Too Many Requests':
                     time.sleep(1)
                     response = BitcoinTrade(ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
@@ -259,9 +259,9 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                if ativo =='xrp':
+                if ativo_parte =='xrp':
                     ordem.quantidade_negociada = round(ordem.quantidade_negociada,2)
-                response = Novadax(ativo).enviarOrdemVenda(ordem.quantidade_negociada, ordem.tipo_ordem, ordem.preco_venda)
+                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo).obterOrdemPorId(response['data']['id'])
                     
@@ -284,15 +284,15 @@ class Corretora:
 
         return ordemRetorno
 
-    def cancelar_ordem(self,ativo,idOrdem):
+    def cancelar_ordem(self,ativo_parte,idOrdem):
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':
-            return BrasilBitcoin(ativo).cancelarOrdem(idOrdem)
+            return BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
         elif self.nome == 'BitcoinTrade':
-            return BitcoinTrade(ativo).cancelarOrdem(idOrdem)
+            return BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
         elif self.nome == 'Novadax':
-            return Novadax(ativo).cancelarOrdem(idOrdem)
+            return Novadax(ativo_parte).cancelarOrdem(idOrdem)
 
     def transferir_crypto(self,ativo,quantidade, destino):      
         '''

@@ -10,12 +10,13 @@ from util import Util
 
 class BrasilBitcoin:
 
-    def __init__(self, ativo):
-        self.ativo = ativo
+    def __init__(self, ativo_parte,ativo_contraparte):
+        self.ativo_parte = ativo_parte
+        self.ativo_contraparte = ativo_contraparte
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
     
     def obterBooks(self):
-        return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo)).json()
+        return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
 
     def obterSaldo(self):
         return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
@@ -26,7 +27,7 @@ class BrasilBitcoin:
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'order_type': tipoOrdem,
             'type': 'buy',
             'amount': quantity,
@@ -40,7 +41,7 @@ class BrasilBitcoin:
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'order_type': tipoOrdem,
             'type': 'sell',
             'amount': quantity,
@@ -56,13 +57,13 @@ class BrasilBitcoin:
         
         # objeto que será postado para o endpoint
         payload = {
-            'coin': self.ativo,
+            'coin': self.ativo_parte,
             'amount': quantity,
-            'address': config[destino]["Address"][self.ativo],
+            'address': config[destino]["Address"][self.ativo_parte],
             'priority': 'high'
         }
         
-        if self.ativo=='xrp':
+        if self.ativo_parte=='xrp':
             payload['tag'] = config[destino]["Address"]["xrp_tag"]         
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada

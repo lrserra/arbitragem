@@ -10,12 +10,12 @@ from util import Util
 
 class MercadoBitcoin:
 
-    def __init__(self, ativo):
-        self.ativo = ativo
+    def __init__(self, ativo_parte,ativo_contraparte= 'brl'):
+        self.ativo_parte = ativo_parte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
 
     def obterBooks(self):
-        return requests.get(url = self.urlMercadoBitcoin.format(self.ativo)).json()
+        return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
 
     def obterSaldo(self):
         tapi_nonce = str(int(time.time()))
@@ -37,7 +37,7 @@ class MercadoBitcoin:
         params = {
             'tapi_method': method,
             'tapi_nonce': tapi_nonce,
-            'coin_pair': 'BRL{}'.format(str.upper(self.ativo)),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'quantity': quantity,
             'limit_price': precoCompra
         }
@@ -57,7 +57,7 @@ class MercadoBitcoin:
         params = {
             'tapi_method': method,
             'tapi_nonce': tapi_nonce,
-            'coin_pair': 'BRL{}'.format(str.upper(self.ativo)),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'quantity': quantity,
             'limit_price': precoVenda
         }
@@ -73,13 +73,13 @@ class MercadoBitcoin:
         params = {
             'tapi_method': 'withdraw_coin',
             'tapi_nonce': tapi_nonce,
-            'coin': str.upper(self.ativo),
-            'address': config[destino]["Address"][self.ativo],
+            'coin': str.upper(self.ativo_parte),
+            'address': config[destino]["Address"][self.ativo_parte],
             'quantity': quantity,
-            'tx_fee': tx_fee[self.ativo]
+            'tx_fee': tx_fee[self.ativo_parte]
         }
 
-        if self.ativo=='xrp':
+        if self.ativo_parte=='xrp':
             params['destination_tag']= config[destino]["Address"]["xrp_tag"] 
 
         params = urlencode(params)

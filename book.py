@@ -6,17 +6,18 @@ from novadaxCorretora import Novadax
 class Book:
     def __init__(self,nome):
 
-        self.ativo = ''
+        self.ativo_parte = ''
+        self.ativo_contraparte =''
         self.nome = nome
         self.preco_compra = 0.0
         self.preco_venda = 0.0
         self.quantidade_compra = 0.0
         self.quantidade_venda = 0.0
 
-    def obter_ordem_book_por_indice(self,ativo,indice = 0):
+    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0):
         
         try:
-            self.__carregar_ordem_books(ativo)
+            self.__carregar_ordem_books(ativo_parte,ativo_contraparte)
 
             if self.nome == 'MercadoBitcoin':
                 self.preco_compra = float(self.book['asks'][indice][0])
@@ -49,16 +50,16 @@ class Book:
     def __carregar_ordem_books(self,ativo):
         try:
             if self.nome == 'MercadoBitcoin':
-                self.book = MercadoBitcoin(ativo).obterBooks()
+                self.book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
 
             elif self.nome == 'BrasilBitcoin':
-                self.book = BrasilBitcoin(ativo).obterBooks()
+                self.book = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
 
             elif self.nome == 'BitcoinTrade':
-                self.book = BitcoinTrade(ativo).obterBooks()
+                self.book = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
              
             elif self.nome == 'Novadax':
-                self.book = Novadax(ativo).obterBooks()
+                self.book = Novadax(ativo_parte,ativo_contraparte).obterBooks()
         except Exception as erro:
             raise Exception(erro)
 
