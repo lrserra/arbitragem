@@ -47,7 +47,7 @@ class Book:
             raise Exception(erro)
 
     #metodo privado   
-    def __carregar_ordem_books(self,ativo):
+    def __carregar_ordem_books(self,ativo_parte,ativo_contraparte):
         try:
             if self.nome == 'MercadoBitcoin':
                 self.book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
