@@ -188,8 +188,8 @@ class Corretora:
                 response = Novadax(self.ativo).obterOrdemPorId(obterOrdem.id)
                 if response['message'] == 'Success':
                     ordem.status = response['data']['status'].lower()
-                    ordem.quantidade_executada = response['data']['filledAmount']
-                    ordem.preco_executado = response['data']['averagePrice']
+                    ordem.quantidade_executada = float(response['data']['filledAmount'])
+                    ordem.preco_executado = float(response['data']['averagePrice']) if response['data']['averagePrice'] is not None else 0 
         except Exception as erro:
             print('erro na classe corretora metodo obter_ordem_por_id. corretora {} - ativo {}'.format(self.nome,self.ativo))
             raise Exception(erro)
@@ -368,12 +368,12 @@ class Corretora:
                     
                     ordemRetorno.id = response['data']['id']
                     ordemRetorno.status = ordem_response['data']['status'].lower()
-                    ordemRetorno.quantidade_compra = float(ordem_response['data']['amount'])
+                    ordemRetorno.quantidade_venda = float(ordem_response['data']['amount'])
                     
                     if ordemRetorno.status == 'filled':
-                        ordemRetorno.preco_compra = float(ordem_response['data']['averagePrice'])
+                        ordemRetorno.preco_venda = float(ordem_response['data']['averagePrice'])
                     else:
-                        ordemRetorno.preco_compra = float(ordem_response['data']['price'])
+                        ordemRetorno.preco_venda = float(ordem_response['data']['price'])
                     
                     ordemRetorno.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
                     ordemRetorno.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
