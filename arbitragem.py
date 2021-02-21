@@ -100,9 +100,10 @@ class Arbitragem:
                         logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar ({}) e só vou ganhar ({})'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
                         
                 else:
-                    logging.info('arbitragem nao vai enviar ordem de {} porque preco compra ({}) é maior que preco venda ({})'.format(ativo,round(preco_de_compra,2),round(preco_de_venda,2)))
+                    logging.info('acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
             else:
-                logging.info('acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
+                logging.info('arbitragem nao vai enviar ordem de {} porque preco compra ({}) é maior que preco venda ({})'.format(ativo,round(preco_de_compra,2),round(preco_de_venda,2)))
+                
 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: simples.', erro)
