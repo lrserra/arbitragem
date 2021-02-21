@@ -44,63 +44,66 @@ class Arbitragem:
 
                 pnl = vou_ganhar - vou_pagar
 
-                # Teste se o financeiro com a corretagem é menor que o pnl da operação
-                if pnl>0:
-                    # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
-                    if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
-                        #se tenho saldo, prossigo
-                        if (corretoraCompra.saldo >= vou_pagar) and (corretoraVenda.saldo >= qtdNegociada): 
-                            
-                            if executarOrdens:
-                                # Atualiza ordem de compra
-                                ordem_compra.quantidade_enviada = qtdNegociada
-                                ordem_compra.preco_enviado = preco_de_compra
-                                ordem_compra.tipo_ordem = 'market'
-
-                                # Atualiza ordem de venda
-                                ordem_venda.quantidade_negociada = qtdNegociada
-                                ordem_venda.preco_enviado = preco_de_venda
-                                ordem_venda.tipo_ordem = 'market'
-
-                                quero_comprar_a = round(preco_de_compra,4)
-                                quero_vender_a = round(preco_de_venda,4)
-
-                                logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome))
+                if qtdNegociada !=0:
+                    # Teste se o financeiro com a corretagem é menor que o pnl da operação
+                    if pnl>0:
+                        # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
+                        if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
+                            #se tenho saldo, prossigo
+                            if (corretoraCompra.saldo >= vou_pagar) and (corretoraVenda.saldo >= qtdNegociada): 
                                 
-                                #efetivamente envia as ordens
-                                ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
-                                ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                if executarOrdens:
+                                    # Atualiza ordem de compra
+                                    ordem_compra.quantidade_enviada = qtdNegociada
+                                    ordem_compra.preco_enviado = preco_de_compra
+                                    ordem_compra.tipo_ordem = 'market'
 
-                                realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
-                                realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
+                                    # Atualiza ordem de venda
+                                    ordem_venda.quantidade_negociada = qtdNegociada
+                                    ordem_venda.preco_enviado = preco_de_venda
+                                    ordem_venda.tipo_ordem = 'market'
 
-                                pnl_real = realmente_paguei - realmente_ganhei
-                               
-                                if ordem_compra.status != ordem_compra.descricao_status_executado:
-                                    logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
-                                else:
-                                    logging.info('operou arb de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
-                                    logging.warning('operou arb de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
-                                    Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,comprei_a,round(qtdNegociada,4),pnl,'ARBITRAGEM',datetime.now()))
+                                    quero_comprar_a = round(preco_de_compra,4)
+                                    quero_vender_a = round(preco_de_venda,4)
+
+                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome))
                                     
-                                if ordem_venda.status != ordem_venda.descricao_status_executado:
-                                    logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
-                                else: 
-                                    logging.info('operou arb de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
-                                    logging.warning('operou arb de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
-                                    Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,vendi_a,round(qtdNegociada,4),pnl,'ARBITRAGEM',datetime.now()))
+                                    #efetivamente envia as ordens
+                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
+                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+
+                                    realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
+                                    realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
+
+                                    pnl_real = realmente_paguei - realmente_ganhei
                                 
-                                  
+                                    if ordem_compra.status != ordem_compra.descricao_status_executado:
+                                        logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                    else:
+                                        logging.info('operou arb de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
+                                        logging.warning('operou arb de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
+                                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,comprei_a,round(qtdNegociada,4),pnl,'ARBITRAGEM',datetime.now()))
+                                        
+                                    if ordem_venda.status != ordem_venda.descricao_status_executado:
+                                        logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                    else: 
+                                        logging.info('operou arb de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
+                                        logging.warning('operou arb de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
+                                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,vendi_a,round(qtdNegociada,4),pnl,'ARBITRAGEM',datetime.now()))
+                                    
+                                    
+                            else:
+                                logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo,2),corretoraVenda.saldo))
                         else:
-                            logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo,2),corretoraVenda.saldo))
+                            logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
-                        logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
+                        logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar ({}) e só vou ganhar ({})'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
+                        
                 else:
-                    logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar ({}) e só vou ganhar ({})'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
-                    
+                    logging.info('arbitragem nao vai enviar ordem de {} porque preco compra ({}) é maior que preco venda ({})'.format(ativo,round(preco_de_compra,2),round(preco_de_venda,2)))
             else:
-                logging.info('arbitragem nao vai enviar ordem de {} porque preco compra ({}) é maior que preco venda ({})'.format(ativo,round(preco_de_compra,2),round(preco_de_venda,2)))
-                
+                logging.info('acabaram as {}'.format(ativo))
+
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: simples.', erro)
             raise Exception(msg_erro)
