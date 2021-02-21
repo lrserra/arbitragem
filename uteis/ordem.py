@@ -10,4 +10,5 @@ class Ordem:
        self.preco_executado = 0.0
        self.quantidade_enviada = 0.0
        self.quantidade_executada = 0.0
+       self.descricao_status_executado ='filled'
        
