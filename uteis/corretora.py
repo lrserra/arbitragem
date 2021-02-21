@@ -255,7 +255,7 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
                 if ativo_parte =='xrp':
-                    ordem.quantidade_negociada = round(ordem.quantidade_negociada,2)
+                    ordem.quantidade_enviada = round(ordem.quantidade_enviada,2)
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo).obterOrdemPorId(response['data']['id'])
