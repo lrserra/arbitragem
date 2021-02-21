@@ -258,7 +258,7 @@ class Corretora:
                     ordem.quantidade_enviada = round(ordem.quantidade_enviada,2)
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
-                    ordem_response = Novadax(ativo).obterOrdemPorId(response['data']['id'])
+                    ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
                     ordem.id = response['data']['id']
                     ordem.status = ordem_response['data']['status'].lower()
