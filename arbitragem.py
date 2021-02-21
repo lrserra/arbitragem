@@ -97,7 +97,7 @@ class Arbitragem:
                         else:
                             logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
-                        logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar ({}) e só vou ganhar ({})'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
+                        logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar {} e só vou ganhar {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
                         
                 else:
                     logging.info('acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
