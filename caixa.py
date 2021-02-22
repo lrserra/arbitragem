@@ -22,7 +22,7 @@ class Caixa:
             #inicialmente cancela todas ordens abertas
             CorretoraMaisLiquida.cancelar_todas_ordens(moeda)
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
-            time.sleep(1)
+            #time.sleep(1)
 
             CorretoraMaisLiquida.atualizar_saldo(moeda)
             CorretoraMenosLiquida.atualizar_saldo(moeda)
@@ -54,7 +54,7 @@ class Caixa:
             #inicialmente cancela todas ordens abertas
             CorretoraMaisLiquida.cancelar_todas_ordens(moeda)
             CorretoraMenosLiquida.cancelar_todas_ordens(moeda)
-            time.sleep(1)
+            #time.sleep(1)
 
             CorretoraMaisLiquida.atualizar_saldo(moeda)
             CorretoraMenosLiquida.atualizar_saldo(moeda)
@@ -70,15 +70,15 @@ class Caixa:
 
             if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
                 
-                if (CorretoraMaisLiquida.book.preco_venda > CorretoraMenosLiquida.book.preco_venda) or (CorretoraMenosLiquida.saldo<quantidade_a_zerar): #vamos vender na corretora que paga mais e que tenha saldo
+                if (CorretoraMaisLiquida.book.preco_venda > CorretoraMenosLiquida.book.preco_venda and CorretoraMaisLiquida.saldo>quantidade_a_zerar) or (CorretoraMenosLiquida.saldo<quantidade_a_zerar): #vamos vender na corretora que paga mais e que tenha saldo
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
-                    CorretoraMaisLiquida.ordem.quantidade_enviada = quantidade_a_zerar
+                    CorretoraMaisLiquida.ordem.quantidade_enviada = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo)
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMaisLiquida.ordem.preco_enviado = CorretoraMaisLiquida.book.preco_venda
                     CorretoraMaisLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem,moeda)
-                elif (CorretoraMaisLiquida.book.preco_venda < CorretoraMenosLiquida.book.preco_venda) or(CorretoraMaisLiquida.saldo<quantidade_a_zerar):
+                elif (CorretoraMaisLiquida.book.preco_venda < CorretoraMenosLiquida.book.preco_venda and CorretoraMenosLiquida.saldo>quantidade_a_zerar) or(CorretoraMaisLiquida.saldo<quantidade_a_zerar):
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMenosLiquida.nome))
-                    CorretoraMenosLiquida.ordem.quantidade_enviada = quantidade_a_zerar
+                    CorretoraMenosLiquida.ordem.quantidade_enviada = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo)
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMenosLiquida.ordem.preco_enviado = CorretoraMenosLiquida.book.preco_venda
                     CorretoraMenosLiquida.enviar_ordem_venda(CorretoraMenosLiquida.ordem,moeda)
