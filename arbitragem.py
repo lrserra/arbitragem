@@ -66,7 +66,7 @@ class Arbitragem:
                                     quero_comprar_a = round(preco_de_compra,4)
                                     quero_vender_a = round(preco_de_venda,4)
 
-                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {}'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome))
+                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo))
                                     
                                     #efetivamente envia as ordens
                                     ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
