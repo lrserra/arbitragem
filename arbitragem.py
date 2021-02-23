@@ -46,7 +46,7 @@ class Arbitragem:
 
                 if qtdNegociada !=0:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
-                    if pnl>0:
+                    if pnl>0.05:#nao vamos o trade por menos de 5 centavos
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
                             #se tenho saldo, prossigo
