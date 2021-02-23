@@ -162,6 +162,7 @@ class Corretora:
                 quantidade_compra_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
+                    logging.warning(response['message'])
                     time.sleep(1)
                     response = BitcoinTrade(ativo_parte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
@@ -242,7 +243,7 @@ class Corretora:
                 quantidade_venda_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(quantidade_venda_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
-                   # logging.info(response['message'])
+                    logging.warning(response['message'])
                     time.sleep(1)
                     response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
