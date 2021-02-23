@@ -159,8 +159,9 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
-                if response['message'] == 'Too Many Requests':
+                quantidade_compra_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
+                if response['message'] != None:
                     time.sleep(1)
                     response = BitcoinTrade(ativo_parte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
@@ -177,7 +178,8 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
+                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
@@ -237,8 +239,10 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
-                if response['message'] == 'Too Many Requests':
+                quantidade_venda_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(quantidade_venda_arb, ordem.tipo_ordem, ordem.preco_enviado)
+                if response['message'] != None:
+                   # logging.info(response['message'])
                     time.sleep(1)
                     response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
