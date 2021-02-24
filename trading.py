@@ -36,4 +36,5 @@ ordem_compra.quantidade_enviada = 1
 ordem_compra.preco_enviado = 1
 ordem_compra.tipo_ordem = 'limited'
 ordem_compra = corretora_obj.enviar_ordem_compra(ordem_compra,ativo)
+ordem = corretora_obj.obter_ordem_por_id(ativo,ordem_compra)
 print('Rumo aos 1000 cakes')

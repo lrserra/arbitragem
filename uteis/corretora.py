@@ -84,7 +84,7 @@ class Corretora:
 
     #metodos eclusivos por ordem
 
-    def obter_ordem_por_id(self,ativo,ordem:Ordem):
+    def obter_ordem_por_id(self,ativo,obterOrdem:Ordem):
         ordem = Ordem()
         try:
             if self.nome == 'MercadoBitcoin':
