@@ -65,7 +65,7 @@ class Corretora:
             ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
                 if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelar_ordem(ordem['id'])
+                    self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(ativo).obterOrdensAbertas()
             if ordens_abertas['message'] == 'Too Many Requests':
@@ -75,12 +75,12 @@ class Corretora:
                 logging.info(str(ordens_abertas))
             for ordem in ordens_abertas['data']['orders']:
                 if 'pair_code' in ordem.keys() and str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
-                    self.cancelar_ordem(ordem['id'])
+                    self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'Novadax':            
             ordens_abertas = Novadax(ativo).obterOrdensAbertas()
             if 'data' in ordens_abertas.keys():
                 for ordem in ordens_abertas['data']:
-                    self.cancelar_ordem(ordem['id'])
+                    self.cancelar_ordem(ativo,ordem['id'])
 
     #metodos eclusivos por ordem
 
