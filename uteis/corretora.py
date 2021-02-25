@@ -164,7 +164,7 @@ class Corretora:
                 if response['message'] != None:
                     logging.warning(response['message'])
                     time.sleep(1)
-                    response = BitcoinTrade(ativo_parte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                    response = BitcoinTrade(ativo_parte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
