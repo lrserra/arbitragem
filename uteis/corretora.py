@@ -179,8 +179,8 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
-                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
+                #quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
+                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
@@ -240,11 +240,12 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                quantidade_venda_arb = ordem.quantidade_enviada*(0.997)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(quantidade_venda_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
                     time.sleep(1)
-                    response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                    response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(quantidade_venda_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 elif 'data' not in response.keys():
                     logging.info(str(response))
                 if response['code'] == None or response['code'] == 200:
