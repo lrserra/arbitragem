@@ -159,7 +159,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                quantidade_compra_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
+                quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
@@ -240,8 +240,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                quantidade_venda_arb = ordem.quantidade_enviada/(1-self.corretagem_mercado)
-                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(quantidade_venda_arb, ordem.tipo_ordem, ordem.preco_enviado)
+                response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
                     time.sleep(1)
