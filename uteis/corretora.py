@@ -35,6 +35,7 @@ class Corretora:
 
     def atualizar_saldo(self,ativo):
         try:
+            response_json={}
             if self.nome == 'MercadoBitcoin':
                 response_json = MercadoBitcoin(ativo).obterSaldo()
                 self.saldo = float(response_json['response_data']['balance'][ativo]['total'])
@@ -42,10 +43,9 @@ class Corretora:
                 response_json = BrasilBitcoin(ativo).obterSaldo()
                 self.saldo = float(response_json[ativo])
             elif self.nome == 'BitcoinTrade':
-                response_json = BitcoinTrade(ativo).obterSaldo()
-                while response_json['message'] == 'Too Many Requests':
-                    time.sleep(1)
+                while 'data' not in response_json.keys():
                     response_json = BitcoinTrade(ativo).obterSaldo()
+                    time.sleep(1)
                 for chave in response_json['data']:
                     if chave['currency_code'] == ativo.upper():
                         self.saldo = float(chave['available_amount']) + float(chave['locked_amount'])
