@@ -14,6 +14,7 @@ from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from uteis.ordem import Ordem
 from uteis.book import Book
+from uteis.util import Util
 
 class Corretora:
     
@@ -27,35 +28,44 @@ class Corretora:
         self.descricao_status_executado = self.__obter_status_executado(nome)
         
         #propriedades dinamicas
-        self.saldo = 0.0
+        self.saldo={}
         self.book = Book(nome)
         self.ordem = Ordem()
 
+        #saldo inicia zerado
+        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        for moeda in lista_de_moedas:
+            self.saldo[moeda] = 0
+
     #metodos exclusivos por ativo
 
-    def atualizar_saldo(self,ativo):
+    def atualizar_saldo(self):
         try:
-
+            ativo ='btc'#temos que tirar isso em algum momento
             response_json={}
+            
             if self.nome == 'MercadoBitcoin':
                 response_json = MercadoBitcoin(ativo).obterSaldo()
-                self.saldo = float(response_json['response_data']['balance'][ativo]['total'])
+                for ativo in response_json['response_data']['balance'].keys():
+                    if float(response_json['response_data']['balance'][ativo]['total'])>0:
+                        self.saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
             elif self.nome == 'BrasilBitcoin':
                 response_json = BrasilBitcoin(ativo).obterSaldo()
-                self.saldo = float(response_json[ativo])
+                for ativo in response_json.keys():
+                    if ativo in self.saldo.keys():
+                        self.saldo[ativo.lower()] = float(response_json[ativo])
             elif self.nome == 'BitcoinTrade':
                 response_json = BitcoinTrade(ativo).obterSaldo()
                 while 'data' not in response_json.keys():
                     time.sleep(1)
                     response_json = BitcoinTrade(ativo).obterSaldo()
-                for chave in response_json['data']:
-                    if chave['currency_code'] == ativo.upper():
-                        self.saldo = float(chave['available_amount']) + float(chave['locked_amount'])
+                for item in response_json['data']:
+                    self.saldo[item['currency_code'].lower()] = float(item['available_amount']) + float(item['locked_amount'])
             elif self.nome == 'Novadax':
                 response_json = Novadax(ativo).obterSaldo()
-                for chave in response_json['data']:
-                    if chave['currency'] == ativo.upper():
-                        self.saldo = float(chave['balance'])
+                for item in response_json['data']:
+                    if float(item['balance'])>0:
+                        self.saldo[item['currency'].lower()] = float(item['balance'])
         except Exception as erro:
             raise Exception(erro)
 

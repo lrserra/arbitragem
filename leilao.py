@@ -25,16 +25,16 @@ class Leilao:
             if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
                                 
                 #existe oportunidade de leilao, vou checar saldo
-                corretoraLeilao.atualizar_saldo(ativo)
-                corretoraZeragem.atualizar_saldo('brl')
+                corretoraLeilao.atualizar_saldo()
+                corretoraZeragem.atualizar_saldo()
 
                 # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
-                gostaria_de_vender = corretoraLeilao.saldo / 4
-                maximo_que_consigo_zerar = corretoraZeragem.saldo / (qtd_de_moedas*preco_de_zeragem)
+                gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
+                maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                 qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
 
                 # Nao pode ter saldo na mercado de menos de um real
-                if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo > Util.retorna_menor_valor_compra(ativo)):
+                if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo['brl'] > Util.retorna_menor_valor_compra(ativo)):
                     
                     
                     if executarOrdens and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
@@ -71,11 +71,11 @@ class Leilao:
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
                 
                 #existe oportunidade de leilao, vou checar saldo
-                corretoraLeilao.atualizar_saldo('brl')
-                corretoraZeragem.atualizar_saldo(ativo)
+                corretoraLeilao.atualizar_saldo()
+                corretoraZeragem.atualizar_saldo()
 
-                gostaria_de_comprar = corretoraLeilao.saldo / (qtd_de_moedas * preco_que_vou_comprar)
-                maximo_que_consigo_zerar = corretoraZeragem.saldo / 4
+                gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
+                maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] / 4
                 
                 # Mínimo entre o que eu gostaria de comprar com o máximo que consigo zerar na outra ponta
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
@@ -127,9 +127,9 @@ class Leilao:
                     corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                     cancelou = True
 
-                elif (corretoraZeragem.saldo < ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado):
+                elif (corretoraZeragem.saldo['brl'] < ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem_leilao_compra.id,ativo,corretorazeragem.saldo,ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem_leilao_compra.id,ativo,corretorazeragem.saldo['brl'],ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado))
                     corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                     cancelou = True
 
@@ -186,9 +186,9 @@ class Leilao:
                     corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
                     cancelou = True
 
-                elif (corretoraZeragem.saldo < ordem_leilao_venda.quantidade_enviada):
+                elif (corretoraZeragem.saldo[ativo] < ordem_leilao_venda.quantidade_enviada):
                     
-                    logging.info('leilao venda vai cancelar ordem {} de {} pq meu saldo em cripto {} é menor que oq eu queria vender {}'.format(ordem_leilao_venda.id,ativo,corretoraZeragem.saldo,ordem_leilao_venda.quantidade_enviada))
+                    logging.info('leilao venda vai cancelar ordem {} de {} pq meu saldo em cripto {} é menor que oq eu queria vender {}'.format(ordem_leilao_venda.id,ativo,corretoraZeragem.saldo[ativo],ordem_leilao_venda.quantidade_enviada))
                     corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
                     cancelou = True
 

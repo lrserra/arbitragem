@@ -16,8 +16,8 @@ class Arbitragem:
             ordem_compra = corretoraCompra.ordem
             ordem_venda = corretoraVenda.ordem
 
-            corretoraCompra.atualizar_saldo('brl')
-            corretoraVenda.atualizar_saldo(ativo)
+            corretoraCompra.atualizar_saldo()
+            corretoraVenda.atualizar_saldo()
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
             corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl')
@@ -32,8 +32,8 @@ class Arbitragem:
                 quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
 
-                quanto_posso_comprar = corretoraCompra.saldo/corretoraCompra.book.preco_venda #saldo em reais
-                quanto_posso_vender = corretoraVenda.saldo #saldo em cripto
+                quanto_posso_comprar = corretoraCompra.saldo['brl']/corretoraCompra.book.preco_venda #saldo em reais
+                quanto_posso_vender = corretoraVenda.saldo[ativo] #saldo em cripto
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
                 qtdNegociada = min(quantidade_de_compra, quantidade_de_venda,quanto_posso_comprar,quanto_posso_vender)
@@ -50,7 +50,7 @@ class Arbitragem:
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
                             #se tenho saldo, prossigo
-                            if (corretoraCompra.saldo >= vou_pagar) and (corretoraVenda.saldo >= qtdNegociada): 
+                            if (corretoraCompra.saldo['brl'] >= vou_pagar) and (corretoraVenda.saldo[ativo] >= qtdNegociada): 
                                 
                                 if executarOrdens:
                                     # Atualiza ordem de compra
@@ -66,7 +66,7 @@ class Arbitragem:
                                     quero_comprar_a = round(preco_de_compra,4)
                                     quero_vender_a = round(preco_de_venda,4)
 
-                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo))
+                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo]))
                                     
                                     #efetivamente envia as ordens
                                     ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
@@ -93,7 +93,7 @@ class Arbitragem:
                                     
                                     
                             else:
-                                logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo,2),corretoraVenda.saldo))
+                                logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo['brl'],2),corretoraVenda.saldo[ativo]))
                         else:
                             logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
