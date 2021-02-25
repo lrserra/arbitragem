@@ -161,7 +161,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
+                quantidade_compra_arb = ordem.quantidade_enviada*(0.995)
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
@@ -181,8 +181,8 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                #quantidade_compra_arb = ordem.quantidade_enviada/(1+self.corretagem_mercado)
-                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                quantidade_compra_arb = ordem.quantidade_enviada*(0.997)
+                response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(quantidade_compra_arb, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
                     
