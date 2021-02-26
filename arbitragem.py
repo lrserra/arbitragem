@@ -59,7 +59,7 @@ class Arbitragem:
                                     ordem_compra.tipo_ordem = 'market'
 
                                     # Atualiza ordem de venda
-                                    ordem_venda.quantidade_enviada = qtdNegociada
+                                    ordem_venda.quantidade_enviada = qtdNegociada *(1-corretoraCompra.corretagem_mercado)
                                     ordem_venda.preco_enviado = preco_de_venda
                                     ordem_venda.tipo_ordem = 'market'
 
