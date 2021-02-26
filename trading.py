@@ -23,15 +23,29 @@ from uteis.ordem import Ordem
 # nova_dax.cancelar_todas_ordens()
 
 
-nome_corretora = 'BrasilBitcoin'
+nome_corretora = 'Novadax'
+ativo = 'bch'
+paridade = 'btc'
 
 corretora_obj = Corretora(nome_corretora)
-#corretora_obj.book.obter_ordem_book_por_indice(ativo,'brl')
-#preco_compra = corretora_obj.book.preco_compra
+
+
+#compra em btc
+corretora_obj.book.obter_ordem_book_por_indice(ativo,paridade)
+preco_compra_paridade = corretora_obj.book.preco_compra
+
+#compra em btc em brl
+corretora_obj.book.obter_ordem_book_por_indice(paridade,'brl')
+preco_compra = corretora_obj.book.preco_compra * preco_compra_paridade
+
+
+'''
+
+
 corretora_obj.atualizar_saldo()
 #saldo = corretora_obj.saldo
 #print('preco compra {} eh {}'.format(ativo,preco_compra))
-'''
+
 ordem_compra = corretora_obj.ordem
 ordem_compra.quantidade_enviada = 1
 ordem_compra.preco_enviado = 1
