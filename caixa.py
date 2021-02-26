@@ -6,16 +6,11 @@ import time
 
 class Caixa:
     
-    def atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida):
+    def atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
         '''
         retorna dicionario com saldo inicial de cada moeda
         '''
-
         saldo_inicial = {}
-
-        # Instancia das corretoras por ativo
-        CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-        CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
         CorretoraMaisLiquida.atualizar_saldo()
         CorretoraMenosLiquida.atualizar_saldo()
@@ -32,22 +27,20 @@ class Caixa:
         return saldo_inicial
 
 
-    def zera_o_pnl_em_cripto(corretora_mais_liquida,corretora_menos_liquida):
+    def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então uma vez ao dia é bom comprar essa quantidade novamente
         '''
         saldo_inicial = Util.obter_saldo_inicial()
         saldo_final = {}
 
-        # Instancia das corretoras por ativo
-        CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-        CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+        if atualizar_saldo:
+            CorretoraMaisLiquida.atualizar_saldo()
+            CorretoraMenosLiquida.atualizar_saldo()
 
-        CorretoraMaisLiquida.atualizar_saldo()
-        CorretoraMenosLiquida.atualizar_saldo()
-
+        moedas_para_zerar = saldo_inicial.keys() if ativo == '' else [ativo]
         #verifica saldo final, para comparar com inicial
-        for moeda in saldo_inicial.keys():
+        for moeda in moedas_para_zerar:
 
             saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
 
@@ -188,7 +181,11 @@ if __name__ == "__main__":
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
-    Caixa.zera_o_pnl_em_cripto(corretora_mais_liquida,corretora_menos_liquida)
+    # Instancia das corretoras por ativo
+    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
     #Caixa.rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida)
     
