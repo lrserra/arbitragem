@@ -10,7 +10,7 @@ from uteis.util import Util
 
 class BrasilBitcoin:
 
-    def __init__(self, ativo_parte,ativo_contraparte):
+    def __init__(self, ativo_parte,ativo_contraparte='brl'):
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
