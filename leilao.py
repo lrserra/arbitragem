@@ -259,8 +259,11 @@ if __name__ == "__main__":
     while hour <= 720:
         #essa parte executa uma vez por hora
         
-        #atualiza saldo inicial
-        Caixa.atualiza_saldo_inicial(lista_de_moedas,corretora_mais_liquida,corretora_menos_liquida)
+        CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+        CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+
+        Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+        
         agora = datetime.now() 
         proxima_hora = agora + timedelta(hours=1)
         logging.warning('proxima atualizacao: {}'.format(proxima_hora))
