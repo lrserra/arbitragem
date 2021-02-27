@@ -191,31 +191,31 @@ class Arbitragem:
                                     pnl_real = realmente_ganhei - realmente_paguei
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                        logging.error('arbitragem paridade NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
+                                        logging.info('operou arb paridade de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
+                                        logging.warning('operou arb paridade de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                        logging.error('arbitragem paridade NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
+                                        logging.info('operou arb paridade de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
+                                        logging.warning('operou arb paridade de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                     
                                     
                             else:
-                                logging.info('arbitragem nao vai enviar ordem de {} porque saldo em {} {} ou saldo em {} {} nao é suficiente'.format(ativo,paridade,round(corretoraCompra.saldo[paridade],6),ativo,corretoraVenda.saldo[ativo]))
+                                logging.info('arbitragem paridade nao vai enviar ordem de {} porque saldo em {} {} ou saldo em {} {} nao é suficiente'.format(ativo,paridade,round(corretoraCompra.saldo[paridade],6),ativo,corretoraVenda.saldo[ativo]))
                         else:
-                            logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
+                            logging.info('arbitragem paridade nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
-                        logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar {} e só vou ganhar {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
+                        logging.info('arbitragem paridade nao vai enviar ordem de {} porque vou pagar {} e só vou ganhar {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
                         
                 else:
                     logging.info('acabaram as {} na {} ou acabou o saldo em {} na {}'.format(ativo,corretoraVenda.nome,paridade,corretoraCompra.nome))
             else:
-                logging.info('arbitragem nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
+                logging.info('arbitragem paridade nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
                 
 
         except Exception as erro:
@@ -306,35 +306,35 @@ class Arbitragem:
                                     pnl_real = realmente_ganhei - realmente_paguei
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                        logging.error('arbitragem paridade NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
                                         logging.info('operou arb paridade de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
                                         logging.warning('operou arb paridade de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                        logging.error('arbitragem paridade NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
+                                        logging.info('operou arb paridade de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
+                                        logging.warning('operou arb paridade de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                     
                                     
                             else:
-                                logging.info('arbitragem nao vai enviar ordem de {} porque saldo em {} {} ou saldo em {} {} nao é suficiente'.format(ativo,paridade,round(corretoraCompra.saldo[paridade],6),ativo,corretoraVenda.saldo[ativo]))
+                                logging.info('arbitragem paridade nao vai enviar ordem de {} porque saldo em {} {} ou saldo em {} {} nao é suficiente'.format(ativo,paridade,round(corretoraCompra.saldo[paridade],6),ativo,corretoraVenda.saldo[ativo]))
                         else:
-                            logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
+                            logging.info('arbitragem paridadenao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
-                        logging.info('arbitragem nao vai enviar ordem de {} porque vou pagar {} e só vou ganhar {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
+                        logging.info('arbitragem paridade nao vai enviar ordem de {} porque vou pagar {} e só vou ganhar {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2)))
                         
                 else:
                     logging.info('acabaram as {} na {} ou acabou o saldo em {} na {}'.format(ativo,corretoraVenda.nome,paridade,corretoraCompra.nome))
             else:
-                logging.info('arbitragem nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
+                logging.info('arbitragem paridade nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
                 
 
         except Exception as erro:
-            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: paridade_compra', erro)
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: paridade_venda', erro)
             raise Exception(msg_erro)
     
 
