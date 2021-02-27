@@ -143,7 +143,7 @@ class Arbitragem:
                 quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
 
-                quanto_posso_comprar = corretoraCompra.saldo[paridade]/(corretoraCompra.book.preco_compra**(1+max(corretoraCompra.corretagem_mercado,corretoraVenda.corretagem_mercado))) #saldo em reais
+                quanto_posso_comprar = corretoraCompra.saldo[paridade]/(corretoraCompra.book.preco_compra*(1+max(corretoraCompra.corretagem_mercado,corretoraVenda.corretagem_mercado))) #saldo em reais
                 quanto_posso_vender = corretoraVenda.saldo[ativo]*(1-corretoraVenda.corretagem_mercado) #saldo em cripto
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
