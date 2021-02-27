@@ -183,6 +183,7 @@ class Arbitragem:
                                     #efetivamente envia as ordens
                                     ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo,paridade)
                                     ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                    Caixa.zera_o_pnl_em_cripto(corretoraCompra,corretoraVenda,paridade) #aqui é o pulo gato onde zeramos o pnl feito em paridade
 
                                     realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                     realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
@@ -224,6 +225,7 @@ class Arbitragem:
     def paridade_venda(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, paridade, executarOrdens = False):
         
         #corretora venda é a novadax
+        #corretora compra é ordem simples
         try:
             pnl = 0
             ordem_compra = corretoraCompra.ordem
@@ -232,7 +234,7 @@ class Arbitragem:
             corretoraCompra.atualizar_saldo()
             corretoraVenda.atualizar_saldo()
 
-            #venda em paridade em brl
+            #preços da paridade em brl
             corretoraCompra.book.obter_ordem_book_por_indice(paridade,'brl')
             corretoraVenda.book.obter_ordem_book_por_indice(paridade,'brl')
 
@@ -250,12 +252,12 @@ class Arbitragem:
             preco_de_compra = corretoraCompra.book.preco_compra #ativo/brl --->na compra
 
             #se tiver arbitragem, a magica começa!
-            if preco_de_compra < preco_de_venda: 
+            if preco_de_compra > preco_de_venda: 
 
                 quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
 
-                quanto_posso_comprar = corretoraCompra.saldo['brl']/(corretoraCompra.book.preco_compra*(1+corretoraCompra.corretagem_mercado)) #saldo em reais
+                quanto_posso_comprar = corretoraCompra.saldo['brl']/(preco_de_compra*(1+corretoraCompra.corretagem_mercado)) #saldo em reais
                 quanto_posso_vender = corretoraVenda.saldo[ativo]*(1-corretoraVenda.corretagem_mercado) #saldo em cripto
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
@@ -263,14 +265,15 @@ class Arbitragem:
             
                 # Verifica em termos financeiros levando em conta as corretagens de compra e venda, se a operação vale a pena
                 vou_pagar = qtdNegociada*preco_de_compra*(1+corretoraCompra.corretagem_mercado)
-                vou_ganhar = qtdNegociada*preco_de_venda*(1-corretoraVenda.corretagem_mercado)
-                vou_ganhar_em_paridade = qtdNegociada*preco_ativo_paridade*(1-max(corretoraCompra.corretagem_mercado,corretoraVenda.corretagem_mercado))#sendo conservador
+                vou_ganhar = qtdNegociada*preco_de_venda*(1-corretoraVenda.corretagem_mercado)*((1-max(corretoraCompra.corretagem_mercado,corretoraVenda.corretagem_mercado)))
                 
                 pnl = vou_ganhar - vou_pagar
 
-                if qtdNegociada !=0:
+                if qtdNegociada !=0:#devo estar sem saldo se isso acontecer
+
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
-                    if pnl>0.05:#nao vamos fazer o trade por menos de 5 centavos
+                    if pnl<0.05:#nao vamos fazer o trade por menos de 5 centavos
+
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
                             #se tenho saldo, prossigo
@@ -278,12 +281,12 @@ class Arbitragem:
                             
                                 # Atualiza ordem de compra
                                 ordem_compra.quantidade_enviada = qtdNegociada
-                                ordem_compra.preco_enviado = preco_ativo_paridade
+                                ordem_compra.preco_enviado = preco_de_compra#normal, em brl
                                 ordem_compra.tipo_ordem = 'market'
 
                                 # Atualiza ordem de venda
                                 ordem_venda.quantidade_enviada = qtdNegociada
-                                ordem_venda.preco_enviado = preco_de_venda
+                                ordem_venda.preco_enviado = preco_ativo_paridade#aqui é na paridade
                                 ordem_venda.tipo_ordem = 'market'
 
                                 quero_comprar_a = round(preco_de_compra,4)
@@ -293,8 +296,9 @@ class Arbitragem:
                             
                                 if executarOrdens:
                                     #efetivamente envia as ordens
-                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo,paridade)
-                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
+                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo,paridade)
+                                    Caixa.zera_o_pnl_em_cripto(corretoraCompra,corretoraVenda,paridade) #aqui é o pulo gato onde zeramos o pnl feito em paridade
 
                                     realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                     realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
@@ -304,8 +308,8 @@ class Arbitragem:
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
+                                        logging.info('operou arb paridade de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
+                                        logging.warning('operou arb paridade de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
@@ -382,7 +386,7 @@ if __name__ == "__main__":
                 except Exception as erro:        
                     logging.error(erro) 
                 
-                time.sleep(Util.frequencia())
+                #time.sleep(Util.frequencia())
 
             agora = datetime.now() 
 
