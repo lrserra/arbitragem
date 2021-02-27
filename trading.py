@@ -24,19 +24,19 @@ from uteis.ordem import Ordem
 
 
 nome_corretora = 'Novadax'
-ativo = 'bch'
+ativo = 'ltc'
 paridade = 'btc'
 
 corretora_obj = Corretora(nome_corretora)
 
-
+#compra em btc em brl
+corretora_obj.book.obter_ordem_book_por_indice(paridade,'brl')
+preco_compra = corretora_obj.book.preco_compra 
 #compra em btc
 corretora_obj.book.obter_ordem_book_por_indice(ativo,paridade)
 preco_compra_paridade = corretora_obj.book.preco_compra
 
-#compra em btc em brl
-corretora_obj.book.obter_ordem_book_por_indice(paridade,'brl')
-preco_compra = corretora_obj.book.preco_compra * preco_compra_paridade
+
 
 
 '''
