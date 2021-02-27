@@ -252,7 +252,7 @@ class Arbitragem:
             preco_de_compra = corretoraCompra.book.preco_compra #ativo/brl --->na compra
 
             #se tiver arbitragem, a magica começa!
-            if preco_de_compra > preco_de_venda: 
+            if preco_de_compra < preco_de_venda: 
 
                 quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
@@ -272,7 +272,7 @@ class Arbitragem:
                 if qtdNegociada !=0:#devo estar sem saldo se isso acontecer
 
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
-                    if pnl<0.05:#nao vamos fazer o trade por menos de 5 centavos
+                    if pnl>0.05:#nao vamos fazer o trade por menos de 5 centavos
 
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
