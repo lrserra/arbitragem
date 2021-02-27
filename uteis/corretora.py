@@ -141,6 +141,10 @@ class Corretora:
         
         try:
             if self.nome == 'MercadoBitcoin':
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['status_code'] == 100: 
                     ordem.id = response['response_data']['order']['order_id']
@@ -153,6 +157,10 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
                     ordem.id = response['data']['id']
@@ -171,7 +179,10 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'BitcoinTrade':
-                #quantidade_compra_arb = ordem.quantidade_enviada*(0.995)
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
@@ -190,8 +201,7 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
-            elif self.nome == 'Novadax':
-                #quantidade_compra_arb = ordem.quantidade_enviada*(0.997)
+            elif self.nome == 'Novadax':                
                 if ativo_parte =='xrp':
                     ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
                 else:
@@ -225,6 +235,10 @@ class Corretora:
 
         try:
             if self.nome == 'MercadoBitcoin':
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['status_code'] == 100:            
                     ordem.id = response['response_data']['order']['order_id']
@@ -238,6 +252,10 @@ class Corretora:
                     #raise Exception(mensagem)
 
             elif self.nome == 'BrasilBitcoin':
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
                     ordem.id = response['data']['id']
@@ -255,8 +273,11 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
-            elif self.nome == 'BitcoinTrade':
-                #quantidade_venda_arb = ordem.quantidade_enviada*(0.997)
+            elif self.nome == 'BitcoinTrade':                
+                if ativo_parte =='xrp':
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+                else:
+                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
                 response = BitcoinTrade(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] != None:
                     logging.warning(response['message'])
@@ -275,8 +296,7 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
-            elif self.nome == 'Novadax':
-                #quantidade_venda_arb = ordem.quantidade_enviada*(0.995)
+            elif self.nome == 'Novadax':                
                 if ativo_parte =='xrp':
                     ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
                 else:
