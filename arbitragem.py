@@ -62,12 +62,12 @@ class Arbitragem:
                                 if executarOrdens:
                                     # Atualiza ordem de compra
                                     ordem_compra.quantidade_enviada = qtdNegociada
-                                    ordem_compra.preco_enviado = preco_de_compra
+                                    ordem_compra.preco_enviado = preco_de_compra*1.1
                                     ordem_compra.tipo_ordem = 'market'
 
                                     # Atualiza ordem de venda
                                     ordem_venda.quantidade_enviada = qtdNegociada *(1-corretoraCompra.corretagem_mercado)
-                                    ordem_venda.preco_enviado = preco_de_venda
+                                    ordem_venda.preco_enviado = preco_de_venda*0.9
                                     ordem_venda.tipo_ordem = 'market'
 
                                     quero_comprar_a = round(preco_de_compra,4)
@@ -87,15 +87,15 @@ class Arbitragem:
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
+                                        logging.info('operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,quero_comprar_a,corretoraCompra.nome))
+                                        logging.warning('operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
-                                        logging.info('operou arb de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
-                                        logging.warning('operou arb de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
+                                        logging.info('operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,quero_vender_a,corretoraVenda.nome))
+                                        logging.warning('operou arb de {}!com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
                                         Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',datetime.now()))
                                     
                                     
