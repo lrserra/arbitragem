@@ -62,12 +62,12 @@ class Arbitragem:
                                 if executarOrdens:
                                     # Atualiza ordem de compra
                                     ordem_compra.quantidade_enviada = qtdNegociada
-                                    ordem_compra.preco_enviado = preco_de_compra*1.1
+                                    ordem_compra.preco_enviado = preco_de_compra
                                     ordem_compra.tipo_ordem = 'market'
 
                                     # Atualiza ordem de venda
                                     ordem_venda.quantidade_enviada = qtdNegociada *(1-corretoraCompra.corretagem_mercado)
-                                    ordem_venda.preco_enviado = preco_de_venda*0.9
+                                    ordem_venda.preco_enviado = preco_de_venda
                                     ordem_venda.tipo_ordem = 'market'
 
                                     quero_comprar_a = round(preco_de_compra,4)
