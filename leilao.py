@@ -117,6 +117,7 @@ class Leilao:
 
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
+                corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl')
                 corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl')
                 
@@ -176,6 +177,7 @@ class Leilao:
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda)  
                 
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
+                corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl')
                 corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl')           
                 
