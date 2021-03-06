@@ -23,9 +23,46 @@ class BitRecife:
 
     def obterSaldo(self):
        
-        return self.executarRequestBitRecife('POST','','getbalances')
+        return self.executarRequestBitRecife('POST','getbalances')
 
-    def executarRequestBitRecife(self, requestMethod, payload, endpoint):
+    def cancelarOrdem(self, idOrdem):
+        payload = {}
+        payload['orderid'] = idOrdem
+        return self.executarRequestBitRecife('POST','ordercancel',payload)
+
+    def obterOrdensAbertas(self,ativo,ativo_contraparte='brl'):
+        payload = {}
+        payload['market']=ativo.upper()+'_'+ativo_contraparte.upper()
+        return self.executarRequestBitRecife('POST','getopenorders', payload)
+
+    def enviarOrdemCompra(self,quantity,preco,ativo,ativo_contraparte='brl'):
+
+        payload = {}
+        payload['market']=ativo.upper()+'_'+ativo_contraparte.upper()
+        payload['rate']=float(preco)
+        payload['quantity']=float(quantity)
+
+        retorno = self.executarRequestBitRecife('POST','buylimit',payload)
+        return retorno
+
+    def enviarOrdemVenda(self,quantity,preco,ativo,ativo_contraparte='brl'):
+        
+        payload = {}
+        payload['market']=ativo.upper()+'_'+ativo_contraparte.upper()
+        payload['rate']=float(preco)
+        payload['quantity']=float(quantity)
+
+        retorno = self.executarRequestBitRecife('POST','selllimit',payload)
+        return retorno
+
+    def obterOrdemPorId(self, idOrdem,ativo,ativo_contraparte='brl'):
+        
+        payload = {}
+        payload['orderid']=idOrdem
+        payload['market']=ativo.upper()+'_'+ativo_contraparte.upper()
+        return self.executarRequestBitRecife('POST','getorder',payload)
+
+    def executarRequestBitRecife(self, requestMethod, endpoint, payload={}):
         # Constantes
         config = Util.obterCredenciais()
         apikey = config["BitRecife"]["Authentication"]
@@ -38,7 +75,8 @@ class BitRecife:
         # Gerar cabeçalho da requisição
         headers = {'apisign': apisign}
 
-        payload={'nonce':nonce,'apikey':apikey}
+        payload['nonce']=nonce
+        payload['apikey']=apikey
         
         # requisição básica com módulo requests
         res = requests.request(requestMethod,url, headers=headers, data=payload)

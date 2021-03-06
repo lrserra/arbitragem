@@ -75,7 +75,7 @@ class Corretora:
         except Exception as erro:
             raise Exception(erro)
 
-    def cancelar_todas_ordens(self,ativo):
+    def cancelar_todas_ordens(self,ativo,ativo_contraparte='brl'):
 
         if self.nome == 'MercadoBitcoin':
             pass
@@ -99,6 +99,11 @@ class Corretora:
             if 'data' in ordens_abertas.keys():
                 for ordem in ordens_abertas['data']:
                     self.cancelar_ordem(ativo,ordem['id'])
+        elif self.nome == 'BitRecife':            
+            ordens_abertas = BitRecife().obterOrdensAbertas(ativo,ativo_contraparte)
+            if ordens_abertas['result'] is not None:
+                for ordem in ordens_abertas['result']:
+                    self.cancelar_ordem(ativo,ordem['OrderID'])
 
     #metodos eclusivos por ordem
 
@@ -138,6 +143,13 @@ class Corretora:
                     ordem.status = response['data']['status'].lower()
                     ordem.quantidade_executada = response['data']['filledAmount']
                     ordem.preco_executado = response['data']['averagePrice']
+            elif self.nome == 'BitRecife':
+                response = BitRecife().obterOrdemPorId(obterOrdem.id,ativo)
+                if response['success'] and (response['result'] is not None):
+                    ordem.status = response['result'][0]['Status'].lower()
+                    ordem.quantidade_executada = response['result'][0]['QuantityBaseTraded']
+                    ordem.preco_executado = response['result'][0]['Price']
+
         except Exception as erro:
             print('erro na classe corretora metodo obter_ordem_por_id. corretora {} - ativo {}'.format(self.nome,ativo))
             raise Exception(erro)
@@ -220,6 +232,14 @@ class Corretora:
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
+            elif self.nome == 'BitRecife':
+                response = BitRecife().enviarOrdemCompra(ordem.quantidade_enviada, ordem.preco_enviado,ativo_parte,ativo_contraparte)
+                if not response['success'] == True:
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+                    print(mensagem)
+                    #raise Exception(mensagem)
+                else:
+                    ordem.id = response['result']
         except Exception as erro:
             raise Exception(erro)
 
@@ -305,6 +325,14 @@ class Corretora:
                 else:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
+            
+            elif self.nome == 'BitRecife':
+                response = BitRecife().enviarOrdemVenda(ordem.quantidade_enviada, ordem.preco_enviado,ativo_parte,ativo_contraparte)
+                if not response['success'] == True:
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+                    print(mensagem)
+                else:
+                    ordem.id = response['result']
         except Exception as erro:
                 raise Exception(erro)
 
@@ -319,6 +347,8 @@ class Corretora:
             return BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
         elif self.nome == 'Novadax':
             return Novadax(ativo_parte).cancelarOrdem(idOrdem)
+        elif self.nome == 'BitRecife':
+            return BitRecife().cancelarOrdem(idOrdem)
 
     def transferir_crypto(self,ativo,quantidade, destino):      
         '''
@@ -378,7 +408,7 @@ class Corretora:
             status_executado = 'FILLED'
 
         elif self.nome == 'BitRecife':
-            status_executado = '2'
+            status_executado = 'ok'
             
         return status_executado
 
