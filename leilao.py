@@ -151,7 +151,7 @@ class Leilao:
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
-                    retorno_compra.preco_executado = corretoraZeragem.book.obter_preco_medio_de_compra(corretoraZeragem.ordem.quantidade_negociada)
+                    #retorno_compra.preco_executado = corretoraZeragem.book.obter_preco_medio_de_compra(corretoraZeragem.ordem.quantidade_negociada)
                                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
@@ -210,7 +210,7 @@ class Leilao:
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
-                    retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
+                    #retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
