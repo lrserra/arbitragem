@@ -129,7 +129,7 @@ class Leilao:
 
                 elif (corretoraZeragem.saldo['brl'] < ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado):
                     
-                    logging.info('leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem_leilao_compra.id,ativo,corretorazeragem.saldo['brl'],ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado))
+                    logging.info('leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem_leilao_compra.id,ativo,corretoraZeragem.saldo['brl'],ordem_leilao_compra.quantidade_enviada*ordem_leilao_compra.preco_enviado))
                     corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                     cancelou = True
 
@@ -151,7 +151,7 @@ class Leilao:
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
-                    retorno_compra.preco_executado = corretoraContraparte.obter_preco_medio_de_compra(corretoraContraparte.ordem.quantidade_negociada)
+                    #retorno_compra.preco_executado = corretoraZeragem.book.obter_preco_medio_de_compra(corretoraZeragem.ordem.quantidade_negociada)
                                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
@@ -209,8 +209,8 @@ class Leilao:
                     logging.info('leilao venda vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_venda.id,ativo))
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
-                    retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraContraparte.ordem,ativo)
-                    retorno_venda.preco_executado = corretoraContraparte.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
+                    retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+                    #retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
