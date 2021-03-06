@@ -1,35 +1,22 @@
 import requests
+import hashlib
+import hmac
 import json
-from util import Util
-from datetime import date, datetime, timedelta
+import time
+import mimetypes
+from http import client
+from urllib.parse import urlencode
+from uteis.util import Util
 
-class Coinext:
+class BrasilBitcoin:
 
-    def __init__(self, ativo):
-        self.ativo = ativo
-        self.urlCoinext = 'https://api.coinext.com.br:8443/AP/'       
-
-    def service_url(self, service_name):
-        return 'https://api.coinext.com.br:8443/AP/%s' % service_name
-
-    def call_get(self, service_name):
-        res = requests.get(self.service_url(service_name))
-        return json.loads(res.content)        
-
-    def call_post(self, service_name, payload):
-        res = requests.post(self.service_url(service_name), data=json.dumps(payload))
-        return json.loads(res.content)
-
+    def __init__(self, ativo_parte,ativo_contraparte='brl'):
+        self.ativo_parte = ativo_parte
+        self.ativo_contraparte = ativo_contraparte
+        self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
+    
     def obterBooks(self):
-        payload = {
-            'OMSId': 1,
-            'AccountId': 1,
-            'InstrumentId': 1
-        }
-
-        return self.call_post('GetL2Snapshot', payload)
-
-        #return self.executarRequestCoinext('GET', payload, 'GetL2Snapshot')
+        return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
 
     def obterSaldo(self):
         return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
@@ -40,7 +27,7 @@ class Coinext:
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'order_type': tipoOrdem,
             'type': 'buy',
             'amount': quantity,
@@ -54,7 +41,7 @@ class Coinext:
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': 'BRL{}'.format(self.ativo),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
             'order_type': tipoOrdem,
             'type': 'sell',
             'amount': quantity,
@@ -65,42 +52,37 @@ class Coinext:
         retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
         return retorno
 
-    def TransferirCrypto(self, quantity):      
+    def TransferirCrypto(self, quantity, destino):      
         config = Util.obterCredenciais()
         
         # objeto que será postado para o endpoint
         payload = {
-            'coin': self.ativo,
+            'coin': self.ativo_parte,
             'amount': quantity,
-            'address': config["MercadoBitcoin"]["Address"],
-            'priority': 'medium'
+            'address': config[destino]["Address"][self.ativo_parte],
+            'priority': 'high'
         }
+        
+        if self.ativo_parte=='xrp':
+            payload['tag'] = config[destino]["Address"]["xrp_tag"]         
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         return self.executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')
 
     def cancelarOrdem(self, idOrdem):
-        return self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
+        retorno = self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
+        return retorno
 
     def obterOrdensAbertas(self):
         return self.executarRequestBrasilBTC('GET', '','/api/my_orders')
 
-    def obterDadosUsuario(self):
-        return self.executarRequestCoinext('POST', '', 'GetUserInfo')
-
-    def obterToken(self):
+    def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
-        res = requests.get(self.urlCoinext+'authenticate', auth=(config['Coinext']['Login'], config['Coinext']['Password']))
-        auth = json.loads(res.text.encode('utf8'))
-
-        if auth['Authenticated']:
-            return auth['Token']        
-
-    def executarRequestCoinext(self, requestMethod, payload, endpoint):
+        
         headers ={
-            'aptoken': self.obterToken(),
+            'Authentication': config["BrasilBitcoin"]["Authentication"],
             'Content-type': 'application/json'
         }
         # requisição básica com módulo requests
-        res = requests.request(requestMethod, self.urlCoinext+endpoint, headers=headers, data=payload)
+        res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         return json.loads(res.text.encode('utf8'))

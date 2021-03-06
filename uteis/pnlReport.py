@@ -1,4 +1,4 @@
-from corretora import Corretora
+from uteis.corretora import Corretora
 
 fileHandle = open(r'Z:\leilao\Saldo.txt', 'r')
 

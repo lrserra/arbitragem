@@ -1,5 +1,5 @@
 import telegram
-from util import Util
+from uteis.util import Util
 
 class Telegram:
 

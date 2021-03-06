@@ -1,11 +1,9 @@
 import json
 import requests
-from util import Util
-from corretora import Corretora
-from ordem import Ordem
+from uteis.util import Util
+from uteis.corretora import Corretora
+from uteis.ordem import Ordem
 
-ativo = 'xrp'
-nome_corretora = 'BitcoinTrade'
 
 # ---- Testar book de ordens ---- #
 # nova_dax = Corretora(nome_corretora, ativo)
@@ -24,9 +22,40 @@ nome_corretora = 'BitcoinTrade'
 # nova_dax = Corretora(nome_corretora, ativo)
 # nova_dax.cancelar_todas_ordens()
 
-btctrade = Corretora(nome_corretora,ativo)
-ordem = Ordem()
-ordem.tipo_ordem = 'limited'
-ordem.quantidade_negociada = 10
-ordem.preco_compra = 1
-btctrade.enviar_ordem_compra(ordem)
+
+nome_corretora = 'BitRecife'
+ativo = 'btc'
+paridade = 'brl'
+
+corretora_obj = Corretora(nome_corretora)
+
+'''
+corretora_obj.book.obter_ordem_book_por_indice(ativo,'brl')
+preco_compra = corretora_obj.book.preco_compra 
+'''
+corretora_obj.cancelar_todas_ordens(ativo)
+
+
+'''
+
+
+corretora_obj.atualizar_saldo()
+#saldo = corretora_obj.saldo
+#print('preco compra {} eh {}'.format(ativo,preco_compra))
+
+ordem_compra = corretora_obj.ordem
+ordem_compra.quantidade_enviada = 0.0006
+ordem_compra.preco_enviado = 200000
+
+ordem_compra = corretora_obj.enviar_ordem_compra(ordem_compra,ativo)
+'''
+
+
+ordem_venda = corretora_obj.ordem
+ordem_venda.quantidade_enviada = 0.0001
+ordem_venda.preco_enviado = 273000
+
+ordem_venda = corretora_obj.enviar_ordem_venda(ordem_venda,ativo)
+ordem = corretora_obj.obter_ordem_por_id(ativo,ordem_venda)
+
+print('terminei')
