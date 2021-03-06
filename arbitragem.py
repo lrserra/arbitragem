@@ -231,7 +231,6 @@ class Arbitragem:
 
     def paridade_venda(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, paridade, executarOrdens = False):
         
-<<<<<<< HEAD
         #corretora venda é a novadax
         #corretora compra é ordem simples
         try:
@@ -345,9 +344,6 @@ class Arbitragem:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: paridade_venda', erro)
             raise Exception(msg_erro)
     
-=======
-        return fiz_arb
->>>>>>> rhyno_2.0
 
 if __name__ == "__main__":
 
