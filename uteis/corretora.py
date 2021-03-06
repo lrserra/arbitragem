@@ -12,6 +12,7 @@ from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
+from corretoras.bitRecife import BitRecife
 from uteis.ordem import Ordem
 from uteis.book import Book
 from uteis.util import Util
@@ -66,6 +67,11 @@ class Corretora:
                 for item in response_json['data']:
                     if float(item['balance'])>0:
                         self.saldo[item['currency'].lower()] = float(item['balance'])
+            elif self.nome == 'BitRecife':
+                response_json = BitRecife().obterSaldo()
+                for item in response_json['result']:
+                    self.saldo[item['Asset'].lower()] = float(item['Available'])
+                
         except Exception as erro:
             raise Exception(erro)
 
@@ -350,6 +356,10 @@ class Corretora:
             corretagem_limitada = 0.001
             corretagem_mercado = 0.003
             
+        elif self.nome == 'BitRecife':
+            corretagem_limitada = 0.002
+            corretagem_mercado = 0.004
+
         return corretagem_limitada, corretagem_mercado
 
     #metodo privado
@@ -366,6 +376,9 @@ class Corretora:
             
         elif self.nome == 'Novadax':
             status_executado = 'FILLED'
+
+        elif self.nome == 'BitRecife':
+            status_executado = '2'
             
         return status_executado
 
