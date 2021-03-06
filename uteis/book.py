@@ -2,6 +2,7 @@ from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
+from corretoras.bitRecife import BitRecife
 
 class Book:
     def __init__(self,nome):
@@ -42,6 +43,12 @@ class Book:
                 self.quantidade_compra = float(self.book['data']['asks'][indice][1])
                 self.preco_venda = float(self.book['data']['bids'][indice][0])
                 self.quantidade_venda = float(self.book['data']['bids'][indice][1])
+
+            elif self.nome == 'BitRecife':
+                self.preco_compra = float(self.book['result']['sell'][indice]['Rate'])
+                self.quantidade_compra = float(self.book['result']['sell'][indice]['Quantity'])
+                self.preco_venda = float(self.book['result']['buy'][indice]['Rate'])
+                self.quantidade_venda = float(self.book['result']['buy'][indice]['Quantity'])
                 
         except Exception as erro:
             raise Exception(erro)
@@ -60,6 +67,9 @@ class Book:
              
             elif self.nome == 'Novadax':
                 self.book = Novadax(ativo_parte,ativo_contraparte).obterBooks()
+
+            elif self.nome == 'BitRecife':
+                self.book = BitRecife().obterBooks(ativo_parte,ativo_contraparte)
         except Exception as erro:
             raise Exception(erro)
 

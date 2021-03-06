@@ -379,7 +379,7 @@ if __name__ == "__main__":
                     # Roda as arbitragens
                     if moeda !='btc':
                         Arbitragem.paridade_compra(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda,'btc', False) 
-                        Arbitragem.paridade_venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda,'btc', False) 
+                        #Arbitragem.paridade_venda(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda,'btc', False) 
                     #Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
                     #Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
                                    
