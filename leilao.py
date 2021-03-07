@@ -23,7 +23,7 @@ class Leilao:
 
             # Valida se existe oportunidade de leilão
             if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
-                                
+                logging.info('Leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,preco_que_vou_vender,preco_de_zeragem))                                
                 #existe oportunidade de leilao, vou checar saldo
                 corretoraLeilao.atualizar_saldo()
                 corretoraZeragem.atualizar_saldo()
