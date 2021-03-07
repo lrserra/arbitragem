@@ -23,7 +23,7 @@ class Leilao:
 
             # Valida se existe oportunidade de leilão
             if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
-                                
+                logging.info('Leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,preco_que_vou_vender,preco_de_zeragem))                                
                 #existe oportunidade de leilao, vou checar saldo
                 corretoraLeilao.atualizar_saldo()
                 corretoraZeragem.atualizar_saldo()
@@ -43,7 +43,13 @@ class Leilao:
                         corretoraLeilao.ordem.preco_enviado = preco_que_vou_vender
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'
-                        retorno_venda_corretora_leilao = corretoraLeilao.enviar_ordem_venda(corretoraLeilao.ordem,ativo)  
+                        retorno_venda_corretora_leilao = corretoraLeilao.enviar_ordem_venda(corretoraLeilao.ordem,ativo) 
+                else:
+                    Financeiro_Venda = qtdNegociada*preco_que_vou_vender
+                    Financeiro_Venda_Minimo = Util.retorna_menor_valor_compra(ativo)
+                    Zeragem_Compra = corretoraZeragem.saldo['brl']
+                    Zeragem_Compra_Minimo = Util.retorna_menor_valor_compra(ativo)
+                    logging.info('Leilao de compra nao executado para moeda {}, pois o financeiro venda: {} < que financeiro venda minimo: {}, ou zeragem compra: {} < zeragem compra minimo: {}'.format(ativo,Financeiro_Venda,Financeiro_Venda_Minimo,Zeragem_Compra,Zeragem_Compra_Minimo))   
             else:
                 logging.info('leilao compra de {} nao vale a pena, (1+corretagem)*{} é menor que (1-corretagem)*{}'.format(ativo,preco_que_vou_vender,preco_de_zeragem))
 
@@ -69,7 +75,7 @@ class Leilao:
 
             # Valida se existe oportunidade de leilão
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
-                
+                logging.info('Leilao de venda aberta para moeda {} no preço de compra {} e preço de zeragem {}'.format(ativo,preco_que_vou_comprar,preco_de_zeragem))                   
                 #existe oportunidade de leilao, vou checar saldo
                 corretoraLeilao.atualizar_saldo()
                 corretoraZeragem.atualizar_saldo()
@@ -90,7 +96,10 @@ class Leilao:
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'    
                         retorno_compra_corretora_leilao = corretoraLeilao.enviar_ordem_compra(corretoraLeilao.ordem,ativo)
-                
+                else:
+                    Quantidade_Compra = qtdNegociada
+                    Quantidade_Venda_Minimo = Util.retorna_menor_quantidade_venda(ativo)
+                    logging.info('Leilao de venda nao executado para moeda {} pois nao tem quantidades disponiveis suficientes para venda: {}<{}'.format(ativo,Quantidade_Compra,Quantidade_Venda_Minimo)) 
             else:
                 logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,preco_que_vou_comprar,preco_de_zeragem))
         except Exception as erro:
@@ -180,7 +189,7 @@ class Leilao:
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl')
                 corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl')           
-                
+
                 if (ordem_leilao_venda.preco_enviado != corretoraLeilao.book.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
