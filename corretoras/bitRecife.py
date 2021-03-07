@@ -58,7 +58,7 @@ class BitRecife:
     def obterOrdemPorId(self, idOrdem,ativo,ativo_contraparte='brl'):
         
         payload = {}
-        payload['orderid']=idOrdem
+        payload['orderid']=int(idOrdem)
         payload['market']=ativo.upper()+'_'+ativo_contraparte.upper()
         return self.executarRequestBitRecife('POST','getorder',payload)
 

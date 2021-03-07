@@ -340,7 +340,7 @@ class Corretora:
 
     def cancelar_ordem(self,ativo_parte,idOrdem):
         if self.nome == 'MercadoBitcoin':
-            pass
+            return False
         elif self.nome == 'BrasilBitcoin':
             BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
             return True
@@ -351,8 +351,8 @@ class Corretora:
             Novadax(ativo_parte).cancelarOrdem(idOrdem)
             return True
         elif self.nome == 'BitRecife':
-            BitRecife().cancelarOrdem(idOrdem)
-            return True
+            retorno_cancel = BitRecife().cancelarOrdem(idOrdem)
+            return retorno_cancel['success']
 
     def transferir_crypto(self,ativo,quantidade, destino):      
         '''
