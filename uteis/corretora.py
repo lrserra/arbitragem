@@ -342,13 +342,17 @@ class Corretora:
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':
-            return BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
+            BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
+            return True
         elif self.nome == 'BitcoinTrade':
-            return BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
+            BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
+            return True
         elif self.nome == 'Novadax':
-            return Novadax(ativo_parte).cancelarOrdem(idOrdem)
+            Novadax(ativo_parte).cancelarOrdem(idOrdem)
+            return True
         elif self.nome == 'BitRecife':
-            return BitRecife().cancelarOrdem(idOrdem)
+            BitRecife().cancelarOrdem(idOrdem)
+            return True
 
     def transferir_crypto(self,ativo,quantidade, destino):      
         '''
