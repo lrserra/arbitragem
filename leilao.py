@@ -43,7 +43,13 @@ class Leilao:
                         corretoraLeilao.ordem.preco_enviado = preco_que_vou_vender
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'
-                        retorno_venda_corretora_leilao = corretoraLeilao.enviar_ordem_venda(corretoraLeilao.ordem,ativo)  
+                        retorno_venda_corretora_leilao = corretoraLeilao.enviar_ordem_venda(corretoraLeilao.ordem,ativo) 
+                else:
+                    Financeiro_Venda = qtdNegociada*preco_que_vou_vender
+                    Financeiro_Venda_Minimo = Util.retorna_menor_valor_compra(ativo)
+                    Zeragem_Compra = corretoraZeragem.saldo['brl']
+                    Zeragem_Compra_Minimo = Util.retorna_menor_valor_compra(ativo)
+                    logging.info('Leilao de compra nao executado para moeda {}, pois o financeiro venda: {} < que financeiro venda minimo: {}, ou zeragem compra: {} < zeragem compra minimo: {}'.format(ativo,Financeiro_Venda,Financeiro_Venda_Minimo,Zeragem_Compra,Zeragem_Compra_Minimo))   
             else:
                 logging.info('leilao compra de {} nao vale a pena, (1+corretagem)*{} é menor que (1-corretagem)*{}'.format(ativo,preco_que_vou_vender,preco_de_zeragem))
 
