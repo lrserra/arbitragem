@@ -75,7 +75,7 @@ class Leilao:
 
             # Valida se existe oportunidade de leilão
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
-                
+                logging.info('Leilao de venda aberta para moeda {} no preço de compra {} e preço de zeragem {}'.format(ativo,preco_que_vou_comprar,preco_de_zeragem))                   
                 #existe oportunidade de leilao, vou checar saldo
                 corretoraLeilao.atualizar_saldo()
                 corretoraZeragem.atualizar_saldo()
@@ -184,7 +184,7 @@ class Leilao:
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
                 corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl')
                 corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl')           
-                
+
                 if (ordem_leilao_venda.preco_enviado != corretoraLeilao.book.preco_venda):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq nao sou o primeiro da fila'.format(ordem_leilao_venda.id,ativo))
