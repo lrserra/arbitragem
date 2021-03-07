@@ -96,7 +96,10 @@ class Leilao:
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'    
                         retorno_compra_corretora_leilao = corretoraLeilao.enviar_ordem_compra(corretoraLeilao.ordem,ativo)
-                
+                else:
+                    Quantidade_Compra = qtdNegociada
+                    Quantidade_Venda_Minimo = Util.retorna_menor_quantidade_venda(ativo)
+                    logging.info('Leilao de venda nao executado para moeda {} pois nao tem quantidades disponiveis suficientes para venda: {}<{}'.format(ativo,Quantidade_Compra,Quantidade_Venda_Minimo)) 
             else:
                 logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,preco_que_vou_comprar,preco_de_zeragem))
         except Exception as erro:
