@@ -116,7 +116,7 @@ class Leilao:
 
         try:
         
-            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
+            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra) if  ordem_leilao_compra.id != 0 else Ordem()
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
@@ -173,7 +173,7 @@ class Leilao:
 
         try:
     
-            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda)
+            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_compra.id != 0 else Ordem()
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
