@@ -339,14 +339,15 @@ class Corretora:
         return ordem
 
     def cancelar_ordem(self,ativo_parte,idOrdem):
+        
         if self.nome == 'MercadoBitcoin':
             return False
         elif self.nome == 'BrasilBitcoin':
-            BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
-            return True
+            retorno_cancel = BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
+            return retorno_cancel['success']
         elif self.nome == 'BitcoinTrade':
             BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
-            return True
+            return True         
         elif self.nome == 'Novadax':
             Novadax(ativo_parte).cancelarOrdem(idOrdem)
             return True
