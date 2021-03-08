@@ -346,8 +346,8 @@ class Corretora:
             retorno_cancel = BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
             return retorno_cancel['success']
         elif self.nome == 'BitcoinTrade':
-            BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
-            return True         
+            retorno_cancel = BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
+            return retorno_cancel['message'] is None      
         elif self.nome == 'Novadax':
             Novadax(ativo_parte).cancelarOrdem(idOrdem)
             return True
