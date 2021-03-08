@@ -173,7 +173,7 @@ class Leilao:
 
         try:
     
-            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_compra.id != 0 else Ordem()
+            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_venda.id != 0 else Ordem()
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
