@@ -116,7 +116,9 @@ class Leilao:
 
         try:
         
-            if ordem_leilao_compra.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
+
+            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
                 logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
                 corretoraZeragem.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)
@@ -124,8 +126,7 @@ class Leilao:
                 retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
                 
             elif ordem_leilao_compra.id != 0:
-
-                ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
+                
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl')
@@ -172,15 +173,15 @@ class Leilao:
 
         try:
     
-            if ordem_leilao_venda.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
+            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda)
+
+            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
                 corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
         
             elif ordem_leilao_venda.id != 0:
-                
-                ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda)  
                 
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
                 corretoraZeragem.atualizar_saldo()
