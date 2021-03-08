@@ -23,8 +23,8 @@ from uteis.ordem import Ordem
 # nova_dax.cancelar_todas_ordens()
 
 
-nome_corretora = 'BitRecife'
-ativo = 'btc'
+nome_corretora = 'BitcoinTrade'
+ativo = 'xrp'
 paridade = 'brl'
 
 corretora_obj = Corretora(nome_corretora)
@@ -52,11 +52,12 @@ ordem_compra = corretora_obj.enviar_ordem_compra(ordem_compra,ativo)
 
 
 ordem_venda = corretora_obj.ordem
-ordem_venda.quantidade_enviada = 0.0001
-ordem_venda.preco_enviado = 283000
+ordem_venda.quantidade_enviada = 1
+ordem_venda.preco_enviado = 10
+ordem_venda.tipo_ordem = 'limited'
 
-ordem_venda = corretora_obj.enviar_ordem_compra(ordem_venda,ativo)
+ordem_venda = corretora_obj.enviar_ordem_venda(ordem_venda,ativo)
 ordem = corretora_obj.obter_ordem_por_id(ativo,ordem_venda)
 cancelou = corretora_obj.cancelar_ordem(ativo,ordem_venda.id)
 
-print('terminei')
+print(cancelou)
