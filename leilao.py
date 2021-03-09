@@ -4,6 +4,7 @@ from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
 from uteis.ordem import Ordem
+import math
 class Leilao:
 
     def envia_compra_limitada(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, executarOrdens = False):
@@ -33,6 +34,12 @@ class Leilao:
                 gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
                 maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                 qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
+
+                # Truncando as casas decimais conforme regra da corretora de maior liquidez
+                if ativo =='xrp':
+                    qtdNegociada = math.trunc(qtdNegociada*100)/100 #trunca na segunda
+                else:
+                    qtdNegociada = math.trunc(qtdNegociada*1000000)/1000000 #trunca na sexta 
 
                 # Nao pode ter saldo na mercado de menos de um real
                 if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo['brl'] > Util.retorna_menor_valor_compra(ativo)):
@@ -86,6 +93,12 @@ class Leilao:
                 
                 # Mínimo entre o que eu gostaria de comprar com o máximo que consigo zerar na outra ponta
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
+
+                # Truncando as casas decimais conforme regra da corretora de maior liquidez
+                if ativo =='xrp':
+                    qtdNegociada = math.trunc(qtdNegociada*100)/100#trunca na segunda
+                else:
+                    qtdNegociada = math.trunc(qtdNegociada*1000000)/1000000#trunca na sexta 
                 
                 # Se quantidade negociada maior que a quantidade mínima permitida de venda
                 if qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
@@ -104,7 +117,7 @@ class Leilao:
             else:
                 logging.info('leilao venda de {} nao vale a pena, {} é maior que 0.99*{}'.format(ativo,preco_que_vou_comprar,preco_de_zeragem))
         except Exception as erro:
-                msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: venda. Msg Corretora:', erro)
+                msg_erro = Util.retorna_erros_objeto_exception('o, método: venda. Msg Corretora:', erro)
                 raise Exception(msg_erro)
         
         return retorno_compra_corretora_leilao
@@ -156,12 +169,13 @@ class Leilao:
                     
                     # Zera o risco na outra corretora com uma operação à mercado
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
+                    corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
                     #retorno_compra.preco_executado = corretoraZeragem.book.obter_preco_medio_de_compra(corretoraZeragem.ordem.quantidade_negociada)
                                 
         except Exception as erro:
-            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado.', erro)
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_compra_na_mercado. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
 
         return retorno_compra, cancelou
@@ -211,13 +225,13 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
                     logging.info('leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
-                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)
+                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)                    
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                     #retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
                 
         except Exception as erro:
-            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado.', erro)
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
         
         return retorno_venda,cancelou

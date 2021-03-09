@@ -172,6 +172,7 @@ class Corretora:
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                
                 if response['success'] == True:
                     ordem.id = response['data']['id']
                     ordem.status = response['data']['status']
@@ -242,7 +243,7 @@ class Corretora:
                     ordem.id = response['result']
         except Exception as erro:
             raise Exception(erro)
-
+        
         return ordem
 
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
@@ -335,7 +336,7 @@ class Corretora:
                     ordem.id = response['result']
         except Exception as erro:
                 raise Exception(erro)
-
+        
         return ordem
 
     def cancelar_ordem(self,ativo_parte,idOrdem):
