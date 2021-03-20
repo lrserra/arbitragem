@@ -75,15 +75,15 @@ class Corretora:
         except Exception as erro:
             raise Exception(erro)
 
-    def cancelar_todas_ordens(self,ativo,ativo_contraparte='brl'):
+    def cancelar_todas_ordens(self,ativo='btc',ativo_contraparte='brl'):
 
         if self.nome == 'MercadoBitcoin':
             pass
         elif self.nome == 'BrasilBitcoin':
             ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
-                if str(ativo).upper() == str(ordem['coin']).upper():
-                    self.cancelar_ordem(ativo,ordem['id'])
+                #if str(ativo).upper() == str(ordem['coin']).upper():
+                self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitcoinTrade':
             ordens_abertas = BitcoinTrade(ativo).obterOrdensAbertas()
             if ordens_abertas['message'] == 'Too Many Requests':
@@ -339,7 +339,7 @@ class Corretora:
         
         return ordem
 
-    def cancelar_ordem(self,ativo_parte,idOrdem):
+    def cancelar_ordem(self,ativo_parte='btc',idOrdem=0):
         
         if self.nome == 'MercadoBitcoin':
             return False
