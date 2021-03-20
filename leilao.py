@@ -297,7 +297,8 @@ if __name__ == "__main__":
 
                     #verifica se fui executado e se necessario cancelar ordens abertas            
                     dict_leilao_compra[moeda]['zeragem'], dict_leilao_compra[moeda]['foi_cancelado'] = Leilao.cancela_ordens_de_compra_e_zera(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_compra[moeda]['ordem'])
-                    
+                    time.sleep(Util.frequencia())
+
                     # Se Id diferente de zero, significa que operou leilão (fui executado)
                     if dict_leilao_compra[moeda]['zeragem'].id != 0:
                         
@@ -324,6 +325,7 @@ if __name__ == "__main__":
                     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
                     dict_leilao_venda[moeda]['zeragem'], dict_leilao_venda[moeda]['foi_cancelado'] = Leilao.cancela_ordens_de_venda_e_zera(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_venda[moeda]['ordem'])
+                    time.sleep(Util.frequencia())
 
                     # Se Id diferente de zero, significa que operou leilão (fui executado)
                     if  dict_leilao_venda[moeda]['zeragem'].id != 0:
