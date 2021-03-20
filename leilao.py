@@ -160,8 +160,8 @@ class Leilao:
                     logging.info('leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_compra.id,ativo))
                     cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                     
-                elif (ordem_leilao_compra.preco_enviado < 1.01 * corretoraZeragem.book.preco_compra):
-                    
+                elif (ordem_leilao_compra.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.preco_compra):
+                                        
                     logging.info('leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_compra.id,ativo))
                     cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                     
@@ -217,7 +217,7 @@ class Leilao:
                     logging.info('leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_leilao_venda.id,ativo))
                     cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
                     
-                elif (ordem_leilao_venda.preco_enviado > 0.99 * corretoraZeragem.book.preco_venda):
+                elif (ordem_leilao_venda.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.preco_venda*(1-corretoraZeragem.corretagem_mercado)):
                     
                     logging.info('leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_venda.id,ativo))
                     cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
@@ -302,7 +302,7 @@ if __name__ == "__main__":
                     if dict_leilao_compra[moeda]['zeragem'].id != 0:
                         
                         comprei_a = round(dict_leilao_compra[moeda]['zeragem'].preco_executado,2)
-                        vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_executado,2)
+                        vendi_a = round(dict_leilao_compra[moeda]['ordem'].preco_enviado,2)
                         quantidade = round(dict_leilao_compra[moeda]['zeragem'].quantidade_executada,4)
 
                         pnl = round((vendi_a * (1-CorretoraMenosLiquida.corretagem_limitada) - comprei_a * (1+CorretoraMaisLiquida.corretagem_mercado)) * quantidade,2)
@@ -319,6 +319,9 @@ if __name__ == "__main__":
                         dict_leilao_compra[moeda]['ordem']  = Leilao.envia_compra_limitada(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                         time.sleep(Util.frequencia())
                 
+                    # Instancia das corretoras
+                    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+                    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
                     dict_leilao_venda[moeda]['zeragem'], dict_leilao_venda[moeda]['foi_cancelado'] = Leilao.cancela_ordens_de_venda_e_zera(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_venda[moeda]['ordem'])
 
@@ -326,7 +329,7 @@ if __name__ == "__main__":
                     if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
                         vendi_a = round(dict_leilao_venda[moeda]['zeragem'].preco_executado,2)
-                        comprei_a = round(dict_leilao_venda[moeda]['ordem'].preco_executado,2)
+                        comprei_a = round(dict_leilao_venda[moeda]['ordem'].preco_enviado,2)
                         quantidade = round(dict_leilao_venda[moeda]['zeragem'].quantidade_executada,4)
 
                         pnl = round(((vendi_a*(1-CorretoraMaisLiquida.corretagem_mercado))-(comprei_a*(1+CorretoraMenosLiquida.corretagem_limitada))) * quantidade,2)
@@ -336,7 +339,7 @@ if __name__ == "__main__":
                         Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
                         
                         dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
-                        dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens 
+                        dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
 
                     elif dict_leilao_venda[moeda]['ordem'].id == 0 or  dict_leilao_venda[moeda]['foi_cancelado']:#se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
                         logging.info('leilao venda vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_venda[moeda]['ordem'].id,dict_leilao_venda[moeda]['foi_cancelado']))

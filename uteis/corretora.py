@@ -377,12 +377,12 @@ class Corretora:
     def __obter_corretagem(self,nome):
 
         if self.nome == 'MercadoBitcoin':
-            corretagem_limitada = 0.003
-            corretagem_mercado = 0.007
+            corretagem_limitada = 0.0012
+            corretagem_mercado = 0.006
             
         elif self.nome == 'BrasilBitcoin':
-            corretagem_limitada = 0.002
-            corretagem_mercado = 0.005
+            corretagem_limitada = 0.0018
+            corretagem_mercado = 0.0045
             
         elif self.nome == 'BitcoinTrade':
             corretagem_limitada = 0.0025
