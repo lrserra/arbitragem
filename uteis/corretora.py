@@ -85,15 +85,16 @@ class Corretora:
                 #if str(ativo).upper() == str(ordem['coin']).upper():
                 self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitcoinTrade':
-            ordens_abertas = BitcoinTrade(ativo).obterOrdensAbertas()
-            if ordens_abertas['message'] == 'Too Many Requests':
-                time.sleep(1)
-                ordens_abertas = BitcoinTrade(ativo).obterOrdensAbertas()
-            elif 'data' not in ordens_abertas.keys():
-                logging.info(str(ordens_abertas))
-            for ordem in ordens_abertas['data']['orders']:
-                if 'pair_code' in ordem.keys():
-                    self.cancelar_ordem(ativo,ordem['id'])
+            for moeda in self.saldo.keys():
+                ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
+                if ordens_abertas['message'] == 'Too Many Requests':
+                    time.sleep(1)
+                    ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
+                elif 'data' not in ordens_abertas.keys():
+                    logging.info(str(ordens_abertas))
+                for ordem in ordens_abertas['data']['orders']:
+                    if 'pair_code' in ordem.keys():
+                        self.cancelar_ordem(moeda,ordem['id'])
         elif self.nome == 'Novadax':            
             ordens_abertas = Novadax(ativo).obterOrdensAbertas()
             if 'data' in ordens_abertas.keys():
