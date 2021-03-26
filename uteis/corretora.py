@@ -92,7 +92,7 @@ class Corretora:
             elif 'data' not in ordens_abertas.keys():
                 logging.info(str(ordens_abertas))
             for ordem in ordens_abertas['data']['orders']:
-                if 'pair_code' in ordem.keys() and str(ativo).upper() == str(ordem['pair_code'][3:]).upper():
+                if 'pair_code' in ordem.keys():
                     self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'Novadax':            
             ordens_abertas = Novadax(ativo).obterOrdensAbertas()
