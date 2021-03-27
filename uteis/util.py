@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from datetime import datetime
 
 class Util:
@@ -19,20 +20,21 @@ class Util:
         arquivo.writelines(linhaRegistro + '\n')
         arquivo.close()
 
-    def adicionar_linha_em_operacoes(linhaRegistro):
-        header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
-        nomeArquivo = 'Operacoes.txt'
+    def adicionar_linha_em_operacoes(moeda,corretora,c_v,preco,quantidade,pnl,estrategia,data):
+        #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         
-        if os.path.exists(nomeArquivo):
-            append_write = 'a' # append if already exists
-            arquivo = open(nomeArquivo,append_write)
-        else:
-            append_write = 'w' # make a new file if not
-            arquivo = open(nomeArquivo,append_write)
-            arquivo.writelines(header + '\n')
+        data_to_send={}
 
-        arquivo.writelines(linhaRegistro + '\n')
-        arquivo.close()
+        data_to_send['moeda'] = moeda
+        data_to_send['corretora'] = corretora
+        data_to_send['c_v'] = c_v
+        data_to_send['preco'] = preco
+        data_to_send['quantidade'] = quantidade
+        data_to_send['pnl'] = pnl
+        data_to_send['estrategia'] = estrategia
+        data_to_send['data'] = data
+
+        requests.post("https://hook.integromat.com/rxcekfvix72yoe20vefs9b7mdloohjo9", json = data_to_send)
 
     def obterCredenciais():
         with open('appsettings.json') as f:
