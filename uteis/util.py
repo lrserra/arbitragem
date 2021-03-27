@@ -5,20 +5,16 @@ from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_saldo(linhaRegistro):
-        header = 'MOEDA|SALDO|DATA'
-        nomeArquivo = 'Saldo.txt'
-        
-        if os.path.exists(nomeArquivo):
-            append_write = 'a' # append if already exists
-            arquivo = open(nomeArquivo,append_write)
-        else:
-            append_write = 'w' # make a new file if not
-            arquivo = open(nomeArquivo,append_write)
-            arquivo.writelines(header + '\n')
+    def adicionar_linha_no_saldo(moeda,saldo,data):
+        #header = 'MOEDA|SALDO|DATA'
+                
+        data_to_send={}
 
-        arquivo.writelines(linhaRegistro + '\n')
-        arquivo.close()
+        data_to_send['moeda'] = moeda
+        data_to_send['saldo'] = saldo
+        data_to_send['data'] = data
+
+        requests.post("https://hook.integromat.com/mov8rcncgzo6eem1o7fpurob9tuk3lzo", json = data_to_send)
 
     def adicionar_linha_em_operacoes(moeda,corretora,c_v,preco,quantidade,pnl,estrategia,data):
         #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'

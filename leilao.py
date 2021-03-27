@@ -281,7 +281,6 @@ if __name__ == "__main__":
         CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
         Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
-        #Caixa.envia_saldo_google(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
         
         agora = datetime.now() 
         proxima_hora = agora + timedelta(hours=1)
