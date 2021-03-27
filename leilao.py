@@ -310,8 +310,8 @@ if __name__ == "__main__":
 
                         logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
                         
-                        Util.adicionar_linha_em_operacoes(moeda,corretora_mais_liquida,comprei_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
-                        Util.adicionar_linha_em_operacoes(moeda,corretora_menos_liquida,vendi_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,corretora_mais_liquida,'C',comprei_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,corretora_menos_liquida,'V',vendi_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                         dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -339,8 +339,8 @@ if __name__ == "__main__":
 
                         logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
                         
-                        Util.adicionar_linha_em_operacoes(moeda,corretora_mais_liquida,vendi_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
-                        Util.adicionar_linha_em_operacoes(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,corretora_mais_liquida,'V',vendi_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,corretora_menos_liquida,'C',comprei_a,quantidade,pnl/2,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                         dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
