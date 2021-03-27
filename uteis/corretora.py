@@ -130,7 +130,7 @@ class Corretora:
                                 ordem.quantidade_executada = ativo['executed_amount']
                                 ordem.preco_executado = ativo['unit_price']
                     if ordem.id == 0:
-                        response = BitcoinTrade().obterOrdemPorIdStatusExecuted(obterOrdem.code)
+                        response = BitcoinTrade(ativo).obterOrdemPorIdStatusExecuted(obterOrdem.code)
                         for ativo in response['data']['orders']: 
                             if ativo['code'] == obterOrdem.code:
                                 ordem.status = ativo['status']
