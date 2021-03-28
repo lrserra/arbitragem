@@ -23,9 +23,23 @@ class Caixa:
             porcentagem_menos_liquida = round(100*CorretoraMenosLiquida.saldo[moeda]/saldo_inicial[moeda],0)
             
             logging.warning('saldo inicial em {}: {} ({}% na {} e {}% na {})'.format(moeda,saldo_inicial[moeda],porcentagem_mais_liquida,CorretoraMaisLiquida.nome,porcentagem_menos_liquida,CorretoraMenosLiquida.nome))
-            Util.adicionar_linha_no_saldo('{}|{}|{}'.format(moeda.upper(),round(saldo_inicial[moeda],4),datetime.now()))
-
+            
         return saldo_inicial
+
+    def envia_saldo_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
+        '''
+        envia saldo para planilha do google
+        '''
+        saldo = {}
+        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch']
+        
+        for moeda in lista_de_moedas_hardcoded:
+            if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
+                saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
+            else:
+                saldo[moeda] = 0
+
+        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
@@ -188,5 +202,8 @@ if __name__ == "__main__":
 
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
     Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
-    #Caixa.rebalanceia_carteiras(corretora_mais_liquida,corretora_menos_liquida)
     
+    CorretoraMaisLiquida.atualizar_saldo()
+    CorretoraMenosLiquida.atualizar_saldo()
+
+    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)

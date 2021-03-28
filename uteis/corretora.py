@@ -57,7 +57,7 @@ class Corretora:
                     time.sleep(3)
                     response_json = BrasilBitcoin(ativo).obterSaldo()
                 for ativo in response_json.keys():
-                    if ativo in self.saldo.keys():
+                    if ativo != 'user_cpf':
                         self.saldo[ativo.lower()] = float(response_json[ativo])
 
             elif self.nome == 'BitcoinTrade':
@@ -137,7 +137,7 @@ class Corretora:
                                 ordem.quantidade_executada = ativo['executed_amount']
                                 ordem.preco_executado = ativo['unit_price']
                     if ordem.id == 0:
-                        response = BitcoinTrade().obterOrdemPorIdStatusExecuted(obterOrdem.code)
+                        response = BitcoinTrade(ativo).obterOrdemPorIdStatusExecuted(obterOrdem.code)
                         for ativo in response['data']['orders']: 
                             if ativo['code'] == obterOrdem.code:
                                 ordem.status = ativo['status']

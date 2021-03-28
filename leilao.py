@@ -191,7 +191,7 @@ class Leilao:
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
-                corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada
+                corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada *(1-corretoraLeilao.corretagem_limitada)
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
         
@@ -225,7 +225,7 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
                     logging.info('leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
-                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)                    
+                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)*(1-corretoraLeilao.corretagem_limitada)              
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                     #retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
@@ -309,14 +309,14 @@ if __name__ == "__main__":
                         pnl = round((vendi_a * (1-CorretoraMenosLiquida.corretagem_limitada) - comprei_a * (1+CorretoraMaisLiquida.corretagem_mercado)) * quantidade,2)
 
                         logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        
+                        Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                         dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
 
                     elif dict_leilao_compra[moeda]['ordem'].id == 0 or dict_leilao_compra[moeda]['foi_cancelado']: #se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
-                        logging.info('leilao compra vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_compra[moeda]['ordem'].id,dict_leilao_compra[moeda]['foi_cancelado']))
+                        #logging.info('leilao compra vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_compra[moeda]['ordem'].id,dict_leilao_compra[moeda]['foi_cancelado']))
                         dict_leilao_compra[moeda]['ordem']  = Leilao.envia_compra_limitada(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                         time.sleep(Util.frequencia())
                 
@@ -337,14 +337,14 @@ if __name__ == "__main__":
                         pnl = round(((vendi_a*(1-CorretoraMaisLiquida.corretagem_mercado))-(comprei_a*(1+CorretoraMenosLiquida.corretagem_limitada))) * quantidade,2)
 
                         logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|V|{}|{}|{}|{}'.format(moeda,corretora_mais_liquida,vendi_a,quantidade,pnl/2,'LEILAO',datetime.now()))
-                        Util.adicionar_linha_em_operacoes('{}|{}|{}|C|{}|{}|{}|{}'.format(moeda,corretora_menos_liquida,comprei_a,quantidade,pnl/2,'LEILAO',datetime.now()))
+                        
+                        Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,CorretoraMaisLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                         dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
 
                     elif dict_leilao_venda[moeda]['ordem'].id == 0 or  dict_leilao_venda[moeda]['foi_cancelado']:#se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
-                        logging.info('leilao venda vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_venda[moeda]['ordem'].id,dict_leilao_venda[moeda]['foi_cancelado']))
+                        #logging.info('leilao venda vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_venda[moeda]['ordem'].id,dict_leilao_venda[moeda]['foi_cancelado']))
                         dict_leilao_venda[moeda]['ordem'] = Leilao.envia_venda_limitada(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
                         time.sleep(Util.frequencia())
                     

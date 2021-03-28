@@ -1,38 +1,59 @@
 import os
 import json
+import requests
 from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_saldo(linhaRegistro):
-        header = 'MOEDA|SALDO|DATA'
-        nomeArquivo = 'Saldo.txt'
+    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,data):
         
-        if os.path.exists(nomeArquivo):
-            append_write = 'a' # append if already exists
-            arquivo = open(nomeArquivo,append_write)
-        else:
-            append_write = 'w' # make a new file if not
-            arquivo = open(nomeArquivo,append_write)
-            arquivo.writelines(header + '\n')
+        #dados que serão enviados ao webhook
+        data_to_send={}
 
-        arquivo.writelines(linhaRegistro + '\n')
-        arquivo.close()
+        data_to_send['qtd_brl'] = round(qtd_brl,4)
+        data_to_send['qtd_btc'] = round(qtd_btc,4)
+        data_to_send['qtd_eth'] = round(qtd_eth,4)
+        data_to_send['qtd_xrp'] = round(qtd_xrp,4)
+        data_to_send['qtd_ltc'] = round(qtd_ltc,4)
+        data_to_send['qtd_bch'] = round(qtd_bch,4)
+        data_to_send['data'] = str(data)
 
-    def adicionar_linha_em_operacoes(linhaRegistro):
-        header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
-        nomeArquivo = 'Operacoes.txt'
+        #pega o webhook no appsettings
+        webhook = ''
+        with open('appsettings.json') as f:
+            webhook = json.load(f)["integromat"]["saldo"]
+
+        #envia post 
+        try:
+            requests.post(webhook, json = data_to_send)
+        except:
+            pass
+
+    def adicionar_linha_em_operacoes(moeda,corretora_compra,preco_compra,corretora_venda,preco_venda,quantidade,pnl,estrategia,data):
+        #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         
-        if os.path.exists(nomeArquivo):
-            append_write = 'a' # append if already exists
-            arquivo = open(nomeArquivo,append_write)
-        else:
-            append_write = 'w' # make a new file if not
-            arquivo = open(nomeArquivo,append_write)
-            arquivo.writelines(header + '\n')
+        data_to_send={}
 
-        arquivo.writelines(linhaRegistro + '\n')
-        arquivo.close()
+        data_to_send['moeda'] = moeda
+        data_to_send['corretora_compra'] = corretora_compra
+        data_to_send['preco_compra'] = preco_compra
+        data_to_send['corretora_venda'] = corretora_venda
+        data_to_send['preco_venda'] = preco_venda
+        data_to_send['quantidade'] = quantidade
+        data_to_send['pnl'] = pnl
+        data_to_send['estrategia'] = estrategia
+        data_to_send['data'] = data
+
+        #pega o webhook no appsettings
+        webhook = ''
+        with open('appsettings.json') as f:
+            webhook = json.load(f)["integromat"]["operacoes"]
+        
+        #envia post
+        try:
+            requests.post(webhook, json = data_to_send)
+        except:
+            pass
 
     def obterCredenciais():
         with open('appsettings.json') as f:
