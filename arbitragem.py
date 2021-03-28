@@ -88,7 +88,7 @@ class Arbitragem:
                                     comprei_a = round(ordem_compra.preco_executado,4)
                                     vendi_a = round(ordem_venda.preco_executado,4)
                                     
-                                    Util.adicionar_linha_em_operacoes(ativo,corretoraCompra.nome,comprei_a,CorretoraVenda.nome,vendi_a,quantidade,pnl_real,'ARBITRAGEM',str(datetime.now()))
+                                    Util.adicionar_linha_em_operacoes(ativo,corretoraCompra.nome,comprei_a,corretoraVenda.nome,vendi_a,quantidade,pnl_real,'ARBITRAGEM',str(datetime.now()))
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
