@@ -191,7 +191,7 @@ class Leilao:
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
-                corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada
+                corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada *(1-corretoraCompra.corretagem_limitada)
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
         
