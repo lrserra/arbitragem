@@ -31,11 +31,10 @@ class Caixa:
         envia saldo para planilha do google
         '''
         saldo_inicial = {}
-        for moeda in lista_de_moedas+['brl']:
-            
-            saldo_inicial[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
-            Util.adicionar_linha_no_saldo(moeda.upper(),round(saldo_inicial[moeda],4),str(datetime.now()))
-            time.sleep(1)
+        
+        moeda = 'brl'
+        saldo_inicial[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
+        Util.adicionar_linha_no_saldo(moeda.upper(),round(saldo_inicial[moeda],4),str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
@@ -198,5 +197,8 @@ if __name__ == "__main__":
 
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
     Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    
+    CorretoraMaisLiquida.atualizar_saldo()
+    CorretoraMenosLiquida.atualizar_saldo()
+
     Caixa.envia_saldo_google(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)

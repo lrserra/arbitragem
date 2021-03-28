@@ -14,7 +14,8 @@ class Util:
         data_to_send['saldo'] = saldo
         data_to_send['data'] = data
 
-        requests.post("https://hook.integromat.com/mov8rcncgzo6eem1o7fpurob9tuk3lzo", json = data_to_send)
+        try:
+            requests.post("https://hook.integromat.com/mov8rcncgzo6eem1o7fpurob9tuk3lzo", json = data_to_send)
 
     def adicionar_linha_em_operacoes(moeda,corretora,c_v,preco,quantidade,pnl,estrategia,data):
         #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
@@ -30,7 +31,9 @@ class Util:
         data_to_send['estrategia'] = estrategia
         data_to_send['data'] = data
 
-        requests.post("https://hook.integromat.com/rxcekfvix72yoe20vefs9b7mdloohjo9", json = data_to_send)
+        try:
+            requests.post("https://hook.integromat.com/rxcekfvix72yoe20vefs9b7mdloohjo9", json = data_to_send)
+
 
     def obterCredenciais():
         with open('appsettings.json') as f:
