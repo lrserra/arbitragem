@@ -51,17 +51,24 @@ class Corretora:
                     if float(response_json['response_data']['balance'][ativo]['total'])>0:
                         self.saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
             elif self.nome == 'BrasilBitcoin':
+                
                 response_json = BrasilBitcoin(ativo).obterSaldo()
+                while response_json is None:
+                    time.sleep(3)
+                    response_json = BrasilBitcoin(ativo).obterSaldo()
                 for ativo in response_json.keys():
                     if ativo in self.saldo.keys():
                         self.saldo[ativo.lower()] = float(response_json[ativo])
+
             elif self.nome == 'BitcoinTrade':
+                
                 response_json = BitcoinTrade(ativo).obterSaldo()
                 while 'data' not in response_json.keys():
                     time.sleep(1)
                     response_json = BitcoinTrade(ativo).obterSaldo()
                 for item in response_json['data']:
                     self.saldo[item['currency_code'].lower()] = float(item['available_amount']) + float(item['locked_amount'])
+
             elif self.nome == 'Novadax':
                 response_json = Novadax(ativo).obterSaldo()
                 for item in response_json['data']:

@@ -19,7 +19,8 @@ class BrasilBitcoin:
         return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
 
     def obterSaldo(self):
-        return self.executarRequestBrasilBTC('GET', '','/api/get_balance')
+        retorno = self.executarRequestBrasilBTC('GET', '','/api/get_balance')
+        return retorno
 
     def obterOrdemPorId(self, idOrdem):
         return self.executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
@@ -85,4 +86,8 @@ class BrasilBitcoin:
         }
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
-        return json.loads(res.text.encode('utf8'))
+        
+        if res.status_code == 429:
+            return None
+        else:
+            return json.loads(res.text.encode('utf8'))
