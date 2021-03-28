@@ -35,9 +35,10 @@ class Util:
         data_to_send={}
 
         data_to_send['moeda'] = moeda
-        data_to_send['corretora'] = corretora
-        data_to_send['c_v'] = c_v
-        data_to_send['preco'] = preco
+        data_to_send['corretora_compra'] = corretora_compra
+        data_to_send['preco_compra'] = preco_compra
+        data_to_send['corretora_venda'] = corretora_venda
+        data_to_send['preco_venda'] = preco_venda
         data_to_send['quantidade'] = quantidade
         data_to_send['pnl'] = pnl
         data_to_send['estrategia'] = estrategia
