@@ -310,9 +310,7 @@ if __name__ == "__main__":
 
                         logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
                         
-                        pnl_minimo= 0.5
-                        if abs(pnl)>pnl_minimo:
-                            Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                         dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -340,9 +338,7 @@ if __name__ == "__main__":
 
                         logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
                         
-                        pnl_minimo= 0.5
-                        if abs(pnl)>pnl_minimo:
-                            Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,CorretoraMaisLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
+                        Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,CorretoraMaisLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                         dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
