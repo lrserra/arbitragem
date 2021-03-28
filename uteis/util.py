@@ -29,7 +29,7 @@ class Util:
         except:
             pass
 
-    def adicionar_linha_em_operacoes(moeda,corretora,c_v,preco,quantidade,pnl,estrategia,data):
+    def adicionar_linha_em_operacoes(moeda,corretora_compra,preco_compra,corretora_venda,preco_venda,quantidade,pnl,estrategia,data):
         #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         
         data_to_send={}

@@ -312,7 +312,7 @@ if __name__ == "__main__":
                         
                         pnl_minimo= 0.5
                         if abs(pnl)>pnl_minimo:
-                            Util.adicionar_linha_em_operacoes(moeda,corretora_mais_liquida,comprei_a,corretora_menos_liquida,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
+                            Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                         dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -342,7 +342,7 @@ if __name__ == "__main__":
                         
                         pnl_minimo= 0.5
                         if abs(pnl)>pnl_minimo:
-                            Util.adicionar_linha_em_operacoes(moeda,corretora_menos_liquida,comprei_a,corretora_mais_liquida,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
+                            Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,CorretoraMaisLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
                         
                         dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                         dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
