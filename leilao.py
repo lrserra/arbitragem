@@ -225,7 +225,7 @@ class Leilao:
                 if executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                     
                     logging.info('leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
-                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)                    
+                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)*(1-corretoraLeilao.corretagem_limitada)              
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                     #retorno_venda.preco_executado = corretoraZeragem.book.obter_preco_medio_de_venda(corretoraZeragem.ordem.quantidade_enviada)
