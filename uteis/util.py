@@ -5,17 +5,27 @@ from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_saldo(moeda,saldo,data):
-        #header = 'MOEDA|SALDO|DATA'
-                
+    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,data):
+        
+        #dados que serão enviados ao webhook
         data_to_send={}
 
-        data_to_send['moeda'] = moeda
-        data_to_send['saldo'] = saldo
-        data_to_send['data'] = data
+        data_to_send['qtd_brl'] = round(qtd_brl,4)
+        data_to_send['qtd_btc'] = round(qtd_btc,4)
+        data_to_send['qtd_eth'] = round(qtd_eth,4)
+        data_to_send['qtd_xrp'] = round(qtd_xrp,4)
+        data_to_send['qtd_ltc'] = round(qtd_ltc,4)
+        data_to_send['qtd_bch'] = round(qtd_bch,4)
+        data_to_send['data'] = str(data)
 
+        #pega o webhook no appsettings
+        webhook = ''
+        with open('appsettings.json') as f:
+            webhook = json.load(f)["integromat"]["saldo"]
+
+        #envia post 
         try:
-            requests.post("https://hook.integromat.com/mov8rcncgzo6eem1o7fpurob9tuk3lzo", json = data_to_send)
+            requests.post(webhook, json = data_to_send)
         except:
             pass
 
@@ -33,8 +43,14 @@ class Util:
         data_to_send['estrategia'] = estrategia
         data_to_send['data'] = data
 
+        #pega o webhook no appsettings
+        webhook = ''
+        with open('appsettings.json') as f:
+            webhook = json.load(f)["integromat"]["operacoes"]
+        
+        #envia post
         try:
-            requests.post("https://hook.integromat.com/rxcekfvix72yoe20vefs9b7mdloohjo9", json = data_to_send)
+            requests.post(webhook, json = data_to_send)
         except:
             pass
 

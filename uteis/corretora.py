@@ -53,7 +53,7 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 response_json = BrasilBitcoin(ativo).obterSaldo()
                 for ativo in response_json.keys():
-                    if ativo in self.saldo.keys():
+                    if ativo != 'user_cpf':
                         self.saldo[ativo.lower()] = float(response_json[ativo])
             elif self.nome == 'BitcoinTrade':
                 response_json = BitcoinTrade(ativo).obterSaldo()

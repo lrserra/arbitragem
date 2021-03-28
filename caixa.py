@@ -26,15 +26,20 @@ class Caixa:
             
         return saldo_inicial
 
-    def envia_saldo_google(lista_de_moedas,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
+    def envia_saldo_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
         '''
         envia saldo para planilha do google
         '''
-        saldo_inicial = {}
+        saldo = {}
+        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch']
         
-        moeda = 'brl'
-        saldo_inicial[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
-        Util.adicionar_linha_no_saldo(moeda.upper(),round(saldo_inicial[moeda],4),str(datetime.now()))
+        for moeda in lista_de_moedas_hardcoded:
+            if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
+                saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
+            else:
+                saldo[moeda] = 0
+
+        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
@@ -201,4 +206,4 @@ if __name__ == "__main__":
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    Caixa.envia_saldo_google(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
