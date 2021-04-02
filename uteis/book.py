@@ -3,6 +3,7 @@ from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from corretoras.bitRecife import BitRecife
+from uteis.util import Util
 
 class Book:
     def __init__(self,nome):
@@ -15,36 +16,70 @@ class Book:
         self.quantidade_compra = 0.0
         self.quantidade_venda = 0.0
 
-    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0):
+    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False):
         
         try:
             self.__carregar_ordem_books(ativo_parte,ativo_contraparte)
 
+            if ignorar_quantidades_pequenas:
+                minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
+                minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
+
             if self.nome == 'MercadoBitcoin':
+                if ignorar_quantidades_pequenas:
+                    while float(self.book['asks'][indice][1])*float(self.book['asks'][indice][0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        indice+=1
+                    while float(self.book['bids'][indice][1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        indice+=1
+
                 self.preco_compra = float(self.book['asks'][indice][0])
                 self.quantidade_compra = float(self.book['asks'][indice][1])
                 self.preco_venda = float(self.book['bids'][indice][0])
                 self.quantidade_venda = float(self.book['bids'][indice][1])
-                
+            
             elif self.nome == 'BrasilBitcoin':
+                if ignorar_quantidades_pequenas:
+                    while float(self.book['sell'][indice]['quantidade'])*float(self.book['sell'][indice]['preco']) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        indice+=1
+                    while float(self.book['buy'][indice]['quantidade']) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        indice+=1
+
                 self.preco_compra = float(self.book['sell'][indice]['preco'])
                 self.quantidade_compra = float(self.book['sell'][indice]['quantidade'])
                 self.preco_venda = float(self.book['buy'][indice]['preco'])
                 self.quantidade_venda = float(self.book['buy'][indice]['quantidade'])
                 
             elif self.nome == 'BitcoinTrade':
+                if ignorar_quantidades_pequenas:
+                    while float(self.book['data']['asks'][indice]['amount'])*float(self.book['data']['asks'][indice]['unit_price']) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        indice+=1
+                    while float(self.book['data']['bids'][indice]['amount']) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        indice+=1
+
                 self.preco_compra = float(self.book['data']['asks'][indice]['unit_price'])
                 self.quantidade_compra = float(self.book['data']['asks'][indice]['amount'])
                 self.preco_venda = float(self.book['data']['bids'][indice]['unit_price'])
                 self.quantidade_venda = float(self.book['data']['bids'][indice]['amount'])
                 
             elif self.nome == 'Novadax':
+                if ignorar_quantidades_pequenas:
+                    while float(self.book['data']['asks'][indice][1])*float(self.book['data']['asks'][indice][0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        indice+=1
+                    while float(self.book['data']['bids'][indice][1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        indice+=1
+
                 self.preco_compra = float(self.book['data']['asks'][indice][0])
                 self.quantidade_compra = float(self.book['data']['asks'][indice][1])
                 self.preco_venda = float(self.book['data']['bids'][indice][0])
                 self.quantidade_venda = float(self.book['data']['bids'][indice][1])
 
             elif self.nome == 'BitRecife':
+                if ignorar_quantidades_pequenas:
+                    while float(self.book['result']['sell'][indice]['Quantity'])*float(self.book['result']['sell'][indice]['Rate']) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        indice+=1
+                    while float(self.book['result']['buy'][indice]['Quantity']) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        indice+=1
+
                 self.preco_compra = float(self.book['result']['sell'][indice]['Rate'])
                 self.quantidade_compra = float(self.book['result']['sell'][indice]['Quantity'])
                 self.preco_venda = float(self.book['result']['buy'][indice]['Rate'])
