@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Util:
     
-    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,data):
+    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,data):
         
         #dados que serão enviados ao webhook
         data_to_send={}
@@ -16,6 +16,11 @@ class Util:
         data_to_send['qtd_xrp'] = round(qtd_xrp,4)
         data_to_send['qtd_ltc'] = round(qtd_ltc,4)
         data_to_send['qtd_bch'] = round(qtd_bch,4)
+        data_to_send['qtd_btc_brl'] = round(qtd_btc_brl,4)
+        data_to_send['qtd_eth_brl'] = round(qtd_eth_brl,4)
+        data_to_send['qtd_xrp_brl'] = round(qtd_xrp_brl,4)
+        data_to_send['qtd_ltc_brl'] = round(qtd_ltc_brl,4)
+        data_to_send['qtd_bch_brl'] = round(qtd_bch_brl,4)
         data_to_send['data'] = str(data)
 
         #pega o webhook no appsettings
