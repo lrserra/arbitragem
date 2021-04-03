@@ -39,8 +39,11 @@ class Caixa:
             if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
                 saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
                 
-                CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
-                preco_venda[moeda] = CorretoraMaisLiquida.book.preco_venda
+                if moeda != 'brl':
+                    CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
+                    preco_venda[moeda] = CorretoraMaisLiquida.book.preco_venda
+                else:
+                    preco_venda[moeda] = 1
             else:
                 saldo[moeda] = 0
                 preco_venda[moeda] = 0
@@ -208,7 +211,7 @@ if __name__ == "__main__":
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
-    Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
+    #Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
