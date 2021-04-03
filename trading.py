@@ -3,8 +3,9 @@ import requests
 from uteis.util import Util
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
+from datetime import datetime
 
-
+is_midnight = datetime.now().hour == 0
 # ---- Testar book de ordens ---- #
 # nova_dax = Corretora(nome_corretora, ativo)
 # nova_dax.carregar_ordem_books()

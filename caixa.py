@@ -31,15 +31,24 @@ class Caixa:
         envia saldo para planilha do google
         '''
         saldo = {}
+        preco_venda = {}
+
         lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch']
         
         for moeda in lista_de_moedas_hardcoded:
             if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
                 saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
+                
+                if moeda != 'brl':
+                    CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
+                    preco_venda[moeda] = CorretoraMaisLiquida.book.preco_venda
+                else:
+                    preco_venda[moeda] = 1
             else:
                 saldo[moeda] = 0
+                preco_venda[moeda] = 0
 
-        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],str(datetime.now()))
+        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
@@ -194,6 +203,7 @@ if __name__ == "__main__":
 
         
     from caixa import Caixa
+    from datetime import datetime
 
     logging.basicConfig(filename='caixa.log', level=logging.INFO,
                         format='[%(asctime)s][%(levelname)s][%(message)s]')
@@ -216,4 +226,6 @@ if __name__ == "__main__":
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+    is_midnight = datetime.now().hour == 0
+    if is_midnight:
+        Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
