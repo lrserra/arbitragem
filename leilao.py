@@ -190,9 +190,10 @@ class Leilao:
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
                 corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada *(1-corretoraLeilao.corretagem_limitada)
-                corretoraZeragem.ordem.tipo_ordem = 'market'
+                corretoraZeragem.ordem.tipo_ordem = 'market'corretoraLeilao.corretagem_limitada
                 retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
-        
+                logging.info('quantidade_enviada {} quantidade_executada_leilao {} Taxa_desconto {}'.format(corretoraZeragem.ordem.quantidade_enviada,ordem_leilao_venda.quantidade_executada,corretoraLeilao.corretagem_limitada))
+
             elif ordem_leilao_venda.id != 0:
                 
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
@@ -209,6 +210,7 @@ class Leilao:
                     corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)*(1-corretoraLeilao.corretagem_limitada)              
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+                    logging.info('quantidade_enviada {} quantidade_executada_leilao {} Taxa_desconto {}'.format(corretoraZeragem.ordem.quantidade_enviada,ordem_leilao_venda.quantidade_executada,corretoraLeilao.corretagem_limitada))
                 
                 elif (ordem_leilao_venda.preco_enviado != corretoraLeilao.book.preco_venda):
                     
