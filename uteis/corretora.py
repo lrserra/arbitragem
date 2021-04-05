@@ -357,8 +357,8 @@ class Corretora:
             if not retorno_cancel['success']:
                 logging.warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
             
-            if retorno_cancel['message']=='Ordem já removida.': #se a operacao ja ta cancelada, fala que cancelou
-                retorno_cancel['success'] = True 
+            if retorno_cancel['message']=='Ordem já removida.' or retorno_cancel['message']=='Ordem completamente executada.': #se a operacao ja ta cancelada, fala que cancelou
+                return True 
 
             return retorno_cancel['success']
         elif self.nome == 'BitcoinTrade':
@@ -392,8 +392,8 @@ class Corretora:
     def __obter_corretagem(self,nome):
 
         if self.nome == 'MercadoBitcoin':
-            corretagem_limitada = 0.0012
-            corretagem_mercado = 0.006
+            corretagem_limitada = 0.0015
+            corretagem_mercado = 0.007
             
         elif self.nome == 'BrasilBitcoin':
             corretagem_limitada = 0.0018
