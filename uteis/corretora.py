@@ -353,6 +353,13 @@ class Corretora:
             return False
         elif self.nome == 'BrasilBitcoin':
             retorno_cancel = BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
+
+            if not retorno_cancel['success']:
+                logging.warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
+            
+            if retorno_cancel['message']=='Ordem já removida.': #se a operacao ja ta cancelada, fala que cancelou
+                retorno_cancel['success'] = True 
+
             return retorno_cancel['success']
         elif self.nome == 'BitcoinTrade':
             retorno_cancel = BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
