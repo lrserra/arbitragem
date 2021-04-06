@@ -19,7 +19,7 @@ class MercadoBitcoin:
         return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
 
     def obterSaldo(self):
-        tapi_nonce = str(int(time.time()))
+        tapi_nonce = str(int(time.time())*2+1)
         params = {
             'tapi_method': 'get_account_info',
             'tapi_nonce': tapi_nonce,
@@ -28,7 +28,7 @@ class MercadoBitcoin:
         return self.executarRequestMercadoBTC(params)
 
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
-        tapi_nonce = str(int(time.time()))
+        tapi_nonce = str(int(time.time())*2+1)
 
         if tipoOrdem == 'market':
             method = 'place_market_buy_order'
@@ -48,7 +48,7 @@ class MercadoBitcoin:
         return retorno
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
-        tapi_nonce = str(int(time.time()))
+        tapi_nonce = str(int(time.time())*2+1)
 
         if tipoOrdem == 'market':
             method = 'place_market_sell_order'
