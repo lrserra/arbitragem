@@ -47,6 +47,9 @@ class Corretora:
             
             if self.nome == 'MercadoBitcoin':
                 response_json = MercadoBitcoin(ativo).obterSaldo()
+                if 'error_message' in response_json.keys():
+                    logging.error('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
+
                 for ativo in response_json['response_data']['balance'].keys():
                     if float(response_json['response_data']['balance'][ativo]['total'])>0:
                         self.saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
