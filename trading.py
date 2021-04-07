@@ -4,6 +4,11 @@ from uteis.util import Util
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
 from datetime import datetime
+import time
+
+print(str(int(time.time())))
+
+print(str(int(time.time()*1000)))
 
 is_midnight = datetime.now().hour == 0
 # ---- Testar book de ordens ---- #
