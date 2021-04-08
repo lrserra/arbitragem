@@ -227,5 +227,5 @@ if __name__ == "__main__":
     CorretoraMenosLiquida.atualizar_saldo()
 
     is_midnight = datetime.now().hour == 0
-    #if is_midnight:
-    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+    if is_midnight:
+        Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
