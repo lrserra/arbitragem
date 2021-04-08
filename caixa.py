@@ -103,7 +103,7 @@ class Caixa:
 
             elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra > Util.retorna_menor_valor_compra(moeda):
             
-                if (CorretoraMaisLiquida.book.preco_compra < CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
+                if (CorretoraMaisLiquida.book.preco_compra < CorretoraMenosLiquida.book.preco_compra) and (CorretoraMaisLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
                     logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_enviada = quantidade_a_zerar
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
@@ -115,7 +115,7 @@ class Caixa:
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,CorretoraMenosLiquida.book.preco_compra,CorretoraMaisLiquida.nome,CorretoraMaisLiquida.book.preco_compra,quantidade_a_zerar,-CorretoraMaisLiquida.book.preco_compra*quantidade_a_zerar,'CAIXA',str(datetime.now()))                    
 
-                elif (CorretoraMaisLiquida.book.preco_compra > CorretoraMenosLiquida.book.preco_compra) or (CorretoraMaisLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra):
+                elif (CorretoraMaisLiquida.book.preco_compra > CorretoraMenosLiquida.book.preco_compra) and (CorretoraMenosLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra) or (CorretoraMaisLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra):
                     logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMenosLiquida.nome))
                     CorretoraMenosLiquida.ordem.quantidade_enviada = quantidade_a_zerar
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
