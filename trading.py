@@ -6,9 +6,11 @@ from uteis.ordem import Ordem
 from datetime import datetime
 import time
 
-print(str(int(time.time())))
 
-print(str(int(time.time()*1000)))
+
+#print(str(int(dt)))
+dt  = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
+print(str(dt))
 
 is_midnight = datetime.now().hour == 0
 # ---- Testar book de ordens ---- #
