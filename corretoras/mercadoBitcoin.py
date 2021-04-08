@@ -7,6 +7,7 @@ import mimetypes
 from http import client
 from urllib.parse import urlencode
 from uteis.util import Util
+from datetime import datetime
 
 class MercadoBitcoin:
 
@@ -14,7 +15,7 @@ class MercadoBitcoin:
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
-        self.tapi = str(int(time.time())*1000)
+        self.tapi = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
 
     def obterBooks(self):
         return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
