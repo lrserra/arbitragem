@@ -86,6 +86,9 @@ class Caixa:
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,CorretoraMenosLiquida.book.preco_venda,CorretoraMaisLiquida.nome,CorretoraMaisLiquida.book.preco_venda,quantidade_a_zerar,CorretoraMaisLiquida.book.preco_venda*quantidade_a_zerar,'CAIXA',str(datetime.now()))
 
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    time.sleep(Util.frequencia())
+
                 elif (CorretoraMaisLiquida.book.preco_venda < CorretoraMenosLiquida.book.preco_venda and CorretoraMenosLiquida.saldo[moeda]>quantidade_a_zerar) or(CorretoraMaisLiquida.saldo[moeda]<quantidade_a_zerar):
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMenosLiquida.nome))
                     CorretoraMenosLiquida.ordem.quantidade_enviada = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
@@ -95,6 +98,9 @@ class Caixa:
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,CorretoraMaisLiquida.book.preco_venda,CorretoraMenosLiquida.nome,CorretoraMenosLiquida.book.preco_venda,quantidade_a_zerar,CorretoraMenosLiquida.book.preco_venda*quantidade_a_zerar,'CAIXA',str(datetime.now()))
 
+                    CorretoraMenosLiquida.atualizar_saldo()
+                    time.sleep(Util.frequencia())
+
             elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra > Util.retorna_menor_valor_compra(moeda):
             
                 if (CorretoraMaisLiquida.book.preco_compra < CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
@@ -103,6 +109,9 @@ class Caixa:
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
                     CorretoraMaisLiquida.ordem.preco_enviado = CorretoraMaisLiquida.book.preco_compra
                     CorretoraMaisLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem,moeda)
+
+                    CorretoraMaisLiquida.atualizar_saldo()
+                    time.sleep(Util.frequencia())
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,CorretoraMenosLiquida.book.preco_compra,CorretoraMaisLiquida.nome,CorretoraMaisLiquida.book.preco_compra,quantidade_a_zerar,-CorretoraMaisLiquida.book.preco_compra*quantidade_a_zerar,'CAIXA',str(datetime.now()))                    
 
@@ -114,6 +123,9 @@ class Caixa:
                     CorretoraMenosLiquida.enviar_ordem_compra(CorretoraMenosLiquida.ordem,moeda)
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,CorretoraMaisLiquida.book.preco_compra,CorretoraMenosLiquida.nome,CorretoraMenosLiquida.book.preco_compra,quantidade_a_zerar,-CorretoraMenosLiquida.book.preco_compra*quantidade_a_zerar,'CAIXA',str(datetime.now()))
+
+                    CorretoraMenosLiquida.atualizar_saldo()
+                    time.sleep(Util.frequencia())
 
             else:
                 logging.warning('caixa não precisa zerar pnl de {} por ora'.format(moeda))
