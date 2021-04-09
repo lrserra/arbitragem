@@ -131,10 +131,10 @@ class Leilao:
         
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra) if  ordem_leilao_compra.id != 0 else Ordem()
 
-            if ordem.status == corretoraLeilao.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
                 logging.info('leilao compra vai zerar ordem executada {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
-                corretoraZeragem.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada,8)/(1-corretoraZeragem.corretagem_mercado)
+                corretoraZeragem.ordem.quantidade_negociada = round(ordem_leilao_compra.quantidade_executada/(1-corretoraZeragem.corretagem_mercado),3)
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
                 
@@ -151,7 +151,7 @@ class Leilao:
                     cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                 
                     # Zera o risco na outra corretora com uma operação à mercado
-                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)/(1-corretoraZeragem.corretagem_mercado)
+                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado),3)
                     corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
@@ -187,9 +187,9 @@ class Leilao:
     
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_venda.id != 0 else Ordem()
 
-            if ordem.status == corretoraLeilao.descricao_status_executado:
+            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
-                corretoraZeragem.ordem.quantidade_enviada = ordem_leilao_venda.quantidade_executada *(1-corretoraLeilao.corretagem_limitada)
+                corretoraZeragem.ordem.quantidade_enviada = round(ordem_leilao_venda.quantidade_executada *(1-corretoraLeilao.corretagem_limitada),3)
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                 logging.info('quantidade_enviada {} quantidade_executada_leilao {} Taxa_desconto {}'.format(corretoraZeragem.ordem.quantidade_enviada,ordem_leilao_venda.quantidade_executada,corretoraLeilao.corretagem_limitada))
@@ -207,7 +207,7 @@ class Leilao:
                     cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
                 
                     logging.info('leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
-                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada,8)*(1-corretoraLeilao.corretagem_limitada)              
+                    corretoraZeragem.ordem.quantidade_enviada = round(ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada),3)              
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                     logging.info('quantidade_enviada {} quantidade_executada_leilao {} Taxa_desconto {}'.format(corretoraZeragem.ordem.quantidade_enviada,ordem_leilao_venda.quantidade_executada,corretoraLeilao.corretagem_limitada))
