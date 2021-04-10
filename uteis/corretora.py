@@ -187,7 +187,7 @@ class Corretora:
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 elif ordem.status != 'filled':
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                    print(mensagem)                else:
+                    print(mensagem)                
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
