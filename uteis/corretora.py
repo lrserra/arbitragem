@@ -212,8 +212,9 @@ class Corretora:
                     logging.error(mensagem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
-                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                    logging.error(mensagem)                
+                    if 'error_message' in response.keys():
+                        mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
+                        logging.error(mensagem)                
 
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
@@ -318,9 +319,10 @@ class Corretora:
                     #raise Exception(mensagem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
-                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
-                    logging.error(mensagem)
-                    #raise Exception(mensagem)
+                    if 'error_message' in response.keys():
+                        mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
+                        logging.error(mensagem)
+                        #raise Exception(mensagem)
 
 
             elif self.nome == 'BrasilBitcoin':
