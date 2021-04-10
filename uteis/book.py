@@ -4,6 +4,7 @@ from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from corretoras.bitRecife import BitRecife
 from uteis.util import Util
+import time
 
 class Book:
     def __init__(self,nome):
@@ -91,6 +92,7 @@ class Book:
     #metodo privado   
     def __carregar_ordem_books(self,ativo_parte,ativo_contraparte):
         try:
+            time.sleep(1)
             if self.nome == 'MercadoBitcoin':
                 self.book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
 

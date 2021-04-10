@@ -34,8 +34,10 @@ class Arbitragem:
                 quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
 
-                quanto_posso_comprar = corretoraCompra.saldo['brl']/corretoraCompra.book.preco_venda #saldo em reais
-                quanto_posso_vender = corretoraVenda.saldo[ativo] #saldo em cripto
+                colchao_de_liquidez = 0.98
+
+                quanto_posso_comprar = colchao_de_liquidez*corretoraCompra.saldo['brl']/corretoraCompra.book.preco_venda #saldo em reais * colchão
+                quanto_posso_vender = colchao_de_liquidez*corretoraVenda.saldo[ativo] #saldo em cripto * colchão
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
                 qtdNegociada = min(quantidade_de_compra, quantidade_de_venda,quanto_posso_comprar,quanto_posso_vender)
@@ -91,13 +93,13 @@ class Arbitragem:
                                     Util.adicionar_linha_em_operacoes(ativo,corretoraCompra.nome,comprei_a,corretoraVenda.nome,vendi_a,quantidade,pnl_real,'ARBITRAGEM',str(datetime.now()))
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                        logging.error('arbitragem NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
                                         logging.info('operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,quero_comprar_a,corretoraCompra.nome))
                                         logging.warning('operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
-                                        logging.error('arbitragem NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                        logging.error('arbitragem NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
                                         logging.info('operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,quero_vender_a,corretoraVenda.nome))
                                         logging.warning('operou arb de {}!com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
