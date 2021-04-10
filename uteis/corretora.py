@@ -183,6 +183,8 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
+                    else:
+                        ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
@@ -282,6 +284,8 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
+                    else:
+                        ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
