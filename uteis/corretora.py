@@ -208,15 +208,11 @@ class Corretora:
                         ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-                else:
-
-                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                    logging.error(mensagem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
                     if 'error_message' in response.keys():
-                        mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                        logging.error(mensagem)                
+                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['error_message']))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
 
 
                     #raise Exception(mensagem)
@@ -317,19 +313,13 @@ class Corretora:
                         ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-                else:
-
-                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
-                    logging.error(mensagem)
-                    #raise Exception(mensagem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
                     if 'error_message' in response.keys():
-                        mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
-                        logging.error(mensagem)
+                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+
                         #raise Exception(mensagem)
-
-
 
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
