@@ -44,11 +44,14 @@ class Corretora:
         try:
             ativo ='btc'#temos que tirar isso em algum momento
             response_json={}
+            time.sleep(1)
             
             if self.nome == 'MercadoBitcoin':
                 response_json = MercadoBitcoin(ativo).obterSaldo()
                 if 'error_message' in response_json.keys():
                     logging.error('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
+                    time.sleep(3)
+                    response_json = MercadoBitcoin(ativo).obterSaldo()
 
                 for ativo in response_json['response_data']['balance'].keys():
                     if float(response_json['response_data']['balance'][ativo]['total'])>0:
@@ -168,6 +171,11 @@ class Corretora:
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
+        if ativo_parte =='xrp':
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+        else:
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+
         try:
             if self.nome == 'MercadoBitcoin':
                 response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
@@ -177,6 +185,9 @@ class Corretora:
                         ordem.status = 'filled'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+                elif ordem.status != 'filled':
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
+                    print(mensagem)                else:
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
@@ -221,11 +232,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                #quantidade_compra_arb = ordem.quantidade_enviada*(0.997)
-                if ativo_parte =='xrp':
-                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
-                else:
-                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
+                
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
@@ -261,6 +268,11 @@ class Corretora:
         
         mensagem = ''
 
+        if ativo_parte =='xrp':
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+        else:
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+
         try:
             if self.nome == 'MercadoBitcoin':
                 response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
@@ -270,6 +282,10 @@ class Corretora:
                         ordem.status = 'filled'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+                elif ordem.status != 'filled':
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
+                    print(mensagem)
+                    #raise Exception(mensagem)
                 else:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
                     print(mensagem)
@@ -314,11 +330,7 @@ class Corretora:
                     print(mensagem)
                     #raise Exception(mensagem)
             elif self.nome == 'Novadax':
-                #quantidade_venda_arb = ordem.quantidade_enviada*(0.995)
-                if ativo_parte =='xrp':
-                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
-                else:
-                    ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000000)/1000000#trunca na sexta
+
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['message'] == "Success":
                     ordem_response = Novadax(ativo_parte).obterOrdemPorId(response['data']['id'])
