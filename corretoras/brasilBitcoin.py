@@ -75,7 +75,8 @@ class BrasilBitcoin:
         return retorno
 
     def obterOrdensAbertas(self):
-        return self.executarRequestBrasilBTC('GET', '','/api/my_orders')
+        retorno = self.executarRequestBrasilBTC('GET', '','/api/my_orders')
+        return retorno
 
     def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
