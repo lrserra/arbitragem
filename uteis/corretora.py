@@ -185,12 +185,14 @@ class Corretora:
                         ordem.status = 'filled'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-                elif ordem.status != 'filled':
-                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                    print(mensagem)                
                 else:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
-                    print(mensagem)
+                    logging.error(mensagem)
+
+                if ordem.status != 'filled':
+                    mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
+                    logging.error(mensagem)                
+
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
@@ -282,14 +284,16 @@ class Corretora:
                         ordem.status = 'filled'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-                elif ordem.status != 'filled':
-                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
-                    print(mensagem)
-                    #raise Exception(mensagem)
                 else:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
-                    print(mensagem)
+                    logging.error(mensagem)
                     #raise Exception(mensagem)
+
+                if ordem.status != 'filled':
+                    mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
+                    logging.error(mensagem)
+                    #raise Exception(mensagem)
+
 
             elif self.nome == 'BrasilBitcoin':
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
