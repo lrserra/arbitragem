@@ -130,6 +130,7 @@ class Leilao:
         try:
         
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra) if  ordem_leilao_compra.id != 0 else Ordem()
+            ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
@@ -195,6 +196,7 @@ class Leilao:
         try:
     
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_venda.id != 0 else Ordem()
+            ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada
 
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
 
@@ -336,8 +338,8 @@ if __name__ == "__main__":
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
                     
-                    quantidade_executada_compra = dict_leilao_compra[moeda]['ordem'].quantidade_executada
-                    quantidade_executada_venda = dict_leilao_compra[moeda]['zeragem'].quantidade_executada
+                    quantidade_executada_compra = dict_leilao_venda[moeda]['ordem'].quantidade_executada
+                    quantidade_executada_venda = dict_leilao_venda[moeda]['zeragem'].quantidade_executada
 
                     Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
 
