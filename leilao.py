@@ -286,8 +286,7 @@ if __name__ == "__main__":
 
                 #verifica se fui executado e se necessario cancelar ordens abertas            
                 dict_leilao_compra[moeda]['zeragem'], dict_leilao_compra[moeda]['foi_cancelado'] = Leilao.cancela_ordens_de_compra_e_zera(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_compra[moeda]['ordem'])
-                time.sleep(Util.frequencia())
-
+                
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if dict_leilao_compra[moeda]['zeragem'].id != 0:
                     
@@ -299,7 +298,10 @@ if __name__ == "__main__":
 
                     logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,CorretoraMaisLiquida.nome,vendi_a,CorretoraMenosLiquida.nome))
                     
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
+                    quantidade_executada_compra = dict_leilao_compra[moeda]['zeragem'].quantidade_executada
+                    quantidade_executada_venda = dict_leilao_compra[moeda]['ordem'].quantidade_executada
+
+                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
                     
                     dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                     dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -307,15 +309,13 @@ if __name__ == "__main__":
                 elif dict_leilao_compra[moeda]['ordem'].id == 0 or dict_leilao_compra[moeda]['foi_cancelado']: #se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
                     #logging.info('leilao compra vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_compra[moeda]['ordem'].id,dict_leilao_compra[moeda]['foi_cancelado']))
                     dict_leilao_compra[moeda]['ordem']  = Leilao.envia_compra_limitada(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                    #time.sleep(Util.frequencia())
-            
+                
                 # Instancia das corretoras
                 CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
                 CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
                 dict_leilao_venda[moeda]['zeragem'], dict_leilao_venda[moeda]['foi_cancelado'] = Leilao.cancela_ordens_de_venda_e_zera(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True, dict_leilao_venda[moeda]['ordem'])
-                time.sleep(Util.frequencia())
-
+                
                 # Se Id diferente de zero, significa que operou leilão (fui executado)
                 if  dict_leilao_venda[moeda]['zeragem'].id != 0:
 
@@ -327,16 +327,17 @@ if __name__ == "__main__":
 
                     logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,CorretoraMaisLiquida.nome,comprei_a,CorretoraMenosLiquida.nome))
                     
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,CorretoraMaisLiquida.nome,vendi_a,quantidade,pnl,'LEILAO',str(datetime.now()))
-                    
+                    quantidade_executada_compra = dict_leilao_compra[moeda]['ordem'].quantidade_executada
+                    quantidade_executada_venda = dict_leilao_compra[moeda]['zeragem'].quantidade_executada
+
+                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+
                     dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                     dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
 
                 elif dict_leilao_venda[moeda]['ordem'].id == 0 or  dict_leilao_venda[moeda]['foi_cancelado']:#se não ha ordens abertas ou se ordens foram canceladas, envia uma nova
-                    #logging.info('leilao venda vai enviar nova ordem pois id:{} é zero ou foi cancelado: {}'.format(dict_leilao_venda[moeda]['ordem'].id,dict_leilao_venda[moeda]['foi_cancelado']))
                     dict_leilao_venda[moeda]['ordem'] = Leilao.envia_venda_limitada(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                    #time.sleep(Util.frequencia())
-                
+                                    
             except Exception as erro:        
                 logging.error(erro) 
             

@@ -89,8 +89,11 @@ class Arbitragem:
                                     quantidade = round(qtdNegociada,4)
                                     comprei_a = round(ordem_compra.preco_executado,4)
                                     vendi_a = round(ordem_venda.preco_executado,4)
-                                    
-                                    Util.adicionar_linha_em_operacoes(ativo,corretoraCompra.nome,comprei_a,corretoraVenda.nome,vendi_a,quantidade,pnl_real,'ARBITRAGEM',str(datetime.now()))
+
+                                    quantidade_executada_compra = ordem_compra.quantidade_executada
+                                    quantidade_executada_venda = ordem_venda.quantidade_executada
+
+                                    Util.adicionar_linha_em_operacoes(ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',str(datetime.now()))
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
@@ -367,44 +370,31 @@ if __name__ == "__main__":
     lista_de_moedas = Util.obter_lista_de_moedas()
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
+    
+    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    hour = 1
-    while hour <= 720:
-        #essa parte executa uma vez por hora
-        agora = datetime.now() 
-        proxima_hora = agora + timedelta(hours=1)
-        logging.warning('proxima atualizacao: {}'.format(proxima_hora))
-        
-        CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-        CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
 
-        Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    while True:
+        for moeda in lista_de_moedas:
+            try:
+                # Instancia das corretoras 
+                CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+                CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-        while agora < proxima_hora:
-            #essa parte executa diversas vezes
-            for moeda in lista_de_moedas:
-                try:
-                    # Instancia das corretoras 
-                    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-                    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+                # Roda a arbitragem nas 2 corretoras
 
-                    # Roda a arbitragem nas 2 corretoras
-
-                    tem_arb = True
-                    while tem_arb:
-                        tem_arb = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                    
-                    tem_arb = True
-                    while tem_arb:
-                        tem_arb = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
-                                   
-                except Exception as erro:        
-                    logging.error(erro) 
+                tem_arb = True
+                while tem_arb:
+                    tem_arb = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
                 
-                #time.sleep(Util.frequencia())
-
-            agora = datetime.now() 
-
-        hour = hour+1
+                tem_arb = True
+                while tem_arb:
+                    tem_arb = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+                                
+            except Exception as erro:        
+                logging.error(erro) 
+            
         
         

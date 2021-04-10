@@ -34,7 +34,7 @@ class Util:
         except:
             pass
 
-    def adicionar_linha_em_operacoes(moeda,corretora_compra,preco_compra,corretora_venda,preco_venda,quantidade,pnl,estrategia,data):
+    def adicionar_linha_em_operacoes(moeda,corretora_compra,preco_compra,quantidade_compra,corretora_venda,preco_venda,quantidade_venda,pnl,estrategia,data):
         #header = 'MOEDA|CORRETORA|PRECO|C/V|QUANTIDADE|PNL|ESTRATEGIA|DATA'
         
         data_to_send={}
@@ -42,10 +42,10 @@ class Util:
         data_to_send['moeda'] = moeda
         data_to_send['corretora_compra'] = corretora_compra
         data_to_send['preco_compra'] = preco_compra
-        data_to_send['quantidade_compra'] = quantidade
+        data_to_send['quantidade_compra'] = quantidade_compra
         data_to_send['corretora_venda'] = corretora_venda
         data_to_send['preco_venda'] = preco_venda
-        data_to_send['quantidade_venda'] = quantidade
+        data_to_send['quantidade_venda'] = quantidade_venda
         data_to_send['pnl'] = pnl
         data_to_send['estrategia'] = estrategia
         data_to_send['data'] = data
