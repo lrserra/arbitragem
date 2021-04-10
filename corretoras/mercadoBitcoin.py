@@ -88,6 +88,35 @@ class MercadoBitcoin:
         params = urlencode(params)
         return self.executarRequestMercadoBTC(params)
 
+    def cancelarOrdem(self, idOrdem):
+        tapi_nonce = self.tapi
+
+        params = {
+            'tapi_method': 'cancel_order',
+            'tapi_nonce': tapi_nonce,
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'order_id': idOrdem,
+            'async': 'true'
+        }
+
+        params = urlencode(params)
+        retorno = self.executarRequestMercadoBTC(params)
+        return retorno
+
+    def obterOrdensAbertas(self):
+        tapi_nonce = self.tapi
+
+        params = {
+            'tapi_method': 'list_orders',
+            'tapi_nonce': tapi_nonce,
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'status_list': '[2]'
+        }
+
+        params = urlencode(params)
+        retorno = self.executarRequestMercadoBTC(params)
+        return retorno
+
     def executarRequestMercadoBTC(self, params):
         # Constantes
         config = Util.obterCredenciais()

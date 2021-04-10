@@ -88,14 +88,32 @@ class Corretora:
         except Exception as erro:
             raise Exception(erro)
 
+    def obter_ordens_abertas(self, ativo):
+        ordens_abertas = None
+
+        if self.nome == 'MercadoBitcoin':
+            ordens_abertas = MercadoBitcoin(ativo).obterOrdensAbertas()
+        elif self.nome == 'BrasilBitcoin':
+            ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
+        elif self.nome == 'BitcoinTrade':
+            ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
+        elif self.nome == 'Novadax':            
+            ordens_abertas = Novadax(ativo).obterOrdensAbertas()
+
+        return ordens_abertas
+
     def cancelar_todas_ordens(self,ativo='btc',ativo_contraparte='brl'):
 
         if self.nome == 'MercadoBitcoin':
-            pass
+            ordens_abertas = MercadoBitcoin(ativo).obterOrdensAbertas()
+            
+            if len(ordens_abertas['response_data']['orders']) > 0:
+                for ordem in ordens_abertas['response_data']['orders']:
+                    self.cancelar_ordem(ativo,ordem['order_id'])
+
         elif self.nome == 'BrasilBitcoin':
             ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
-                #if str(ativo).upper() == str(ordem['coin']).upper():
                 self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitcoinTrade':
             for moeda in self.saldo.keys():
@@ -183,6 +201,8 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
+                    if response['response_data']['order']['status'] == 2:
+                        ordem.status = 'open'
                     else:
                         ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
@@ -191,12 +211,14 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     logging.error(mensagem)
 
-                if ordem.status != 'filled':
+                if ordem.status != 'filled' and ordem.status != 'open':
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     logging.error(mensagem)                
 
                     #raise Exception(mensagem)
             elif self.nome == 'BrasilBitcoin':
+                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
+
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 
                 if response['success'] == True:
@@ -284,6 +306,8 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
+                    if response['response_data']['order']['status'] == 2:
+                        ordem.status = 'open'
                     else:
                         ordem.status = 'error'
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
@@ -293,13 +317,15 @@ class Corretora:
                     logging.error(mensagem)
                     #raise Exception(mensagem)
 
-                if ordem.status != 'filled':
+                if ordem.status != 'filled' and ordem.status != 'open':
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
                     logging.error(mensagem)
                     #raise Exception(mensagem)
 
 
             elif self.nome == 'BrasilBitcoin':
+                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
+
                 response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 if response['success'] == True:
                     ordem.id = response['data']['id']
@@ -373,7 +399,12 @@ class Corretora:
     def cancelar_ordem(self,ativo_parte='btc',idOrdem=0):
         
         if self.nome == 'MercadoBitcoin':
-            return False
+            retorno_cancel = MercadoBitcoin(ativo_parte).cancelarOrdem(idOrdem)
+            if len(retorno_cancel['response_data']['order']) > 0:
+                return True
+            else:
+                return False
+
         elif self.nome == 'BrasilBitcoin':
             retorno_cancel = BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
 
