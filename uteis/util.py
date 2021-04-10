@@ -42,9 +42,10 @@ class Util:
         data_to_send['moeda'] = moeda
         data_to_send['corretora_compra'] = corretora_compra
         data_to_send['preco_compra'] = preco_compra
+        data_to_send['quantidade_compra'] = quantidade
         data_to_send['corretora_venda'] = corretora_venda
         data_to_send['preco_venda'] = preco_venda
-        data_to_send['quantidade'] = quantidade
+        data_to_send['quantidade_venda'] = quantidade
         data_to_send['pnl'] = pnl
         data_to_send['estrategia'] = estrategia
         data_to_send['data'] = data
