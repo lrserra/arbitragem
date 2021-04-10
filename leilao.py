@@ -134,7 +134,12 @@ class Leilao:
             if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
                 logging.info('leilao compra vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
-                corretoraZeragem.ordem.quantidade_negociada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                
+                if corretoraZeragem.nome == 'MercadoBitcoin':
+                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+                else:
+                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
                 
@@ -151,7 +156,11 @@ class Leilao:
                     cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
                 
                     # Zera o risco na outra corretora com uma operação à mercado
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                    if corretoraZeragem.nome == 'MercadoBitcoin':
+                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+                    else:
+                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                    
                     corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
                     corretoraZeragem.ordem.tipo_ordem = 'market'
                     retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
