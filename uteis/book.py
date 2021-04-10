@@ -51,6 +51,12 @@ class Book:
                 self.quantidade_venda = float(self.book['buy'][indice]['quantidade'])
                 
             elif self.nome == 'BitcoinTrade':
+
+                #retry para a BT barreada
+                while 'data' not in self.book.keys():
+                    time.sleep(3)
+                    self.__carregar_ordem_books(ativo_parte,ativo_contraparte)
+
                 if ignorar_quantidades_pequenas:
                     while float(self.book['data']['asks'][indice]['amount'])*float(self.book['data']['asks'][indice]['unit_price']) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
                         indice+=1

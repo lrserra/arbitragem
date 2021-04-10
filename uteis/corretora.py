@@ -47,12 +47,13 @@ class Corretora:
             time.sleep(1)
             
             if self.nome == 'MercadoBitcoin':
+                
                 response_json = MercadoBitcoin(ativo).obterSaldo()
-                if 'error_message' in response_json.keys():
-                    logging.error('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
+                while 'error_message' in response_json.keys():
+                    logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
                     time.sleep(3)
                     response_json = MercadoBitcoin(ativo).obterSaldo()
-
+                
                 for ativo in response_json['response_data']['balance'].keys():
                     if float(response_json['response_data']['balance'][ativo]['total'])>0:
                         self.saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
@@ -208,6 +209,7 @@ class Corretora:
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
+
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                     logging.error(mensagem)
 
@@ -216,7 +218,9 @@ class Corretora:
                         mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['error_message'])
                         logging.error(mensagem)                
 
+
                     #raise Exception(mensagem)
+            
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
 
@@ -314,6 +318,7 @@ class Corretora:
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
                 else:
+
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
                     logging.error(mensagem)
                     #raise Exception(mensagem)
@@ -323,6 +328,7 @@ class Corretora:
                         mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['error_message'])
                         logging.error(mensagem)
                         #raise Exception(mensagem)
+
 
 
             elif self.nome == 'BrasilBitcoin':
