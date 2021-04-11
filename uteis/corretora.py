@@ -202,7 +202,7 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
-                    if response['response_data']['order']['status'] == 2:
+                    elif response['response_data']['order']['status'] == 2:
                         ordem.status = 'open'
                     else:
                         ordem.status = 'error'
@@ -308,7 +308,7 @@ class Corretora:
                     ordem.id = response['response_data']['order']['order_id']
                     if response['response_data']['order']['status'] == 4:
                         ordem.status = 'filled'
-                    if response['response_data']['order']['status'] == 2:
+                    elif response['response_data']['order']['status'] == 2:
                         ordem.status = 'open'
                     else:
                         ordem.status = 'error'
