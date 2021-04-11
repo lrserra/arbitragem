@@ -4,7 +4,19 @@ import requests
 from datetime import datetime
 
 class Util:
-    
+
+    class Moeda:
+        def BTC():
+            return 'btc'
+        def ETH():
+            return 'eth'
+        def XRP():
+            return 'xrp'
+        def LTC():
+            return 'ltc'
+        def BCH():
+            return 'bch'
+
     def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,data):
         
         #dados que serão enviados ao webhook
