@@ -178,8 +178,8 @@ class Leilao:
                 return retorno_compra, cancelou
 
             #5: esta dando pnl negativo para zerar tudo
-            if ordem_leilao_compra.id != 0 and (ordem_leilao_compra.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.preco_compra):
-                                    
+            if ordem_leilao_compra.id != 0 and (ordem_leilao_compra.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.obter_preco_medio_de_compra(ordem_leilao_compra.quantidade_enviada)):
+                
                 logging.info('LC5: leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_compra.id,ativo))
                 cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
 
@@ -248,7 +248,7 @@ class Leilao:
                 return retorno_venda,cancelou
 
             #5: esta dando pnl negativo para zerar tudo    
-            if ordem_leilao_venda.id != 0 and (ordem_leilao_venda.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.preco_venda*(1-corretoraZeragem.corretagem_mercado)):
+            if ordem_leilao_venda.id != 0 and (ordem_leilao_venda.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.obter_preco_medio_de_venda(ordem_leilao_venda.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
                 
                 logging.info('LV5: leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_leilao_venda.id,ativo))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
