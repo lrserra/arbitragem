@@ -33,7 +33,9 @@ class Leilao:
                 # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
                 gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
                 maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
-                qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar)
+                #se vc for executada nessa quantidade inteira, talvez nao tera lucro
+                maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender)
+                qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
 
                 # Nao pode ter saldo na mercado de menos de um real
                 if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo['brl'] > Util.retorna_menor_valor_compra(ativo)):
@@ -84,9 +86,9 @@ class Leilao:
 
                 gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
                 maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] / 4
-                
-                # Mínimo entre o que eu gostaria de comprar com o máximo que consigo zerar na outra ponta
-                qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar)
+                #se vc for executada nessa quantidade inteira, talvez nao tera lucro
+                maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar)
+                qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
 
                 # Se quantidade negociada maior que a quantidade mínima permitida de venda
                 if qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
