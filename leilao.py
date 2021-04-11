@@ -132,7 +132,7 @@ class Leilao:
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra) if  ordem_leilao_compra.id != 0 else Ordem()
             ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
 
-            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_compra.id == False: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            if ordem.status == corretoraLeilao.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
                 
                 logging.info('leilao compra vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem_leilao_compra.id,ativo))
                 
@@ -198,7 +198,7 @@ class Leilao:
             ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_venda.id != 0 else Ordem()
             ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada
 
-            if ordem.status == corretoraLeilao.descricao_status_executado and ordem_leilao_venda.id == False:
+            if ordem.status == corretoraLeilao.descricao_status_executado:
 
                 corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)
                 corretoraZeragem.ordem.tipo_ordem = 'market'

@@ -213,8 +213,9 @@ class Corretora:
                     if 'error_message' in response.keys():
                         logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['error_message']))
                         logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-
-
+                    else:
+                        logging.error('{}: enviar_ordem_compra - status:'.format(response['response_data']['order']['status']))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     #raise Exception(mensagem)
             
             elif self.nome == 'BrasilBitcoin':
@@ -318,7 +319,10 @@ class Corretora:
                     if 'error_message' in response.keys():
                         logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-
+                    else:
+                        logging.error('{}: enviar_ordem_venda - status:'.format(response['response_data']['order']['status']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                    
                         #raise Exception(mensagem)
 
             elif self.nome == 'BrasilBitcoin':
