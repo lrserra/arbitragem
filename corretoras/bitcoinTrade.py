@@ -11,15 +11,17 @@ from datetime import date, datetime, timedelta
 
 class BitcoinTrade:
 
-    def __init__(self, ativo_parte,ativo_contraparte='brl'):
+    def __init__(self, ativo_parte = Util.CCYBTC(),ativo_contraparte = Util.CCYBRL()):
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlBitcoinTrade = 'https://api.bitcointrade.com.br/'
     
+#---------------- MÉTODOS PRIVADOS ----------------#
+
     def obterBooks(self):
         return requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper())).json()
 
-    def obterSaldo(self):
+    def __obterSaldo(self):
         return self.executarRequestBTCTrade('GET', '','v3/wallets/balance')
 
     def obterOrdemPorIdStatusExecuted(self, idOrdem):
@@ -83,7 +85,7 @@ class BitcoinTrade:
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         return self.executarRequestBTCTrade('POST', json.dumps(payload), api)
 
-    def cancelarOrdem(self, idOrdem):
+    def __cancelarOrdem(self, idOrdem):
         
         payload = {
             "id": idOrdem
@@ -91,9 +93,9 @@ class BitcoinTrade:
         
         return self.executarRequestBTCTrade('DELETE', json.dumps(payload), 'v3/market/user_orders/')
 
-    def obterOrdensAbertas(self):
+    def __obterOrdensAbertas(self):
         # objeto que será postado para o endpoint
-        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(),self.ativo_contraparte.upper(),self.ativo_parte.upper()))
+        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo_contraparte.upper(), self.ativo_parte.upper()))
 
     def executarRequestBTCTrade(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
@@ -106,3 +108,36 @@ class BitcoinTrade:
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
         
         return json.loads(res.text.encode('utf8'))
+
+
+#---------------- MÉTODOS PÚBLICOS ----------------#    
+
+    def obter_saldo(self):
+        '''
+        Método público para obter saldo de todas as moedas conforme as regras das corretoras.
+        '''
+        saldo = {}
+        
+        response_json = self.__obterSaldo()
+
+        while 'data' not in response_json.keys():
+            time.sleep(3)
+            response_json = self.__obterSaldo()
+
+        for item in response_json['data']:
+            saldo[item['currency_code'].lower()] = float(item['available_amount']) + float(item['locked_amount'])
+        
+        return saldo
+
+    def obter_ordens_abertas(self):
+        '''
+        Obtém todas as ordens abertas
+        '''
+        return self.__obterOrdensAbertas()
+
+    def cancelar_ordem(self, idOrdem):
+        '''
+        Cancelar unitariamente uma ordem
+        '''
+        retorno_cancel = self.__cancelarOrdem(idOrdem)
+        return retorno_cancel['message'] is None     

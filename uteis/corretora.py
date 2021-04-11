@@ -42,98 +42,62 @@ class Corretora:
 
     def atualizar_saldo(self):
         try:
-            ativo ='btc'#temos que tirar isso em algum momento
-            response_json={}
-            time.sleep(1)
             
             if self.nome == 'MercadoBitcoin':
-                
-                response_json = MercadoBitcoin(ativo).obterSaldo()
-                while 'error_message' in response_json.keys():
-                    logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
-                    time.sleep(3)
-                    response_json = MercadoBitcoin(ativo).obterSaldo()
-                
-                for ativo in response_json['response_data']['balance'].keys():
-                    if float(response_json['response_data']['balance'][ativo]['total'])>0:
-                        self.saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
+                self.saldo = MercadoBitcoin().obter_saldo()
             elif self.nome == 'BrasilBitcoin':
-                
-                response_json = BrasilBitcoin(ativo).obterSaldo()
-                while response_json is None:
-                    time.sleep(3)
-                    response_json = BrasilBitcoin(ativo).obterSaldo()
-                for ativo in response_json.keys():
-                    if ativo != 'user_cpf':
-                        self.saldo[ativo.lower()] = float(response_json[ativo])
-
+                self.saldo = BrasilBitcoin().obter_saldo()
             elif self.nome == 'BitcoinTrade':
-                
-                response_json = BitcoinTrade(ativo).obterSaldo()
-                while 'data' not in response_json.keys():
-                    time.sleep(1)
-                    response_json = BitcoinTrade(ativo).obterSaldo()
-                for item in response_json['data']:
-                    self.saldo[item['currency_code'].lower()] = float(item['available_amount']) + float(item['locked_amount'])
-
+                self.saldo = BitcoinTrade().obter_saldo()
             elif self.nome == 'Novadax':
-                response_json = Novadax(ativo).obterSaldo()
-                for item in response_json['data']:
-                    if float(item['balance'])>0:
-                        self.saldo[item['currency'].lower()] = float(item['balance'])
+                self.saldo = Novadax().obter_saldo()
             elif self.nome == 'BitRecife':
-                response_json = BitRecife().obterSaldo()
-                for item in response_json['result']:
-                    self.saldo[item['Asset'].lower()] = float(item['Available'])
+                self.saldo = BitRecife().obter_saldo()
                 
         except Exception as erro:
-            raise Exception(erro)
+            logging.error(Util.descricao_erro_padrao().format('atualizar_saldo', self.nome, erro))
 
-    def obter_ordens_abertas(self, ativo):
-        ordens_abertas = None
+    def obter_ordens_abertas_por_ativo(self, ativo):
+        try:
+
+            if self.nome == 'MercadoBitcoin':
+                return MercadoBitcoin(ativo).obter_ordens_abertas()
+            elif self.nome == 'BrasilBitcoin':
+                return BrasilBitcoin(ativo).obter_ordens_abertas()
+            elif self.nome == 'BitcoinTrade':
+                return BitcoinTrade(ativo).obter_ordens_abertas()
+            elif self.nome == 'Novadax':            
+                return Novadax(ativo).obter_ordens_abertas()
+        
+        except Exception as erro:
+            logging.error(Util.descricao_erro_padrao().format('obter_ordens_abertas_por_ativo', self.nome, erro))
+        
+    def cancelar_todas_ordens(self, ativo='btc', ativo_contraparte='brl'):
+
+        ordens_abertas = self.obter_ordens_abertas_por_ativo(ativo)
 
         if self.nome == 'MercadoBitcoin':
-            ordens_abertas = MercadoBitcoin(ativo).obterOrdensAbertas()
-        elif self.nome == 'BrasilBitcoin':
-            ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
-        elif self.nome == 'BitcoinTrade':
-            ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
-        elif self.nome == 'Novadax':            
-            ordens_abertas = Novadax(ativo).obterOrdensAbertas()
-
-        return ordens_abertas
-
-    def cancelar_todas_ordens(self,ativo='btc',ativo_contraparte='brl'):
-
-        if self.nome == 'MercadoBitcoin':
-            ordens_abertas = MercadoBitcoin(ativo).obterOrdensAbertas()
-            
             if len(ordens_abertas['response_data']['orders']) > 0:
                 for ordem in ordens_abertas['response_data']['orders']:
                     self.cancelar_ordem(ativo,ordem['order_id'])
 
         elif self.nome == 'BrasilBitcoin':
-            ordens_abertas = BrasilBitcoin(ativo).obterOrdensAbertas()
             for ordem in ordens_abertas:
                 self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitcoinTrade':
             for moeda in self.saldo.keys():
-                ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
                 if ordens_abertas['message'] == 'Too Many Requests':
                     time.sleep(1)
-                    ordens_abertas = BitcoinTrade(moeda).obterOrdensAbertas()
                 elif 'data' not in ordens_abertas.keys():
                     logging.info(str(ordens_abertas))
                 for ordem in ordens_abertas['data']['orders']:
                     if 'pair_code' in ordem.keys():
                         self.cancelar_ordem(moeda,ordem['id'])
         elif self.nome == 'Novadax':            
-            ordens_abertas = Novadax(ativo).obterOrdensAbertas()
             if 'data' in ordens_abertas.keys():
                 for ordem in ordens_abertas['data']:
                     self.cancelar_ordem(ativo,ordem['id'])
         elif self.nome == 'BitRecife':            
-            ordens_abertas = BitRecife().obterOrdensAbertas(ativo,ativo_contraparte)
             if ordens_abertas['result'] is not None:
                 for ordem in ordens_abertas['result']:
                     self.cancelar_ordem(ativo,ordem['OrderID'])
@@ -259,6 +223,18 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
+
+                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        ordemFiltro = Ordem()
+                        ordemFiltro.code = response['data']['code']
+                        ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
+                        logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                
             elif self.nome == 'Novadax':
                 
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemCompra(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
@@ -315,7 +291,7 @@ class Corretora:
                     ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
                     ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
 
-                if ordem.status != 'filled' and ordem.status != 'open':
+                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
                     if 'error_message' in response.keys():
                         logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
@@ -365,6 +341,19 @@ class Corretora:
                     mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
                     print(mensagem)
                     #raise Exception(mensagem)
+
+                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        ordemFiltro = Ordem()
+                        ordemFiltro.code = response['data']['code']
+                        ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
+                        logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                    
+
             elif self.nome == 'Novadax':
 
                 response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
@@ -399,33 +388,20 @@ class Corretora:
         return ordem
 
     def cancelar_ordem(self,ativo_parte='btc',idOrdem=0):
-        
-        if self.nome == 'MercadoBitcoin':
-            retorno_cancel = MercadoBitcoin(ativo_parte).cancelarOrdem(idOrdem)
-            if len(retorno_cancel['response_data']['order']) > 0:
-                return True
-            else:
-                return False
-
-        elif self.nome == 'BrasilBitcoin':
-            retorno_cancel = BrasilBitcoin(ativo_parte).cancelarOrdem(idOrdem)
-
-            if not retorno_cancel['success']:
-                logging.warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
-            
-            if retorno_cancel['message']=='Ordem já removida.' or retorno_cancel['message']=='Ordem completamente executada.': #se a operacao ja ta cancelada, fala que cancelou
-                return True 
-
-            return retorno_cancel['success']
-        elif self.nome == 'BitcoinTrade':
-            retorno_cancel = BitcoinTrade(ativo_parte).cancelarOrdem(idOrdem)
-            return retorno_cancel['message'] is None      
-        elif self.nome == 'Novadax':
-            Novadax(ativo_parte).cancelarOrdem(idOrdem)
-            return True
-        elif self.nome == 'BitRecife':
-            retorno_cancel = BitRecife().cancelarOrdem(idOrdem)
-            return retorno_cancel['success']
+        try:
+            if self.nome == 'MercadoBitcoin':
+                return MercadoBitcoin(ativo_parte).cancelar_ordem(idOrdem)
+            elif self.nome == 'BrasilBitcoin':
+                return BrasilBitcoin(ativo_parte).cancelar_ordem(idOrdem)
+            elif self.nome == 'BitcoinTrade':
+                return BitcoinTrade(ativo_parte).cancelar_ordem(idOrdem)
+            elif self.nome == 'Novadax':
+                return Novadax(ativo_parte).cancelar_ordem(idOrdem)
+            elif self.nome == 'BitRecife':
+                return BitRecife().cancelar_ordem(idOrdem)
+                        
+        except Exception as erro:
+            logging.error(Util.descricao_erro_padrao().format('cancelar_ordem', self.nome, erro))
 
     def transferir_crypto(self,ativo,quantidade, destino):      
         '''
