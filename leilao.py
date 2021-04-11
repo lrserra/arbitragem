@@ -138,11 +138,12 @@ class Leilao:
                 return retorno_compra, cancelou 
             
             #2: executada parcialmente, mais que o valor minimo
-            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True) 
-            corretoraZeragem.atualizar_saldo()
-            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra) if ordem_leilao_compra.id != 0 else Ordem()
-            ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
+            if ordem_leilao_compra.id != 0:
+                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True) 
+                corretoraZeragem.atualizar_saldo()
+                ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
+                ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
 
             if ordem_leilao_compra.id != 0 and executarOrdens and ordem.quantidade_executada * corretoraLeilao.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
                 
@@ -215,11 +216,12 @@ class Leilao:
                 return retorno_venda,cancelou
 
             #2: executada parcialmente, mais que o valor minimo
-            corretoraZeragem.atualizar_saldo()
-            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True)   
-            ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) if  ordem_leilao_venda.id != 0 else Ordem()
-            ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada        
+            if  ordem_leilao_venda.id != 0:
+                corretoraZeragem.atualizar_saldo()
+                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True)   
+                ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) 
+                ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada        
 
             if ordem_leilao_venda.id != 0 and executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                 
@@ -259,6 +261,7 @@ class Leilao:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão, método: cancela_ordens_e_vende_na_mercado. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
         
+        return retorno_venda,cancelou
         
 
 
@@ -297,11 +300,6 @@ if __name__ == "__main__":
         dict_leilao_venda[moeda]['zeragem'] = Ordem()
         dict_leilao_compra[moeda]['foi_cancelado'] = False
         dict_leilao_venda[moeda]['foi_cancelado'] = False
-
-    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
-
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
     
     while True:
 
