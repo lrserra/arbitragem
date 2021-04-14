@@ -14,6 +14,8 @@ class BitRecife:
 
         self.urlBitRecife = 'https://exchange.bitrecife.com.br/api/v3/'
     
+#---------------- MÉTODOS PRIVADOS ----------------#
+
     def obterBooks(self,ativo,ativo_contraparte='brl'):
         market = ativo.upper()+'_'+ativo_contraparte.upper()
         tipo = 'ALL'
@@ -21,11 +23,10 @@ class BitRecife:
         request_url =self.urlBitRecife+'public/getorderbook?market='+market+'&type='+tipo+'&depth='+depth
         return requests.get(url = request_url).json()
 
-    def obterSaldo(self):
-       
+    def __obterSaldo(self):
         return self.executarRequestBitRecife('POST','getbalances')
 
-    def cancelarOrdem(self, idOrdem):
+    def __cancelarOrdem(self, idOrdem):
         payload = {}
         payload['orderid'] = idOrdem
         return self.executarRequestBitRecife('POST','ordercancel',payload)
@@ -82,3 +83,25 @@ class BitRecife:
         res = requests.request(requestMethod,url, headers=headers, data=payload)
         return json.loads(res.text.encode('utf8'))
 
+
+#---------------- MÉTODOS PÚBLICOS ----------------#
+
+    def obter_saldo(self):
+        '''
+        Método público para obter saldo de todas as moedas conforme as regras das corretoras.
+        '''
+        saldo = {}
+        
+        response_json = self.__obterSaldo()
+        
+        for item in response_json['result']:
+            saldo[item['Asset'].lower()] = float(item['Available'])
+    
+        return saldo
+
+    def cancelar_ordem(self, idOrdem):
+        '''
+        Cancelar unitariamente uma ordem
+        '''
+        retorno_cancel = self.__cancelarOrdem(idOrdem)
+        return retorno_cancel['success']

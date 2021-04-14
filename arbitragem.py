@@ -87,9 +87,11 @@ class Arbitragem:
                                     realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                     realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
 
-                                    pnl_real = realmente_ganhei - realmente_paguei
+                                    if ordem_compra.preco_executado== 0 or ordem_venda.preco_executado ==0:
+                                        pnl_real = 0
+                                    else:
+                                        pnl_real = realmente_ganhei - realmente_paguei
 
-                                    quantidade = round(qtdNegociada,4)
                                     comprei_a = round(ordem_compra.preco_executado,4)
                                     vendi_a = round(ordem_venda.preco_executado,4)
 
@@ -108,7 +110,7 @@ class Arbitragem:
                                         logging.error('arbitragem NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
                                         logging.info('operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,quero_vender_a,corretoraVenda.nome))
-                                        logging.warning('operou arb de {}!com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
+                                        logging.warning('operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
                                                                             
                             else:
                                 logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo['brl'],2),corretoraVenda.saldo[ativo]))

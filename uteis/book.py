@@ -161,3 +161,52 @@ class Book:
                 pass   
         except Exception as erro:
             raise Exception(erro)
+
+    def obter_quantidade_acima_de_preco_venda(self,preco_venda):
+        try:
+            if self.nome == 'MercadoBitcoin':
+                precos = self.book
+                linha = 0
+                qtd_venda = 0
+                lista_de_precos = precos['bids']
+                preco = lista_de_precos[linha][0]
+                
+                while preco > preco_venda:
+                    preco = lista_de_precos[linha][0]
+                    qtd_venda = qtd_venda+ lista_de_precos[linha][1]
+                    linha +=1
+                    preco = lista_de_precos[linha][0]
+                
+                return qtd_venda
+            
+            elif self.nome == 'BrasilBitcoin':
+                pass
+            elif self.nome == 'BitcoinTrade':
+                pass   
+        except Exception as erro:
+            raise Exception(erro)
+
+
+    def obter_quantidade_abaixo_de_preco_compra(self,preco_compra):
+        try:
+            if self.nome == 'MercadoBitcoin':
+                precos = self.book
+                linha = 0
+                qtd_compra = 0
+                lista_de_precos = precos['asks']
+                preco = lista_de_precos[linha][0]
+                
+                while preco < preco_compra:
+                    preco = lista_de_precos[linha][0]
+                    qtd_compra = qtd_compra+ lista_de_precos[linha][1]
+                    linha +=1
+                    preco = lista_de_precos[linha][0]
+                
+                return qtd_compra
+            
+            elif self.nome == 'BrasilBitcoin':
+                pass
+            elif self.nome == 'BitcoinTrade':
+                pass   
+        except Exception as erro:
+            raise Exception(erro)

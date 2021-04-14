@@ -6,17 +6,19 @@ from uteis.util import Util
 
 class Novadax:
 
-    def __init__(self, ativo_parte,ativo_contraparte='brl'):
+    def __init__(self, ativo_parte = Util.CCYBTC(),ativo_contraparte = Util.CCYBRL()):
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlNovadax = 'https://api.novadax.com/'
         self.nome_corretora = 'Novadax'
     
+#---------------- MÉTODOS PRIVADOS ----------------#
+
     def obterBooks(self):
         nova_client = novadax.RequestClient()
         return nova_client.get_depth('{}_{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper()))
 
-    def obterSaldo(self):
+    def __obterSaldo(self):
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.get_account_balance()
@@ -49,13 +51,41 @@ class Novadax:
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.withdraw_coin(self.ativo_parte.upper(),quantity, destino, crypto_tag)
 
-    def cancelarOrdem(self, idOrdem):
+    def __cancelarOrdem(self, idOrdem):
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.cancle_order(idOrdem)
 
-    def obterOrdensAbertas(self):
+    def __obterOrdensAbertas(self):
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.list_orders('{}_{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper()), 'UNFINISHED')
-  
+
+
+#---------------- MÉTODOS PÚBLICOS ----------------#
+
+    def obter_saldo(self):
+        '''
+        Método público para obter saldo de todas as moedas conforme as regras das corretoras.
+        '''
+        saldo = {}
+        
+        response_json = self.__obterSaldo()
+        for item in response_json['data']:
+            if float(item['balance'])>0:
+                saldo[item['currency'].lower()] = float(item['balance'])
+    
+        return saldo
+
+    def obter_ordens_abertas(self):
+        '''
+        Obtém todas as ordens abertas
+        '''
+        return self.__obterOrdensAbertas()
+
+    def cancelar_ordem(self, idOrdem):
+        '''
+        Cancelar unitariamente uma ordem
+        '''
+        self.__cancelarOrdem(idOrdem) 
+        return True

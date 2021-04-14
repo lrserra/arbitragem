@@ -4,7 +4,26 @@ import requests
 from datetime import datetime
 
 class Util:
-    
+
+    def descricao_erro_padrao():
+        '''
+        Retorna uma descrição de erro padrão podendo parametrizar o método, a corretora e a mensagem de erro.
+        '''
+        return 'Erro no método {}, corretora {}. Erro: {}.'
+
+    def CCYBRL():
+        return 'brl'
+    def CCYBTC():
+        return 'btc'
+    def CCYETH():
+        return 'eth'
+    def CCYXRP():
+        return 'xrp'
+    def CCYLTC():
+        return 'ltc'
+    def CCYBCH():
+        return 'bch'
+
     def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,data):
         
         #dados que serão enviados ao webhook

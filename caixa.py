@@ -53,7 +53,7 @@ class Caixa:
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
         '''
-        ao longo do dia, nós pagamos corretagem em cripto, então uma vez ao dia é bom comprar essa quantidade novamente
+        ao longo do dia, nós pagamos corretagem em cripto, então é bom comprar essa quantidade novamente
         '''
         saldo_inicial = Util.obter_saldo_inicial()
         saldo_final = {}
@@ -243,9 +243,8 @@ if __name__ == "__main__":
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
     Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
     
+    time.sleep(2)
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    is_midnight = datetime.now().hour == 0
-    if is_midnight:
-        Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)

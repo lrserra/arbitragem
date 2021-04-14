@@ -1,3 +1,4 @@
+import logging
 import requests
 import hashlib
 import hmac
@@ -11,16 +12,18 @@ from datetime import datetime
 
 class MercadoBitcoin:
 
-    def __init__(self, ativo_parte,ativo_contraparte= 'brl'):
+    def __init__(self, ativo_parte = Util.CCYBTC(), ativo_contraparte = Util.CCYBRL()):
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
         self.tapi = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
 
+#---------------- MÉTODOS PRIVADOS ----------------#
+
     def obterBooks(self):
         return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
 
-    def obterSaldo(self):
+    def __obterSaldo(self):
         tapi_nonce = self.tapi
         params = {
             'tapi_method': 'get_account_info',
@@ -60,7 +63,7 @@ class MercadoBitcoin:
         params = {
             'tapi_method': method,
             'tapi_nonce': tapi_nonce,
-            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(), self.ativo_parte.upper()),
             'quantity': quantity,
             'limit_price': precoVenda
         }
@@ -88,13 +91,13 @@ class MercadoBitcoin:
         params = urlencode(params)
         return self.executarRequestMercadoBTC(params)
 
-    def cancelarOrdem(self, idOrdem):
+    def __cancelarOrdem(self, idOrdem):
         tapi_nonce = self.tapi
 
         params = {
             'tapi_method': 'cancel_order',
             'tapi_nonce': tapi_nonce,
-            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(), self.ativo_parte.upper()),
             'order_id': idOrdem,
             'async': 'true'
         }
@@ -103,13 +106,13 @@ class MercadoBitcoin:
         retorno = self.executarRequestMercadoBTC(params)
         return retorno
 
-    def obterOrdensAbertas(self):
+    def __obterOrdensAbertas(self):
         tapi_nonce = self.tapi
 
         params = {
             'tapi_method': 'list_orders',
             'tapi_nonce': tapi_nonce,
-            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(), self.ativo_parte.upper()),
             'status_list': '[2]'
         }
 
@@ -153,3 +156,50 @@ class MercadoBitcoin:
                 conn.close()
 
         return response_json
+
+
+#---------------- MÉTODOS PÚBLICOS ----------------#
+
+    def obter_saldo(self):
+        '''
+        Método público para obter saldo de todas as moedas conforme as regras das corretoras.
+        '''
+        saldo = {}
+        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        for moeda in lista_de_moedas:
+            saldo[moeda] = 0
+        
+        response_json = self.__obterSaldo()
+        
+        # Retentativa em caso de erro
+        while 'error_message' in response_json.keys():
+            logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
+            time.sleep(3)
+            response_json = self.__obterSaldo()
+        
+        # Obtém o saldo em todas as moedas
+        for ativo in response_json['response_data']['balance'].keys():
+            if float(response_json['response_data']['balance'][ativo]['total']) > 0:
+                saldo[ativo.lower()] = float(response_json['response_data']['balance'][ativo]['total'])
+        
+        return saldo
+
+    def obter_ordens_abertas(self):
+        '''
+        Obtém todas as ordens abertas
+        '''
+        return self.__obterOrdensAbertas()
+
+    def cancelar_ordem(self, idOrdem):
+        '''
+        Cancelar unitariamente uma ordem
+        '''
+        retorno_cancel = self.__cancelarOrdem(idOrdem)
+        return len(retorno_cancel['response_data']['order']) > 0
+
+
+    def cancelar_todas_ordens(self, ordens_abertas):
+        '''
+        Cancelar todas as ordens abertas por ativo
+        '''
+        pass
