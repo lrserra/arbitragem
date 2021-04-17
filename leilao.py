@@ -147,23 +147,34 @@ class Leilao:
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
                 ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
 
-            if ordem_leilao_compra.id != 0 and executarOrdens and ordem.quantidade_executada * corretoraLeilao.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
-                
-                logging.info('LC2: leilao compra vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem_leilao_compra.id,ativo))
-                cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
-
-                # Zera o risco na outra corretora com uma operação à mercado
-                if corretoraZeragem.nome == 'MercadoBitcoin':
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-                else:
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
-                
-                corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
-                corretoraZeragem.ordem.tipo_ordem = 'market'
-                retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
-
-                return retorno_compra, cancelou 
+            if ordem_leilao_compra.id != 0 and executarOrdens and ordem.quantidade_executada * corretoraLeilao.book.preco_compra > 0:
             
+                if ordem.quantidade_executada * corretoraLeilao.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
+                
+                    logging.info('LC2: leilao compra vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem_leilao_compra.id,ativo))
+                    cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_compra.id)
+
+                    # Zera o risco na outra corretora com uma operação à mercado
+                    if corretoraZeragem.nome == 'MercadoBitcoin':
+                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+                    else:
+                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                    
+                    corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
+                    corretoraZeragem.ordem.tipo_ordem = 'market'
+                    retorno_compra = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
+
+                    return retorno_compra, cancelou 
+                else:
+                    fui_executado = round(ordem.quantidade_executada * corretoraLeilao.book.preco_compra,4)
+                    valor_minimo = round(Util.retorna_menor_valor_compra(ativo),4)
+                    quantidade_executada_venda = ordem.quantidade_executada
+                    vendi_a = ordem_leilao_compra.preco_enviado
+
+                    Util.adicionar_linha_em_operacoes(ativo,'',0,0,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,0,'LEILAO',str(datetime.now()))
+                    logging.info('LC6: leilao compra de {} nao vai fazer nada porque fui executado em {} reais que é menos que o valor minimo de {} reais'.format(ativo,fui_executado,valor_minimo))
+                        
+        
             #3: nao sou o primeiro da fila
             if ordem_leilao_compra.id != 0 and (ordem_leilao_compra.preco_enviado != corretoraLeilao.book.preco_compra):
                 
@@ -225,17 +236,28 @@ class Leilao:
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) 
                 ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada        
 
-            if ordem_leilao_venda.id != 0 and executarOrdens and ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
-                
-                logging.info('LV2: leilao venda vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem_leilao_venda.id,ativo,Util.retorna_menor_quantidade_venda(ativo)))
-                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
+            if ordem_leilao_venda.id != 0 and executarOrdens and ordem.quantidade_executada > 0:
             
-                logging.info('LV2: leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
-                corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)             
-                corretoraZeragem.ordem.tipo_ordem = 'market'
-                retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+                if ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
                 
-                return retorno_venda,cancelou
+                    logging.info('LV2: leilao venda vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem_leilao_venda.id,ativo,Util.retorna_menor_quantidade_venda(ativo)))
+                    cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_leilao_venda.id)
+                
+                    logging.info('LV2: leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem_leilao_venda.id,ativo))
+                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)             
+                    corretoraZeragem.ordem.tipo_ordem = 'market'
+                    retorno_venda = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+                    
+                    return retorno_venda,cancelou
+                else:
+                    fui_executado = round(ordem.quantidade_executada,4)
+                    valor_minimo = round(Util.retorna_menor_quantidade_venda(ativo),4)
+                    quantidade_executada_compra = ordem.quantidade_executada
+                    comprei_a = ordem_leilao_venda.preco_enviado
+
+                    Util.adicionar_linha_em_operacoes(ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'LEILAO',str(datetime.now()))
+                    logging.info('LV6: leilao venda de {} nao vai fazer nada porque fui executado em {} que é menos que o valor minimo de {}'.format(ativo,fui_executado,valor_minimo))
+                    
 
             #3: nao sou o primeiro da fila
             if ordem_leilao_venda.id != 0 and (ordem_leilao_venda.preco_enviado != corretoraLeilao.book.preco_venda):

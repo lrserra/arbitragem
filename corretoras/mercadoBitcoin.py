@@ -1,3 +1,4 @@
+import logging
 import requests
 import hashlib
 import hmac
@@ -15,15 +16,17 @@ class MercadoBitcoin:
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
-        self.tapi = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
-
+        
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
         return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
 
+    def _obter_tapi(self):
+        return str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
+
     def __obterSaldo(self):
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
         params = {
             'tapi_method': 'get_account_info',
             'tapi_nonce': tapi_nonce,
@@ -32,7 +35,7 @@ class MercadoBitcoin:
         return self.executarRequestMercadoBTC(params)
 
     def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
 
         if tipoOrdem == 'market':
             method = 'place_market_buy_order'
@@ -52,7 +55,7 @@ class MercadoBitcoin:
         return retorno
 
     def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
 
         if tipoOrdem == 'market':
             method = 'place_market_sell_order'
@@ -74,7 +77,7 @@ class MercadoBitcoin:
         config = Util.obterCredenciais()
         tx_fee = {'xrp':0.01,'btc':0.0004,'ltc':0.001,'bch':0.001}
 
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
         params = {
             'tapi_method': 'withdraw_coin',
             'tapi_nonce': tapi_nonce,
@@ -91,7 +94,7 @@ class MercadoBitcoin:
         return self.executarRequestMercadoBTC(params)
 
     def __cancelarOrdem(self, idOrdem):
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
 
         params = {
             'tapi_method': 'cancel_order',
@@ -106,7 +109,7 @@ class MercadoBitcoin:
         return retorno
 
     def __obterOrdensAbertas(self):
-        tapi_nonce = self.tapi
+        tapi_nonce = self._obter_tapi()
 
         params = {
             'tapi_method': 'list_orders',
@@ -164,6 +167,9 @@ class MercadoBitcoin:
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
+        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        for moeda in lista_de_moedas:
+            saldo[moeda] = 0
         
         response_json = self.__obterSaldo()
         

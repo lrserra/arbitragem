@@ -1,3 +1,4 @@
+import logging
 import requests
 import hashlib
 import hmac
@@ -103,6 +104,10 @@ class BrasilBitcoin:
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
+
+        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        for moeda in lista_de_moedas:
+            saldo[moeda] = 0
         
         response_json = self.__obterSaldo()
 
