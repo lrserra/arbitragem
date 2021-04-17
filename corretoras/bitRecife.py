@@ -91,8 +91,12 @@ class BitRecife:
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
-        
+
         response_json = self.__obterSaldo()
+
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
         
         for item in response_json['result']:
             saldo[item['Asset'].lower()] = float(item['Available'])

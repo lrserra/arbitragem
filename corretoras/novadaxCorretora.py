@@ -70,6 +70,10 @@ class Novadax:
         '''
         saldo = {}
         
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
+
         response_json = self.__obterSaldo()
         for item in response_json['data']:
             if float(item['balance'])>0:

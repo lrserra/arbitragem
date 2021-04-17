@@ -110,6 +110,10 @@ class BrasilBitcoin:
             time.sleep(3)
             response_json = self.__obterSaldo()
 
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
+
         for ativo in response_json.keys():
             if ativo != 'user_cpf':
                 saldo[ativo.lower()] = float(response_json[ativo])

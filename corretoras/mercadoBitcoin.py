@@ -173,6 +173,10 @@ class MercadoBitcoin:
             time.sleep(3)
             response_json = self.__obterSaldo()
         
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
+
         # Obtém o saldo em todas as moedas
         for ativo in response_json['response_data']['balance'].keys():
             if float(response_json['response_data']['balance'][ativo]['total']) > 0:

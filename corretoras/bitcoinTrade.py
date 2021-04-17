@@ -124,6 +124,10 @@ class BitcoinTrade:
             time.sleep(3)
             response_json = self.__obterSaldo()
 
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
+
         for item in response_json['data']:
             saldo[item['currency_code'].lower()] = float(item['available_amount']) + float(item['locked_amount'])
         
