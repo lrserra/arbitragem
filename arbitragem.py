@@ -379,8 +379,6 @@ if __name__ == "__main__":
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
-
     while True:
         for moeda in lista_de_moedas:
             try:
