@@ -46,6 +46,7 @@ class Caixa:
                 else:
                     preco_venda[moeda] = 1
             else:
+                CorretoraMaisLiquida.saldo[moeda] = 0
                 saldo[moeda] = 0
                 preco_venda[moeda] = 0
 
