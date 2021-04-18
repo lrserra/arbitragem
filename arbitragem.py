@@ -24,8 +24,13 @@ class Arbitragem:
             corretoraVenda.atualizar_saldo()
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-            corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+            if corretoraCompra.nome == corretora_mais_liquida: #dou preferencia pra carregar os preços da mais liquida por ultimo
+                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+            else:
+                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+
 
             preco_de_compra = corretoraCompra.book.preco_compra #primeiro no book de ordens
             preco_de_venda = corretoraVenda.book.preco_venda #primeiro no book de ordens
