@@ -9,6 +9,7 @@ from http import client
 from urllib.parse import urlencode
 from uteis.util import Util
 from datetime import datetime
+from uteis.ordem import Ordem
 
 class MercadoBitcoin:
 
@@ -32,9 +33,9 @@ class MercadoBitcoin:
             'tapi_nonce': tapi_nonce,
         }
         params = urlencode(params)
-        return self.executarRequestMercadoBTC(params)
+        return self.__executarRequestMercadoBTC(params)
 
-    def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
+    def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         tapi_nonce = self._obter_tapi()
 
         if tipoOrdem == 'market':
@@ -51,10 +52,10 @@ class MercadoBitcoin:
         }
 
         params = urlencode(params)
-        retorno = self.executarRequestMercadoBTC(params)
+        retorno = self.__executarRequestMercadoBTC(params)
         return retorno
 
-    def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
+    def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         tapi_nonce = self._obter_tapi()
 
         if tipoOrdem == 'market':
@@ -70,7 +71,7 @@ class MercadoBitcoin:
             'limit_price': precoVenda
         }
         params = urlencode(params)
-        retorno = self.executarRequestMercadoBTC(params)
+        retorno = self.__executarRequestMercadoBTC(params)
         return retorno
 
     def TransferirCrypto(self, quantity, destino):
@@ -91,7 +92,7 @@ class MercadoBitcoin:
             params['destination_tag']= config[destino]["Address"]["xrp_tag"] 
 
         params = urlencode(params)
-        return self.executarRequestMercadoBTC(params)
+        return self.__executarRequestMercadoBTC(params)
 
     def __cancelarOrdem(self, idOrdem):
         tapi_nonce = self._obter_tapi()
@@ -105,7 +106,7 @@ class MercadoBitcoin:
         }
 
         params = urlencode(params)
-        retorno = self.executarRequestMercadoBTC(params)
+        retorno = self.__executarRequestMercadoBTC(params)
         return retorno
 
     def __obterOrdensAbertas(self):
@@ -119,10 +120,10 @@ class MercadoBitcoin:
         }
 
         params = urlencode(params)
-        retorno = self.executarRequestMercadoBTC(params)
+        retorno = self.__executarRequestMercadoBTC(params)
         return retorno
 
-    def executarRequestMercadoBTC(self, params):
+    def __executarRequestMercadoBTC(self, params):
         # Constantes
         config = Util.obterCredenciais()
         MB_TAPI_ID = config["MercadoBitcoin"]["Authentication"]
@@ -167,7 +168,7 @@ class MercadoBitcoin:
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
-        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        lista_de_moedas = Util.obter_lista_de_moedas()+[Util.CCYBRL()]
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
@@ -178,10 +179,6 @@ class MercadoBitcoin:
             logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
             time.sleep(3)
             response_json = self.__obterSaldo()
-        
-        # Inicializa todas as moedas
-        for moeda in Util.obter_lista_de_moedas():
-            saldo[moeda] = 0
 
         # Obtém o saldo em todas as moedas
         for ativo in response_json['response_data']['balance'].keys():
@@ -203,9 +200,41 @@ class MercadoBitcoin:
         retorno_cancel = self.__cancelarOrdem(idOrdem)
         return len(retorno_cancel['response_data']['order']) > 0
 
-
     def cancelar_todas_ordens(self, ordens_abertas):
         '''
         Cancelar todas as ordens abertas por ativo
         '''
-        pass
+        if len(ordens_abertas['response_data']['orders']) > 0:
+                for ordem in ordens_abertas['response_data']['orders']:
+                    self.cancelar_ordem(ativo,ordem['order_id'])
+
+    def enviar_ordem_compra(self, ordemCompra):
+        ordem = Ordem()
+        response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
+        if response['status_code'] == 100: 
+            ordem.id = response['response_data']['order']['order_id']
+            if response['response_data']['order']['status'] == 4:
+                ordem.status = 'filled'
+            elif response['response_data']['order']['status'] == 2:
+                ordem.status = 'open'
+            else:
+                ordem.status = 'error'
+            ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
+            ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+        return ordem
+    
+    def enviar_ordem_venda(self, ordemVenda):
+        ordem = Ordem()
+        response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
+        if response['status_code'] == 100:            
+            ordem.id = response['response_data']['order']['order_id']
+            if response['response_data']['order']['status'] == 4:
+                ordem.status = 'filled'
+            elif response['response_data']['order']['status'] == 2:
+                ordem.status = 'open'
+            else:
+                ordem.status = 'error'
+            ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
+            ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
+        return ordem
+

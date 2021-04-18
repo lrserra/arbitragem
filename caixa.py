@@ -72,8 +72,8 @@ class Caixa:
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
             
             #carrego os books de ordem mais recentes
-            CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
-            CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
+            CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True)
+            CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True)
 
             if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
 

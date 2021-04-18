@@ -8,6 +8,7 @@ import mimetypes
 from http import client
 from urllib.parse import urlencode
 from uteis.util import Util
+from uteis.ordem import Ordem
 
 class BrasilBitcoin:
 
@@ -22,13 +23,13 @@ class BrasilBitcoin:
         return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
 
     def __obterSaldo(self):
-        retorno = self.executarRequestBrasilBTC('GET', '','/api/get_balance')
+        retorno = self.__executarRequestBrasilBTC('GET', '','/api/get_balance')
         return retorno
 
-    def obterOrdemPorId(self, idOrdem):
-        return self.executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
+    def __obterOrdemPorId(self, idOrdem):
+        return self.__executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
 
-    def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
+    def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         payload = {
             'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
@@ -39,10 +40,10 @@ class BrasilBitcoin:
         }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        retorno = self.__executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
         return retorno
 
-    def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
+    def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
         payload = {
             'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
@@ -53,7 +54,7 @@ class BrasilBitcoin:
         }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        retorno = self.executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
+        retorno = self.__executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
         return retorno
 
     def TransferirCrypto(self, quantity, destino):      
@@ -71,17 +72,17 @@ class BrasilBitcoin:
             payload['tag'] = config[destino]["Address"]["xrp_tag"]         
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        return self.executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')
+        return self.__executarRequestBrasilBTC('POST', json.dumps(payload), '/api/send')
 
     def __cancelarOrdem(self, idOrdem):
-        retorno = self.executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
+        retorno = self.__executarRequestBrasilBTC('GET', '', 'api/remove_order/{}'.format(idOrdem))
         return retorno
 
     def __obterOrdensAbertas(self):
-        retorno = self.executarRequestBrasilBTC('GET', '','/api/my_orders')
+        retorno = self.__executarRequestBrasilBTC('GET', '','/api/my_orders')
         return retorno
 
-    def executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
+    def __executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
         
         headers ={
@@ -115,10 +116,6 @@ class BrasilBitcoin:
             time.sleep(3)
             response_json = self.__obterSaldo()
 
-        # Inicializa todas as moedas
-        for moeda in Util.obter_lista_de_moedas():
-            saldo[moeda] = 0
-
         for ativo in response_json.keys():
             if ativo != 'user_cpf':
                 saldo[ativo.lower()] = float(response_json[ativo])
@@ -144,3 +141,60 @@ class BrasilBitcoin:
             return True 
 
         return retorno_cancel['success']
+
+    def cancelar_todas_ordens(self, ordens_abertas):
+        '''
+        Cancelar todas as ordens abertas por ativo
+        '''
+        for ordem in ordens_abertas:
+            self.cancelar_ordem(ativo,ordem['id'])
+
+    def obter_ordem_por_id(self, filterOrdem):
+        ordem = Ordem()
+        response = self.__obterOrdemPorId(filterOrdem.id)
+        ordem.status = response['data']['status']
+        ordem.quantidade_executada = response['data']['executed']
+        ordem.preco_executado = response['data']['price']
+        return ordem
+
+    def enviar_ordem_compra(self, ordemCompra):
+        ordem = Ordem()
+        response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
+                
+        if response['success'] == True:
+            ordem.id = response['data']['id']
+            ordem.status = response['data']['status']
+            ordem.quantidade_executada = float(response['data']['amount'])
+            ordem.preco_executado = float(response['data']['price'])
+            i = 0
+            qtd = len(response['data']['fills'])
+            while i < qtd:
+                ordem.quantidade_executada += float(response['data']['fills'][i]['amount'])
+                valor = response['data']['fills'][i]['price'].replace('.','')
+                ordem.preco_executado = float(valor.replace(',','.'))
+                i += 1
+        else:
+            mensagem = '{}: enviar_ordem_compra - {}'.format('BrasilBitcoin', response['message'])
+            print(mensagem)
+        return ordem
+
+    def enviar_ordem_venda(self, ordemVenda):
+        ordem = Ordem()
+        response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
+        if response['success'] == True:
+            ordem.id = response['data']['id']
+            ordem.status = response['data']['status']
+            ordem.quantidade_venda = float(response['data']['amount'])
+            ordem.preco_venda = float(response['data']['price'])
+            i = 0
+            qtd = len(response['data']['fills'])
+            while i < qtd:
+                ordem.quantidade_executada += float(response['data']['fills'][i]['amount'])
+                valor = response['data']['fills'][i]['price'].replace('.','')
+                ordem.preco_executado = float(valor.replace(',','.'))
+                i += 1
+        else:
+            mensagem = '{}: enviar_ordem_venda - {}'.format('BrasilBitcoin', response['message'])
+            print(mensagem)
+        return ordem
+
