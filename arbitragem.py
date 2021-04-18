@@ -12,6 +12,8 @@ class Arbitragem:
     def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, executarOrdens = False):
         
         fiz_arb = False
+        
+        corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
 
         try:
             pnl = 0
@@ -78,11 +80,15 @@ class Arbitragem:
                                     quero_comprar_a = round(preco_de_compra,4)
                                     quero_vender_a = round(preco_de_venda,4)
 
-                                    logging.info('arbitragem vai comprar {}{} @{} na {} e vender @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo]))
-                                    
                                     #efetivamente envia as ordens
-                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
-                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                    if corretoraCompra.nome == corretora_mais_liquida:
+                                        logging.info('arbitragem vai comprar primeiro {}{} @{} na {} e vender depois @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo]))
+                                        ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
+                                        ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                    else:
+                                        logging.info('arbitragem vai vender primeiro {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
+                                        ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                        ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
 
                                     realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                     realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
