@@ -6,6 +6,14 @@ from uteis.ordem import Ordem
 from datetime import datetime
 import time
 
+ativo= 'xrp'
+corretoraMercadoBTC = Corretora('MercadoBitcoin')
+corretoraMercadoBTC.book.obter_ordem_book_por_indice(ativo,'brl',0,True,False)
 
-corretoraMercadoBTC = Corretora('Novadax')
-print(corretoraMercadoBTC.atualizar_saldo())
+print(corretoraMercadoBTC.book.preco_venda)
+print(corretoraMercadoBTC.book.preco_compra)
+
+corretoraMercadoBTC.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+
+print(corretoraMercadoBTC.book.preco_venda)
+print(corretoraMercadoBTC.book.preco_compra)

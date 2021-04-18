@@ -25,11 +25,11 @@ class Arbitragem:
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
             if corretoraCompra.nome == corretora_mais_liquida: #dou preferencia pra carregar os preços da mais liquida por ultimo
-                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
             else:
-                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
 
 
             preco_de_compra = corretoraCompra.book.preco_compra #primeiro no book de ordens
