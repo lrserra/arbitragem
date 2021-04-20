@@ -17,3 +17,4 @@ corretoraMercadoBTC.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
 
 print(corretoraMercadoBTC.book.preco_venda)
 print(corretoraMercadoBTC.book.preco_compra)
+

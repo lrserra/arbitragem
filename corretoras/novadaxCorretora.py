@@ -3,6 +3,7 @@ import novadax
 import json
 import time
 from uteis.util import Util
+from uteis.ordem import Ordem
 
 class Novadax:
 
@@ -23,12 +24,12 @@ class Novadax:
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.get_account_balance()
 
-    def obterOrdemPorId(self, idOrdem):
+    def __obterOrdemPorId(self, idOrdem):
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
         return nova_client.get_order(idOrdem)
 
-    def enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
+    def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
@@ -37,7 +38,7 @@ class Novadax:
         elif tipoOrdem.upper() == 'LIMIT':
             return nova_client.create_order('{}_{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper()), tipoOrdem.upper(), 'BUY', precoCompra, quantity)
 
-    def enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
+    def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
        # objeto que será postado para o endpoint
         config = Util.obterCredenciais()
         nova_client = novadax.RequestClient(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
@@ -70,6 +71,10 @@ class Novadax:
         '''
         saldo = {}
         
+        # Inicializa todas as moedas
+        for moeda in Util.obter_lista_de_moedas():
+            saldo[moeda] = 0
+
         response_json = self.__obterSaldo()
         for item in response_json['data']:
             if float(item['balance'])>0:
@@ -89,3 +94,64 @@ class Novadax:
         '''
         self.__cancelarOrdem(idOrdem) 
         return True
+
+    def cancelar_todas_ordens(self, ordens_abertas):
+        '''
+        Cancelar todas as ordens abertas por ativo
+        '''
+        if 'data' in ordens_abertas.keys():
+            for ordem in ordens_abertas['data']:
+                self.cancelar_ordem(ativo,ordem['id'])
+
+    def obter_ordem_por_id(self, filterOrdem):
+        response = self.__obterOrdemPorId(filterOrdem.id)
+        if response['message'] == 'Success':
+            ordem.status = response['data']['status'].lower()
+            ordem.quantidade_executada = response['data']['filledAmount']
+            ordem.preco_executado = response['data']['averagePrice']
+        return ordem
+
+    def enviar_ordem_compra(self, ordemCompra):
+        ordem = Ordem()
+        response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
+                
+        if response['message'] == "Success":
+            ordem_response = self.__obterOrdemPorId(response['data']['id'])
+            
+            ordem.id = response['data']['id']
+            ordem.status = ordem_response['data']['status'].lower()
+            ordem.quantidade_executada = float(ordem_response['data']['value'])
+            
+            if ordem.status == 'filled':
+                ordem.preco_executado = float(ordem_response['data']['averagePrice'])
+            else:
+                ordem.preco_executado = float(ordem_response['data']['price'])
+            
+            ordem.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
+            ordem.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
+        else:
+            mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+            print(mensagem)
+        return ordem
+
+    def enviar_ordem_venda(self, ordemVenda):
+        ordem = Ordem()
+        response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
+        if response['message'] == "Success":
+            ordem_response = self.__obterOrdemPorId(response['data']['id'])
+            
+            ordem.id = response['data']['id']
+            ordem.status = ordem_response['data']['status'].lower()
+            ordem.quantidade_executada = float(ordem_response['data']['amount'])
+            
+            if ordem.status == 'filled':
+                ordem.preco_executado = float(ordem_response['data']['averagePrice'])
+            else:
+                ordem.preco_executado = float(ordem_response['data']['price'])
+            
+            ordem.quantidade_executada = 0 if ordem_response['data']['filledAmount'] is None else float(ordem_response['data']['filledAmount'])                                        
+            ordem.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
+        else:
+            mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+            print(mensagem)
+        return ordem
