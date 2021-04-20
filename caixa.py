@@ -37,6 +37,7 @@ class Caixa:
         
         for moeda in lista_de_moedas_hardcoded:
             if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
+                
                 saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
                 
                 if moeda != 'brl':
@@ -45,10 +46,12 @@ class Caixa:
                 else:
                     preco_venda[moeda] = 1
             else:
+                CorretoraMaisLiquida.saldo[moeda] = 0
                 saldo[moeda] = 0
                 preco_venda[moeda] = 0
 
-        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],str(datetime.now()))
+        logging.warning('caixa vai enviar saldo para o google')
+        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'],str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):

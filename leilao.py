@@ -16,8 +16,8 @@ class Leilao:
             qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
 
             preco_que_vou_vender = corretoraLeilao.book.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
             preco_de_zeragem = corretoraZeragem.book.preco_compra # zeragem no primeiro book de ordens
@@ -71,8 +71,8 @@ class Leilao:
             qtd_de_moedas = len(Util.obter_lista_de_moedas())
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
+            corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+            corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
 
             preco_que_vou_comprar = corretoraLeilao.book.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
             preco_de_zeragem = corretoraZeragem.book.preco_venda # zeragem no primeiro book de ordens
@@ -141,8 +141,8 @@ class Leilao:
             
             #2: executada parcialmente, mais que o valor minimo
             if ordem_leilao_compra.id != 0:
-                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True) 
+                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) 
                 corretoraZeragem.atualizar_saldo()
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_compra)
                 ordem_leilao_compra.quantidade_executada = ordem.quantidade_executada
@@ -231,8 +231,8 @@ class Leilao:
             #2: executada parcialmente, mais que o valor minimo
             if  ordem_leilao_venda.id != 0:
                 corretoraZeragem.atualizar_saldo()
-                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True)
-                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True)   
+                corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+                corretoraZeragem.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)   
                 ordem = corretoraLeilao.obter_ordem_por_id(ativo,ordem_leilao_venda) 
                 ordem_leilao_venda.quantidade_executada = ordem.quantidade_executada        
 

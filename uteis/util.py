@@ -24,7 +24,7 @@ class Util:
     def CCYBCH():
         return 'bch'
 
-    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,data):
+    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,qtd_brl_mais_liquida,qtd_btc_mais_liquida,qtd_eth_mais_liquida,qtd_xrp_mais_liquida,qtd_ltc_mais_liquida,qtd_bch_mais_liquida,data):
         
         #dados que serão enviados ao webhook
         data_to_send={}
@@ -40,6 +40,12 @@ class Util:
         data_to_send['qtd_xrp_brl'] = round(qtd_xrp_brl,4)
         data_to_send['qtd_ltc_brl'] = round(qtd_ltc_brl,4)
         data_to_send['qtd_bch_brl'] = round(qtd_bch_brl,4)
+        data_to_send['qtd_brl_mais_liquida'] = round(qtd_brl_mais_liquida,4)
+        data_to_send['qtd_btc_mais_liquida'] = round(qtd_btc_mais_liquida,4)
+        data_to_send['qtd_eth_mais_liquida'] = round(qtd_eth_mais_liquida,4)
+        data_to_send['qtd_xrp_mais_liquida'] = round(qtd_xrp_mais_liquida,4)
+        data_to_send['qtd_ltc_mais_liquida'] = round(qtd_ltc_mais_liquida,4)
+        data_to_send['qtd_bch_mais_liquida'] = round(qtd_bch_mais_liquida,4)
         data_to_send['data'] = str(data)
 
         #pega o webhook no appsettings

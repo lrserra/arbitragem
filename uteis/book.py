@@ -17,24 +17,51 @@ class Book:
         self.quantidade_compra = 0.0
         self.quantidade_venda = 0.0
 
-    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False):
+    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
         
         try:
             self.__carregar_ordem_books(ativo_parte,ativo_contraparte)
+            indice_inicial = indice
 
             if ignorar_quantidades_pequenas:
                 minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
                 minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
 
             if self.nome == 'MercadoBitcoin':
-                if ignorar_quantidades_pequenas:
-                    while float(self.book['asks'][indice][1])*float(self.book['asks'][indice][0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
-                        indice+=1
-                    while float(self.book['bids'][indice][1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+
+                if ignorar_ordens_fantasmas:
+                    
+                    indice = indice_inicial
+                    while float(self.book['bids'][indice][0]) > float(self.book['asks'][indice][0]): #o preco de venda tem queser menor que o de compra
+                        self.book['bids'][indice].append('DESCONSIDERAR')
                         indice+=1
 
+                    indice = indice_inicial
+                    while float(self.book['asks'][indice][0]) < float(self.book['bids'][indice][0]): #o preco de compra tem queser maior que o de venda
+                        self.book['asks'][indice].append('DESCONSIDERAR')
+                        indice+=1
+                    
+
+                if ignorar_quantidades_pequenas:
+                    indice = indice_inicial
+                    while float(self.book['asks'][indice][1])*float(self.book['asks'][indice][0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        self.book['asks'][indice].append('DESCONSIDERAR')
+                        indice+=1
+
+                    indice = indice_inicial
+                    while float(self.book['bids'][indice][1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        self.book['bids'][indice].append('DESCONSIDERAR')
+                        indice+=1
+
+                indice = indice_inicial
+                while 'DESCONSIDERAR' in self.book['asks'][indice]:
+                    indice+=1
                 self.preco_compra = float(self.book['asks'][indice][0])
                 self.quantidade_compra = float(self.book['asks'][indice][1])
+            
+                indice = indice_inicial
+                while 'DESCONSIDERAR' in self.book['asks'][indice]:
+                    indice+=1
                 self.preco_venda = float(self.book['bids'][indice][0])
                 self.quantidade_venda = float(self.book['bids'][indice][1])
             
