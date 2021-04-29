@@ -58,6 +58,7 @@ class Arbitragem:
                 #define pnl minimo para aceitarmos o trade
                 fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
                 pnl_minimo = 1 if fracao_do_caixa<0.2 else 0.1 # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
+                pnl_minimo = 10 if fracao_do_caixa<0.05 else pnl_minimo # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
 
                 if qtdNegociada !=0:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
@@ -128,7 +129,7 @@ class Arbitragem:
                         else:
                             logging.info('arbitragem nao vai enviar ordem de {} porque quantidade negociada {} nao é maior que a quantidade minima {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo)))
                     else:
-                        logging.info('arbitragem nao vai enviar ordem de {} porque oq vou pagar {} menos oq vou ganhar {} nao é maior que nosso pnl minimo {}'.format(ativo,round(vou_pagar,2),round(vou_ganhar,2),round(pnl_minimo,2)))
+                        logging.info('arbitragem nao vai enviar ordem de {} porque o pnl estimado: {}=({}-{}) nao é maior que nosso pnl minimo: {}'.format(ativo,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(pnl_minimo,2)))
                         
                 else:
                     logging.info('acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
