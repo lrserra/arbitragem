@@ -57,7 +57,7 @@ class Arbitragem:
                 
                 #define pnl minimo para aceitarmos o trade
                 fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
-                pnl_minimo = 1 if fracao_do_caixa<0.2 else -1 # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
+                pnl_minimo = 1 if fracao_do_caixa<0.2 else 0.1 # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
                 pnl_minimo = 10 if fracao_do_caixa<0.05 else pnl_minimo # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
 
                 if qtdNegociada !=0:
