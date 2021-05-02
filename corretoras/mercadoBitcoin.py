@@ -221,7 +221,7 @@ class MercadoBitcoin:
                 ordem.status = 'error'
             ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
             ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-        return ordem
+        return ordem,response
     
     def enviar_ordem_venda(self, ordemVenda):
         ordem = Ordem()
@@ -236,5 +236,5 @@ class MercadoBitcoin:
                 ordem.status = 'error'
             ordem.quantidade_executada = float(response['response_data']['order']['executed_quantity'])
             ordem.preco_executado = float(response['response_data']['order']['executed_price_avg'])
-        return ordem
+        return ordem,response
 

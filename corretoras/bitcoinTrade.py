@@ -185,7 +185,7 @@ class BitcoinTrade:
                         ordem.preco_executado = ativo['unit_price']
         return ordem
     
-    def enviar_compra(self, ordemCompra):
+    def enviar_ordem_compra(self, ordemCompra):
         ordem = Ordem()
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
         if response['message'] != None:
@@ -204,7 +204,7 @@ class BitcoinTrade:
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = Ordem()
@@ -225,4 +225,4 @@ class BitcoinTrade:
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response

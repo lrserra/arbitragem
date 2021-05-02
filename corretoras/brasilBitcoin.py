@@ -176,7 +176,7 @@ class BrasilBitcoin:
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = Ordem()
@@ -196,5 +196,5 @@ class BrasilBitcoin:
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response
 

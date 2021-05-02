@@ -111,13 +111,13 @@ class Corretora:
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
         if ativo_parte =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000)/1000#trunca na terceira
         else:
             ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
 
         try:
             if self.nome == 'MercadoBitcoin':
-                ordem = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
                     if 'error_message' in response.keys():
@@ -130,10 +130,10 @@ class Corretora:
             
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
-                ordem = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
             elif self.nome == 'BitcoinTrade':
-                ordem = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
                 if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
                     if 'message' in response.keys():
@@ -147,7 +147,7 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
             elif self.nome == 'Novadax':
-                ordem = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
             elif self.nome == 'BitRecife':
                 ordem = BitRecife().enviar_ordem_compra(ordem)
         except Exception as erro:
@@ -160,7 +160,7 @@ class Corretora:
         mensagem = ''
 
         if ativo_parte =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000)/1000#trunca na terceira
         else:
             ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
 
@@ -179,6 +179,16 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                
+                if ordem.status != self.descricao_status_executado:
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        logging.error('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                
+
             elif self.nome == 'BitcoinTrade':
                 ordem = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
 

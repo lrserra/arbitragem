@@ -132,7 +132,7 @@ class Novadax:
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = Ordem()
@@ -154,4 +154,4 @@ class Novadax:
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
             print(mensagem)
-        return ordem
+        return ordem,response
