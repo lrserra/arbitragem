@@ -131,6 +131,14 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                
+                if ordem.status != self.descricao_status_executado:
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        logging.error('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
 
             elif self.nome == 'BitcoinTrade':
                 ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
@@ -149,7 +157,7 @@ class Corretora:
             elif self.nome == 'Novadax':
                 ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
             elif self.nome == 'BitRecife':
-                ordem = BitRecife().enviar_ordem_compra(ordem)
+                ordem,response = BitRecife().enviar_ordem_compra(ordem)
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('enviar_ordem_compra', self.nome, erro))
         
@@ -166,7 +174,7 @@ class Corretora:
 
         try:
             if self.nome == 'MercadoBitcoin':
-                ordem = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
                 if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
                     if 'error_message' in response.keys():
@@ -178,7 +186,7 @@ class Corretora:
                 
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
-                ordem = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
                 if ordem.status != self.descricao_status_executado:
                     if 'message' in response.keys():
@@ -190,7 +198,7 @@ class Corretora:
                 
 
             elif self.nome == 'BitcoinTrade':
-                ordem = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
 
                 if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
                     if 'message' in response.keys():
@@ -204,10 +212,10 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     
             elif self.nome == 'Novadax':
-                ordem = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
             
             elif self.nome == 'BitRecife':
-                ordem = BitRecife().enviar_ordem_venda(ordem)
+                ordem,response = BitRecife().enviar_ordem_venda(ordem)
         except Exception as erro:
                 logging.error(Util.descricao_erro_padrao().format('enviar_ordem_venda', self.nome, erro))
         

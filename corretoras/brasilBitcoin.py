@@ -158,7 +158,7 @@ class BrasilBitcoin:
         return ordem
 
     def enviar_ordem_compra(self, ordemCompra):
-        ordem = Ordem()
+        ordem = ordemCompra
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
                 
         if response['success'] == True:
@@ -179,7 +179,7 @@ class BrasilBitcoin:
         return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
-        ordem = Ordem()
+        ordem = ordemVenda
         response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
         if response['success'] == True:
             ordem.id = response['data']['id']

@@ -209,7 +209,7 @@ class MercadoBitcoin:
                     self.cancelar_ordem(ativo,ordem['order_id'])
 
     def enviar_ordem_compra(self, ordemCompra):
-        ordem = Ordem()
+        ordem = ordemCompra
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
         if response['status_code'] == 100: 
             ordem.id = response['response_data']['order']['order_id']
@@ -224,7 +224,7 @@ class MercadoBitcoin:
         return ordem,response
     
     def enviar_ordem_venda(self, ordemVenda):
-        ordem = Ordem()
+        ordem = ordemVenda
         response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
         if response['status_code'] == 100:            
             ordem.id = response['response_data']['order']['order_id']
