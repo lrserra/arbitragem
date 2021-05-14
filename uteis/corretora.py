@@ -132,7 +132,7 @@ class Corretora:
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
                 
-                if ordem.status != self.descricao_status_executado and ordem.status != 'new':
+                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
                     if 'message' in response.keys():
                         logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
                         logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
@@ -188,7 +188,7 @@ class Corretora:
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
-                if ordem.status != self.descricao_status_executado and ordem.status != 'new':
+                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
                     if 'message' in response.keys():
                         logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
