@@ -151,7 +151,7 @@ class BrasilBitcoin:
 
     def obter_ordem_por_id(self, filterOrdem):
         ordem = Ordem()
-        response = self.__obterOrdemPorId(filterOrdem.id)
+        response = self.__obterOrdemPorId(filterOrdem)
         ordem.status = response['data']['status']
         ordem.quantidade_executada = response['data']['executed']
         ordem.preco_executado = response['data']['price']
