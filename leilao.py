@@ -171,7 +171,8 @@ class Leilao:
                     quantidade_executada_venda = ordem.quantidade_executada
                     vendi_a = ordem_leilao_compra.preco_enviado
 
-                    Util.adicionar_linha_em_operacoes(ativo,'',0,0,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,0,'LEILAO',str(datetime.now()))
+                    #comentando essa praeconomizar no integromat
+                    #Util.adicionar_linha_em_operacoes(ativo,'',0,0,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,0,'LEILAO',str(datetime.now()))
                     logging.info('LC6: leilao compra de {} nao vai fazer nada porque fui executado em {} reais que é menos que o valor minimo de {} reais'.format(ativo,fui_executado,valor_minimo))
                         
         
@@ -255,7 +256,8 @@ class Leilao:
                     quantidade_executada_compra = ordem.quantidade_executada
                     comprei_a = ordem_leilao_venda.preco_enviado
 
-                    Util.adicionar_linha_em_operacoes(ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'LEILAO',str(datetime.now()))
+                    #comentando pra economizar no integromat
+                    #Util.adicionar_linha_em_operacoes(ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'LEILAO',str(datetime.now()))
                     logging.info('LV6: leilao venda de {} nao vai fazer nada porque fui executado em {} que é menos que o valor minimo de {}'.format(ativo,fui_executado,valor_minimo))
                     
 
