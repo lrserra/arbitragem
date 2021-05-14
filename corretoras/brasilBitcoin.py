@@ -147,7 +147,7 @@ class BrasilBitcoin:
         Cancelar todas as ordens abertas por ativo
         '''
         for ordem in ordens_abertas:
-            self.cancelar_ordem(ativo,ordem['id'])
+            self.cancelar_ordem(ordem['id'])
 
     def obter_ordem_por_id(self, filterOrdem):
         ordem = Ordem()

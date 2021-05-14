@@ -74,11 +74,11 @@ class Caixa:
             pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],4)
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
             
-            #carrego os books de ordem mais recentes
-            CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-            CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-
             if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
+
+                #carrego os books de ordem mais recentes
+                CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+                CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
 
                 if (CorretoraMaisLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) and CorretoraMaisLiquida.saldo[moeda]>quantidade_a_zerar) or (CorretoraMenosLiquida.saldo[moeda]<quantidade_a_zerar): #vamos vender na corretora que paga mais e que tenha saldo
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
@@ -110,6 +110,10 @@ class Caixa:
                     
             elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra > Util.retorna_menor_valor_compra(moeda):
             
+                #carrego os books de ordem mais recentes
+                CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+                CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+
                 if (CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)) and (CorretoraMaisLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
                     logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_enviada = quantidade_a_zerar
