@@ -33,7 +33,7 @@ class Caixa:
         saldo = {}
         preco_venda = {}
 
-        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch']
+        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch','usdt','dai','eos']
         
         for moeda in lista_de_moedas_hardcoded:
             if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
@@ -74,13 +74,13 @@ class Caixa:
             pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],4)
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
             
-            #carrego os books de ordem mais recentes
-            CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True)
-            CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True)
-
             if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
 
-                if (CorretoraMaisLiquida.book.preco_venda > CorretoraMenosLiquida.book.preco_venda and CorretoraMaisLiquida.saldo[moeda]>quantidade_a_zerar) or (CorretoraMenosLiquida.saldo[moeda]<quantidade_a_zerar): #vamos vender na corretora que paga mais e que tenha saldo
+                #carrego os books de ordem mais recentes
+                CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+                CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+
+                if (CorretoraMaisLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) and CorretoraMaisLiquida.saldo[moeda]>quantidade_a_zerar) or (CorretoraMenosLiquida.saldo[moeda]<quantidade_a_zerar): #vamos vender na corretora que paga mais e que tenha saldo
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_enviada = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda])
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
@@ -94,7 +94,7 @@ class Caixa:
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
-                elif (CorretoraMaisLiquida.book.preco_venda < CorretoraMenosLiquida.book.preco_venda and CorretoraMenosLiquida.saldo[moeda]>quantidade_a_zerar) or(CorretoraMaisLiquida.saldo[moeda]<quantidade_a_zerar):
+                elif (CorretoraMaisLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) < CorretoraMenosLiquida.book.obter_preco_medio_de_venda(quantidade_a_zerar) and CorretoraMenosLiquida.saldo[moeda]>quantidade_a_zerar) or(CorretoraMaisLiquida.saldo[moeda]<quantidade_a_zerar):
                     logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMenosLiquida.nome))
                     CorretoraMenosLiquida.ordem.quantidade_enviada = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
@@ -110,7 +110,11 @@ class Caixa:
                     
             elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra > Util.retorna_menor_valor_compra(moeda):
             
-                if (CorretoraMaisLiquida.book.preco_compra < CorretoraMenosLiquida.book.preco_compra) and (CorretoraMaisLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
+                #carrego os books de ordem mais recentes
+                CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+                CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+
+                if (CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)) and (CorretoraMaisLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra) or (CorretoraMenosLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMenosLiquida.book.preco_compra): #vamos comprar na corretora que esta mais barato e que tenha saldo
                     logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMaisLiquida.nome))
                     CorretoraMaisLiquida.ordem.quantidade_enviada = quantidade_a_zerar
                     CorretoraMaisLiquida.ordem.tipo_ordem = 'market'
@@ -124,7 +128,7 @@ class Caixa:
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
-                elif (CorretoraMaisLiquida.book.preco_compra > CorretoraMenosLiquida.book.preco_compra) and (CorretoraMenosLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra) or (CorretoraMaisLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra):
+                elif (CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)) and (CorretoraMenosLiquida.saldo['brl']>quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra) or (CorretoraMaisLiquida.saldo['brl']<quantidade_a_zerar*CorretoraMaisLiquida.book.preco_compra):
                     logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,CorretoraMenosLiquida.nome))
                     CorretoraMenosLiquida.ordem.quantidade_enviada = quantidade_a_zerar
                     CorretoraMenosLiquida.ordem.tipo_ordem = 'market'
@@ -246,7 +250,6 @@ if __name__ == "__main__":
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
     Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
     
-    time.sleep(2)
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
