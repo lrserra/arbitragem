@@ -40,7 +40,7 @@ class Book:
                 minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
                 minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
 
-            time.sleep(0.5)#importante, sempre antes de fazermos esse request esperamos
+            time.sleep(0.6)#importante, sempre antes de fazermos esse request esperamos
 
             if self.nome == 'MercadoBitcoin':
                 retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
