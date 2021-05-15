@@ -59,11 +59,12 @@ class Corretora:
 
     def obter_todas_ordens_abertas(self, ativo='btc'):
         try:
-
+            lista_de_ordens = []
             if self.nome == 'MercadoBitcoin':
                 return MercadoBitcoin(ativo).obter_ordens_abertas()
             elif self.nome == 'BrasilBitcoin':
-                return BrasilBitcoin(ativo).obter_ordens_abertas()
+                lista_de_ordens = BrasilBitcoin(ativo).obter_ordens_abertas()
+                return lista_de_ordens
             elif self.nome == 'BitcoinTrade':
                 return BitcoinTrade(ativo).obter_ordens_abertas()
             elif self.nome == 'Novadax':            

@@ -49,10 +49,6 @@ if __name__ == "__main__":
     #essa parte faz a cada 5 minutos
     while True:
     
-        agora = datetime.now() 
-        proximo_ciclo = agora + timedelta(minutes=5)
-        logging.info('#### proximo ciclo: {} ####'.format(proximo_ciclo))
-
         corretoraZeragem = Corretora(corretora_mais_liquida)
         corretoraLeilao = Corretora(corretora_menos_liquida)
         
@@ -81,13 +77,20 @@ if __name__ == "__main__":
                 if fracao_do_caixa > 0.01:
                     Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
             
-            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas()]
+            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
 
         #step 3: essa parte faz em loop de 5 minutos
-        while agora < proximo_ciclo:
+        agora = datetime.now() 
+        proximo_ciclo = agora + timedelta(minutes=5)
+        logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
+        logging.warning('no proximo ciclo serao consideradas {} ordens'.format(qtd_ordens_abertas))
+        
+        while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
-            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas()]
+            agora = datetime.now() 
+            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
+            qtd_ordens_abertas = len(ordens_abertas)
 
             for ordem_aberta in ordens_abertas:
                 cancelou = False
@@ -98,14 +101,53 @@ if __name__ == "__main__":
                 
                 if ordem_leilao.direcao == 'compra':
                     ordem_zeragem,cancelou = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True)
+                    
                     if cancelou:
+                    
+                        corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                        corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
-                        #agora logar pnl
+                        
+                        #agora vai logar pnl
+                        if  ordem_zeragem.id != 0:
+
+                            vendi_a = round(ordem_zeragem.preco_executado,2)
+                            comprei_a = round(ordem_leilao.preco_enviado,2)
+                            quantidade = round(ordem_zeragem.quantidade_executada,4)
+
+                            pnl = round(((vendi_a*(1-corretoraZeragem.corretagem_mercado))-(comprei_a*(1+corretoraLeilao.corretagem_limitada))) * quantidade,2)
+
+                            logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
+                            
+                            quantidade_executada_compra = ordem_leilao.quantidade_executada
+                            quantidade_executada_venda = ordem_zeragem.quantidade_executada
+
+                            Util.adicionar_linha_em_operacoes(moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+
                 elif ordem_leilao.direcao =='venda':
                     ordem_zeragem,cancelou = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True)
+                    
                     if cancelou:
+                        
+                        corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                        corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
-                        #agora logar pnl
+                    
+                    #agora vai logar pnl
+                    if ordem_zeragem.id != 0:
+                        
+                            comprei_a = round(ordem_zeragem.preco_executado,2)
+                            vendi_a = round(ordem_leilao.preco_enviado,2)
+                            quantidade = round(ordem_zeragem.quantidade_executada,4)
+
+                            pnl = round((vendi_a * (1-corretoraLeilao.corretagem_limitada) - comprei_a * (1+corretoraZeragem.corretagem_mercado)) * quantidade,2)
+
+                            logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
+                            
+                            quantidade_executada_compra = ordem_zeragem.quantidade_executada
+                            quantidade_executada_venda = ordem_leilao.quantidade_executada
+
+                            Util.adicionar_linha_em_operacoes(moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
 
             #step4: ir ao step 2
 
