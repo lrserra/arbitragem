@@ -126,7 +126,10 @@ class BrasilBitcoin:
         '''
         Obtém todas as ordens abertas
         '''
-        return self.__obterOrdensAbertas()
+        retorno = self.__obterOrdensAbertas()
+        if len(retorno)==0:
+            retorno=[]
+        return retorno
 
     def cancelar_ordem(self, idOrdem):
         '''
