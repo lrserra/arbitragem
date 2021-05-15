@@ -127,7 +127,7 @@ class BrasilBitcoin:
         Obtém todas as ordens abertas
         '''
         retorno = self.__obterOrdensAbertas()
-        if len(retorno)==0:
+        if len(retorno)==0 or retorno is None:
             retorno=[]
         return retorno
 
