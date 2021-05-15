@@ -149,12 +149,15 @@ class BrasilBitcoin:
         for ordem in ordens_abertas:
             self.cancelar_ordem(ordem['id'])
 
-    def obter_ordem_por_id(self, filterOrdem):
-        ordem = Ordem()
-        response = self.__obterOrdemPorId(filterOrdem)
+    def obter_ordem_por_id(self, ordem:Ordem):
+        
+        response = self.__obterOrdemPorId(ordem.id)
         ordem.status = response['data']['status']
-        ordem.quantidade_executada = response['data']['executed']
-        ordem.preco_executado = response['data']['price']
+        ordem.quantidade_executada = float(response['data']['executed'])
+        ordem.quantidade_enviada = float(response['data']['total'])
+        ordem.preco_executado = float(response['data']['price'])
+        ordem.preco_enviado = ordem.preco_executado
+        ordem.direcao = 'compra' if response['data']['type']=='buy' else 'venda'
         return ordem
 
     def enviar_ordem_compra(self, ordemCompra):
