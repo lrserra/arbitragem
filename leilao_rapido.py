@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
                             pnl = round(((vendi_a*(1-corretoraZeragem.corretagem_mercado))-(comprei_a*(1+corretoraLeilao.corretagem_limitada))) * quantidade,2)
 
-                            logging.warning('operou leilao de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
+                            logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(moeda,pnl,quantidade,moeda,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
                             
                             quantidade_executada_compra = ordem_leilao.quantidade_executada
                             quantidade_executada_venda = ordem_zeragem.quantidade_executada
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
                             pnl = round((vendi_a * (1-corretoraLeilao.corretagem_limitada) - comprei_a * (1+corretoraZeragem.corretagem_mercado)) * quantidade,2)
 
-                            logging.warning('operou leilao de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
+                            logging.warning('operou leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(moeda,pnl,quantidade,moeda,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
                             
                             quantidade_executada_compra = ordem_zeragem.quantidade_executada
                             quantidade_executada_venda = ordem_leilao.quantidade_executada
