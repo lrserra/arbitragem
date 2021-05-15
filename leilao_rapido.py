@@ -71,10 +71,10 @@ if __name__ == "__main__":
                 #define quantidade minima de caixa para enviarmos o trade
                 fracao_do_caixa = corretoraLeilao.saldo['brl']/(corretoraLeilao.saldo['brl']+corretoraZeragem.saldo['brl'])
                 
-                if fracao_do_caixa < 0.99:
+                if fracao_do_caixa < 0.995:
                     Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)  
                 
-                if fracao_do_caixa > 0.01:
+                if fracao_do_caixa > 0.005:
                     Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
             
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
