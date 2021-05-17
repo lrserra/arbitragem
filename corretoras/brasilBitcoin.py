@@ -92,17 +92,11 @@ class BrasilBitcoin:
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         
-        try: #diminuir aquela merda de erro 'Expecting value: line 1 column 1 (char 0)'
-            retorno = json.loads(res.text.encode('utf8'))
-        except:
+        while res.status_code != 200:
             time.sleep(1)
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
-            retorno = json.loads(res.text.encode('utf8'))
-
-        if res.status_code == 429:
-            return None
-        else:
-            return retorno
+   
+        return json.loads(res.text.encode('utf8'))
 
 
 #---------------- MÉTODOS PÚBLICOS ----------------#    
