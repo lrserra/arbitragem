@@ -146,6 +146,13 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)[moeda]["quantidade_minima_venda"]
 
+    def retorna_config_google_api():
+        '''
+        retorna a menor quantidade possivel que vc pode operar na mercado bitcoin
+        '''
+        with open('appsettings.json') as f:
+            return json.load(f)["google_api"]
+
     def retorna_erros_objeto_exception(mensagem, erro):
         '''
         escrever todos os erros logado no objeto exception na sequencia

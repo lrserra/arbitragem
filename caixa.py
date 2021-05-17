@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
+from uteis.googleSheets import GoogleSheets
 import time
 
 class Caixa:
@@ -51,7 +52,8 @@ class Caixa:
                 preco_venda[moeda] = 0
 
         logging.warning('caixa vai enviar saldo para o google')
-        Util.adicionar_linha_no_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'],str(datetime.now()))
+
+        GoogleSheets().escrever_saldo(saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'],str(datetime.now()))
 
 
     def zera_o_pnl_em_cripto(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
@@ -60,6 +62,8 @@ class Caixa:
         '''
         saldo_inicial = Util.obter_saldo_inicial()
         saldo_final = {}
+
+        google_sheets = GoogleSheets()
 
         if atualizar_saldo:
             CorretoraMaisLiquida.atualizar_saldo()
@@ -92,7 +96,7 @@ class Caixa:
                     vendi_a = ordem_venda.preco_executado
                     quantidade_executada_venda = ordem_venda.quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,'',0,0,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA',str(datetime.now()))
+                    google_sheets.escrever_operacao(moeda,'',0,0,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA',str(datetime.now()))
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
@@ -106,7 +110,7 @@ class Caixa:
                     vendi_a = ordem_venda.preco_executado
                     quantidade_executada_venda = ordem_venda.quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,'',0,0,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA',str(datetime.now()))
+                    google_sheets.escrever_operacao(moeda,'',0,0,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA',str(datetime.now()))
 
                     CorretoraMenosLiquida.atualizar_saldo()
                     
@@ -125,7 +129,7 @@ class Caixa:
                     comprei_a = ordem_compra.preco_executado
                     quantidade_executada_compra = ordem_compra.quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA',str(datetime.now()))
+                    google_sheets.escrever_operacao(moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA',str(datetime.now()))
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
@@ -139,7 +143,7 @@ class Caixa:
                     comprei_a = ordem_compra.preco_executado
                     quantidade_executada_compra = ordem_compra.quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA',str(datetime.now()))
+                    google_sheets.escrever_operacao(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA',str(datetime.now()))
 
                     CorretoraMenosLiquida.atualizar_saldo()
                     
