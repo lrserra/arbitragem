@@ -90,7 +90,7 @@ if __name__ == "__main__":
         agora = datetime.now() 
         proximo_ciclo = agora + timedelta(minutes=5)
         logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
-        logging.warning('no proximo ciclo serao consideradas {} ordens'.format(qtd_ordens_abertas))
+        logging.warning('no proximo ciclo serao consideradas apenas {} ordens!'.format(qtd_ordens_abertas))
         
         while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
