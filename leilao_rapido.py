@@ -68,14 +68,20 @@ if __name__ == "__main__":
                 corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
 
-                #define quantidade minima de caixa para enviarmos o trade
+                #define quantidade minima de caixa e moeda para enviarmos o trade
+                #essa parte é importante pq apenas as ordens enviadas aqui serão utilizadas no proximo passo
                 fracao_do_caixa = corretoraLeilao.saldo['brl']/(corretoraLeilao.saldo['brl']+corretoraZeragem.saldo['brl'])
+                fracao_da_moeda = corretoraLeilao.saldo[moeda]/(corretoraLeilao.saldo[moeda]+corretoraZeragem.saldo[moeda])
                 
-                if fracao_do_caixa < 0.995:
-                    Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)  
+                if fracao_do_caixa < 0.995 and fracao_da_moeda > 0.05:
+                    Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                else:
+                    logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99.5% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa,fracao_da_moeda))  
                 
-                if fracao_do_caixa > 0.005:
+                if fracao_do_caixa > 0.005 and fracao_da_moeda < 0.95:
                     Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                else:
+                    logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 0.5% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa,fracao_da_moeda))
             
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
