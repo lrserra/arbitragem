@@ -24,7 +24,7 @@ class Util:
     def CCYBCH():
         return 'bch'
 
-    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,qtd_brl_mais_liquida,qtd_btc_mais_liquida,qtd_eth_mais_liquida,qtd_xrp_mais_liquida,qtd_ltc_mais_liquida,qtd_bch_mais_liquida,data):
+    def adicionar_linha_no_saldo(qtd_brl,qtd_btc,qtd_eth,qtd_xrp,qtd_ltc,qtd_bch,qtd_usdt,qtd_dai,qtd_eos,qtd_btc_brl,qtd_eth_brl,qtd_xrp_brl,qtd_ltc_brl,qtd_bch_brl,qtd_usdt_brl,qtd_dai_brl,qtd_eos_brl,qtd_brl_mais_liquida,qtd_btc_mais_liquida,qtd_eth_mais_liquida,qtd_xrp_mais_liquida,qtd_ltc_mais_liquida,qtd_bch_mais_liquida,qtd_usdt_mais_liquida,qtd_dai_mais_liquida,qtd_eos_mais_liquida,data):
         
         #dados que serão enviados ao webhook
         data_to_send={}
@@ -35,17 +35,26 @@ class Util:
         data_to_send['qtd_xrp'] = round(qtd_xrp,4)
         data_to_send['qtd_ltc'] = round(qtd_ltc,4)
         data_to_send['qtd_bch'] = round(qtd_bch,4)
+        data_to_send['qtd_usdt'] = round(qtd_usdt,4)
+        data_to_send['qtd_dai'] = round(qtd_dai,4)
+        data_to_send['qtd_eos'] = round(qtd_eos,4)
         data_to_send['qtd_btc_brl'] = round(qtd_btc_brl,4)
         data_to_send['qtd_eth_brl'] = round(qtd_eth_brl,4)
         data_to_send['qtd_xrp_brl'] = round(qtd_xrp_brl,4)
         data_to_send['qtd_ltc_brl'] = round(qtd_ltc_brl,4)
         data_to_send['qtd_bch_brl'] = round(qtd_bch_brl,4)
+        data_to_send['qtd_usdt_brl'] = round(qtd_usdt_brl,4)
+        data_to_send['qtd_dai_brl'] = round(qtd_dai_brl,4)
+        data_to_send['qtd_eos_brl'] = round(qtd_eos_brl,4)
         data_to_send['qtd_brl_mais_liquida'] = round(qtd_brl_mais_liquida,4)
         data_to_send['qtd_btc_mais_liquida'] = round(qtd_btc_mais_liquida,4)
         data_to_send['qtd_eth_mais_liquida'] = round(qtd_eth_mais_liquida,4)
         data_to_send['qtd_xrp_mais_liquida'] = round(qtd_xrp_mais_liquida,4)
         data_to_send['qtd_ltc_mais_liquida'] = round(qtd_ltc_mais_liquida,4)
         data_to_send['qtd_bch_mais_liquida'] = round(qtd_bch_mais_liquida,4)
+        data_to_send['qtd_usdt_mais_liquida'] = round(qtd_usdt_mais_liquida,4)
+        data_to_send['qtd_dai_mais_liquida'] = round(qtd_dai_mais_liquida,4)
+        data_to_send['qtd_eos_mais_liquida'] = round(qtd_eos_mais_liquida,4)
         data_to_send['data'] = str(data)
 
         #pega o webhook no appsettings
@@ -68,9 +77,11 @@ class Util:
         data_to_send['corretora_compra'] = corretora_compra
         data_to_send['preco_compra'] = preco_compra
         data_to_send['quantidade_compra'] = quantidade_compra
+        data_to_send['financeiro_compra'] = preco_compra*quantidade_compra
         data_to_send['corretora_venda'] = corretora_venda
         data_to_send['preco_venda'] = preco_venda
         data_to_send['quantidade_venda'] = quantidade_venda
+        data_to_send['financeiro_venda'] = preco_venda*quantidade_venda
         data_to_send['pnl'] = pnl
         data_to_send['estrategia'] = estrategia
         data_to_send['data'] = data
