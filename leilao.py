@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
+from uteis.googleSheets import GoogleSheets
 from uteis.ordem import Ordem
 import math
 class Leilao:
@@ -317,6 +318,8 @@ if __name__ == "__main__":
     dict_leilao_compra = {}
     dict_leilao_venda = {}
 
+    google_sheets = GoogleSheets()
+
     for moeda in lista_de_moedas:
         dict_leilao_compra[moeda]={}
         dict_leilao_venda[moeda]={}
@@ -352,7 +355,7 @@ if __name__ == "__main__":
                     quantidade_executada_compra = dict_leilao_compra[moeda]['zeragem'].quantidade_executada
                     quantidade_executada_venda = dict_leilao_compra[moeda]['ordem'].quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+                    google_sheets.escrever_operacao([moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
                     
                     dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                     dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -381,7 +384,7 @@ if __name__ == "__main__":
                     quantidade_executada_compra = dict_leilao_venda[moeda]['ordem'].quantidade_executada
                     quantidade_executada_venda = dict_leilao_venda[moeda]['zeragem'].quantidade_executada
 
-                    Util.adicionar_linha_em_operacoes(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+                    google_sheets.escrever_operacao([moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
 
                     dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                     dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
