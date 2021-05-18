@@ -60,7 +60,7 @@ class Caixa:
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então é bom comprar essa quantidade novamente
         '''
-        saldo_inicial = Util.obter_saldo_inicial()
+        saldo_inicial = Util.obter_saldo_inicial_configuracao()
         saldo_final = {}
 
         google_sheets = GoogleSheets()

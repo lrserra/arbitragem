@@ -37,9 +37,21 @@ class GoogleSheets:
 
         sheet.insert_row(linha, row_count + 2, value_input_option='USER_ENTERED')
 
+    def ler_quantidade_moeda(self):
+        google_config = Util.retorna_config_google_api()
         
+        # Obtem o número de moedas parametrizadas
+        contador_moeda = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'contador_moeda')
+        contador = int(contador_moeda[0][0]) + 2
+        
+        retorno = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'I3:J{}'.format(str(contador)))
+        return retorno
 
-
+    def ler(self, planilha, aba, descricao_range):
+        client = self.retorna_google_sheets_client()
+        sheet = client.open(planilha).worksheet(aba)
+        data = sheet.get(descricao_range)
+        return data
 
 
 
