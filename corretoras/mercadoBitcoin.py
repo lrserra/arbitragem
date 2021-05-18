@@ -4,12 +4,10 @@ import hashlib
 import hmac
 import json
 import time
-import mimetypes
 from http import client
 from urllib.parse import urlencode
 from uteis.util import Util
 from datetime import datetime
-from uteis.ordem import Ordem
 
 class MercadoBitcoin:
 

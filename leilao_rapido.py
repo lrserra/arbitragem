@@ -8,11 +8,8 @@ from uteis.ordem import Ordem
 if __name__ == "__main__":
 
     #bibliotecas do python
-    import requests
-    import json
-    import time
+
     import logging
-    import math
     from datetime import datetime, timedelta
     
     #bibliotecas nossas

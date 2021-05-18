@@ -1,6 +1,3 @@
-
-import requests
-import time
 import logging
 from datetime import datetime
 from uteis.corretora import Corretora
@@ -377,7 +374,7 @@ class Arbitragem:
 
 if __name__ == "__main__":
 
-    from datetime import datetime, timedelta
+    from datetime import datetime
     from caixa import Caixa
     from arbitragem import Arbitragem
     

@@ -1,13 +1,6 @@
-import requests
-import hashlib
-import hmac
-import json
-import time
-import mimetypes
+
 import logging
 import math
-from http import client
-from urllib.parse import urlencode
 from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
