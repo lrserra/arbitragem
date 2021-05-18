@@ -18,6 +18,7 @@ if __name__ == "__main__":
     #bibliotecas nossas
     from uteis.util import Util
     from uteis.corretora import Corretora
+    from uteis.googleSheets import GoogleSheets
     from caixa import Caixa
     from leilao_rapido import Leilao
     
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
+    google_sheets = GoogleSheets()
     
     '''
     nesse script vamos 
@@ -79,7 +81,7 @@ if __name__ == "__main__":
                     Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                 else:
                     logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99.5% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
-                
+                 
                 if fracao_do_caixa > 0.005 and fracao_da_moeda < 0.95:
                     Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                 else:
@@ -130,7 +132,7 @@ if __name__ == "__main__":
                             quantidade_executada_compra = ordem_leilao.quantidade_executada
                             quantidade_executada_venda = ordem_zeragem.quantidade_executada
 
-                            Util.adicionar_linha_em_operacoes(moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+                            google_sheets.escrever_operacao([moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
 
                 elif ordem_leilao.direcao =='venda':
                     ordem_zeragem,cancelou = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True)
@@ -155,8 +157,7 @@ if __name__ == "__main__":
                             quantidade_executada_compra = ordem_zeragem.quantidade_executada
                             quantidade_executada_venda = ordem_leilao.quantidade_executada
 
-                            Util.adicionar_linha_em_operacoes(moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
-
+                            google_sheets.escrever_operacao([moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
             #step4: ir ao step 2
 
 
