@@ -57,9 +57,8 @@ class Corretora:
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('atualizar_saldo', self.nome, erro))
 
-    def obter_ordens_abertas_por_ativo(self, ativo):
+    def obter_todas_ordens_abertas(self, ativo='btc'):
         try:
-
             if self.nome == 'MercadoBitcoin':
                 return MercadoBitcoin(ativo).obter_ordens_abertas()
             elif self.nome == 'BrasilBitcoin':
@@ -70,11 +69,11 @@ class Corretora:
                 return Novadax(ativo).obter_ordens_abertas()
         
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('obter_ordens_abertas_por_ativo', self.nome, erro))
+            logging.error(Util.descricao_erro_padrao().format('obter_todas_ordens_abertas', self.nome, erro))
         
     def cancelar_todas_ordens(self, ativo='btc', ativo_contraparte='brl'):
         try:
-            ordens_abertas = self.obter_ordens_abertas_por_ativo(ativo)
+            ordens_abertas = self.obter_todas_ordens_abertas()
 
             if self.nome == 'MercadoBitcoin':
                 MercadoBitcoin().cancelar_todas_ordens(ordens_abertas)
@@ -91,22 +90,22 @@ class Corretora:
     #metodos eclusivos por ordem
 
     def obter_ordem_por_id(self,ativo,obterOrdem:Ordem):
-        ordem = Ordem()
+        
         try:
             if self.nome == 'MercadoBitcoin':
                 pass
             elif self.nome == 'BrasilBitcoin':
-                ordem = BrasilBitcoin().obter_ordem_por_id(obterOrdem.id)
+                obterOrdem = BrasilBitcoin().obter_ordem_por_id(obterOrdem)
             elif self.nome == 'BitcoinTrade':
-                ordem = BitcoinTrade().obter_ordem_por_id(obterOrdem.code)
+                obterOrdem = BitcoinTrade().obter_ordem_por_id(obterOrdem.code)
             elif self.nome == 'Novadax':
-                ordem = Novadax().obter_ordem_por_id(obterOrdem.id)
+                obterOrdem = Novadax().obter_ordem_por_id(obterOrdem.id)
             elif self.nome == 'BitRecife':
-                ordem = BitRecife().obter_ordem_por_id(obterOrdem.id,ativo)
+                obterOrdem = BitRecife().obter_ordem_por_id(obterOrdem.id,ativo)
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('obter_ordem_por_id', self.nome, erro))
 
-        return ordem
+        return obterOrdem
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         

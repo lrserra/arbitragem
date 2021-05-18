@@ -21,7 +21,11 @@ class MercadoBitcoin:
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
-        return requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)).json()
+        retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+        while retorno_json.status_code!=200:
+            time.sleep(1)
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+        return retorno_json.json()
 
     def _obter_tapi(self):
         return str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
