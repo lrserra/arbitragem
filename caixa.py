@@ -58,7 +58,7 @@ class Caixa:
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então é bom comprar essa quantidade novamente
         '''
-        saldo_inicial = Util.obter_saldo_inicial()
+        saldo_inicial = Util.obter_saldo_inicial_configuracao()
         saldo_final = {}
 
         google_sheets = GoogleSheets()
@@ -73,10 +73,10 @@ class Caixa:
 
             saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
 
-            pnl_em_moeda = round(saldo_final[moeda] - saldo_inicial[moeda],4)
+            pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
             
             #para evitar erros operacionais, é melhor só zerar se temos ctz que nao é uma transf de moeda
-            if abs(pnl_em_moeda)< saldo_inicial[moeda]/2:              
+            if abs(pnl_em_moeda)< float(saldo_inicial[moeda])/2:              
                 quantidade_a_zerar = round(abs(pnl_em_moeda),4)
             else:
                 logging.warning('caixa não vai zerar pnl de {} porque estamos transferindo cripto'.format(moeda))

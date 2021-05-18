@@ -113,6 +113,14 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)["saldo_inicial"]
 
+    def obter_saldo_inicial_configuracao():
+        '''
+        retorna dicionario com saldo inicial de cada moeda de acordo com
+        a configuração da planilha
+        '''
+        with open('worksheetsettings.json') as f:
+            return json.load(f)["saldo_inicial"]
+
     def obter_balancear_carteira():
         '''
         retorna dicionario com moedas a balancear cripto
