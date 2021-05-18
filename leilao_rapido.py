@@ -122,7 +122,8 @@ if __name__ == "__main__":
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                        if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                            ordens_enviadas.append([ordem_enviada.id,moeda])
                         
                         #agora vai logar pnl
                         if  ordem_zeragem.id != 0:
@@ -148,7 +149,8 @@ if __name__ == "__main__":
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                        if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                            ordens_enviadas.append([ordem_enviada.id,moeda])
                     
                     #agora vai logar pnl
                     if ordem_zeragem.id != 0:
