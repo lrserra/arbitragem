@@ -39,7 +39,7 @@ if __name__ == "__main__":
     nesse script vamos 
     1 - listar todas moedas que queremos negociar 
     2 - enviar ordem de leilao (se valer a pena) para todas moedas
-    3 - listar ordem abertas e verificar por moeda
+    3 - listar ordem abertas e verificar por moeda (falta verificar ordens executadas completamente)
         a) se fui executado zerar
         b) se precisar recolocar ordem, cancela e recoloca
         c) loga pnl se executado
@@ -57,6 +57,8 @@ if __name__ == "__main__":
 
         corretoraZeragem.atualizar_saldo()
         corretoraLeilao.atualizar_saldo()
+
+        Caixa.envia_saldo_google(corretoraZeragem,corretoraLeilao)
 
         #step 2: else só pode ir ao proximo step se tem ordens abertas
         qtd_ordens_abertas = 0
@@ -86,9 +88,9 @@ if __name__ == "__main__":
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
 
-        #step 3: essa parte faz em loop de 5 minutos
+        #step 3: essa parte faz em loop de 6 minutos
         agora = datetime.now() 
-        proximo_ciclo = agora + timedelta(minutes=5)
+        proximo_ciclo = agora + timedelta(minutes=6)
         logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
         logging.warning('no proximo ciclo serao consideradas apenas {} ordens!'.format(qtd_ordens_abertas))
         
