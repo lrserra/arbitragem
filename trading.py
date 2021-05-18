@@ -3,10 +3,12 @@ import requests
 from uteis.googleSheets import GoogleSheets
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 
-GoogleSheets().escrever_saldo(['saldo', 20])
-GoogleSheets().escrever_operacao(['operacao', 20])
+print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+
+
 
 

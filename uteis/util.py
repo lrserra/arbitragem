@@ -5,6 +5,11 @@ from datetime import datetime
 
 class Util:
 
+    def excel_date(date1):
+        temp = datetime(1899, 12, 30)    # Note, not 31st Dec but 30th!
+        delta = date1 - temp
+        return float(delta.days) + (float(delta.seconds) / 86400)
+
     def descricao_erro_padrao():
         '''
         Retorna uma descrição de erro padrão podendo parametrizar o método, a corretora e a mensagem de erro.
@@ -152,6 +157,10 @@ class Util:
         '''
         with open('appsettings.json') as f:
             return json.load(f)["google_api"]
+
+    def formatar_data_relatorio(date):
+        retorno = datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
+        return retorno
 
     def retorna_erros_objeto_exception(mensagem, erro):
         '''

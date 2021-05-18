@@ -2,6 +2,8 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
 from uteis.util import Util
+from datetime import datetime
+from gspread_formatting import *
 
 class GoogleSheets:
 
@@ -33,7 +35,9 @@ class GoogleSheets:
         data = sheet.get_all_records()
         row_count = len(data)
 
-        sheet.insert_row(linha, row_count + 2)
+        sheet.insert_row(linha, row_count + 2, value_input_option='USER_ENTERED')
+
+        
 
 
 
