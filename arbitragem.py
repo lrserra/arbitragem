@@ -111,7 +111,7 @@ class Arbitragem:
                                     quantidade_executada_compra = ordem_compra.quantidade_executada
                                     quantidade_executada_venda = ordem_venda.quantidade_executada
 
-                                    GoogleSheets().escrever_operacao(ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now()))
+                                    GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now())])
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('arbitragem NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
@@ -230,14 +230,14 @@ class Arbitragem:
                                     else:
                                         logging.info('operou arb paridade de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
                                         logging.warning('operou arb paridade de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
-                                        google_sheets.escrever_operacao('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',Util.excel_date(datetime.now())))
+                                        google_sheets.escrever_operacao(['{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM',Util.excel_date(datetime.now()))])
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
                                         logging.error('arbitragem paridade NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
                                         logging.info('operou arb paridade de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
                                         logging.warning('operou arb paridade de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
-                                        google_sheets.escrever_operacao('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now())))
+                                        google_sheets.escrever_operacao(['{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now()))])
                                     
                                     
                             else:
@@ -347,14 +347,14 @@ class Arbitragem:
                                     else:
                                         logging.info('operou arb paridade de {}! + {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome))
                                         logging.warning('operou arb paridade de {}! + {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
-                                        google_sheets.escrever_operacao('{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now())))
+                                        google_sheets.escrever_operacao(['{}|{}|{}|C|{}|{}|{}|{}'.format(ativo,corretoraCompra.nome,ordem_compra.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now()))])
                                         
                                     if ordem_venda.status != ordem_venda.descricao_status_executado:
                                         logging.error('arbitragem paridade NAO zerou na {}, o status veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
                                         logging.info('operou arb paridade de {}! + {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome))
                                         logging.warning('operou arb paridade de {}! + {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(qtdNegociada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
-                                        google_sheets.escrever_operacao('{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now())))
+                                        google_sheets.escrever_operacao(['{}|{}|{}|V|{}|{}|{}|{}'.format(ativo,corretoraVenda.nome,ordem_venda.preco_executado,round(qtdNegociada,4),pnl_real/2,'ARBITRAGEM', Util.excel_date(datetime.now()))])
                                     
                                     
                             else:

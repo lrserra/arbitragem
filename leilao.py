@@ -355,7 +355,7 @@ if __name__ == "__main__":
                     quantidade_executada_compra = dict_leilao_compra[moeda]['zeragem'].quantidade_executada
                     quantidade_executada_venda = dict_leilao_compra[moeda]['ordem'].quantidade_executada
 
-                    google_sheets.escrever_operacao(moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()))
+                    google_sheets.escrever_operacao([moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
                     
                     dict_leilao_compra[moeda]['ordem'] = Ordem() #reinicia as ordens
                     dict_leilao_compra[moeda]['zeragem'] = Ordem() #reinicia as ordens
@@ -384,7 +384,7 @@ if __name__ == "__main__":
                     quantidade_executada_compra = dict_leilao_venda[moeda]['ordem'].quantidade_executada
                     quantidade_executada_venda = dict_leilao_venda[moeda]['zeragem'].quantidade_executada
 
-                    google_sheets.escrever_operacao(moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()))
+                    google_sheets.escrever_operacao([moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
 
                     dict_leilao_venda[moeda]['ordem'] = Ordem() #reinicia as ordens  
                     dict_leilao_venda[moeda]['zeragem'] = Ordem() #reinicia as ordens 
