@@ -31,3 +31,4 @@ arquivo.close() # Fecha o arquivo
 
 
 
+

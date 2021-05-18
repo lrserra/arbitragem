@@ -1,11 +1,10 @@
-import time
 import logging
 from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
 from uteis.googleSheets import GoogleSheets
 from uteis.ordem import Ordem
-import math
+
 class Leilao:
 
     def envia_compra_limitada(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, executarOrdens = False):
@@ -293,11 +292,8 @@ class Leilao:
 
 
 if __name__ == "__main__":
-
-    import requests
     
-    from datetime import datetime, timedelta
-    from caixa import Caixa
+    from datetime import datetime
     from leilao import Leilao
     
     #inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os warning ou acima

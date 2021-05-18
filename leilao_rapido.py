@@ -8,16 +8,14 @@ from uteis.ordem import Ordem
 if __name__ == "__main__":
 
     #bibliotecas do python
-    import requests
-    import json
-    import time
+
     import logging
-    import math
     from datetime import datetime, timedelta
     
     #bibliotecas nossas
     from uteis.util import Util
     from uteis.corretora import Corretora
+    from uteis.googleSheets import GoogleSheets
     from caixa import Caixa
     from leilao_rapido import Leilao
     
@@ -34,6 +32,7 @@ if __name__ == "__main__":
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
+    google_sheets = GoogleSheets()
     
     '''
     nesse script vamos 
@@ -79,7 +78,7 @@ if __name__ == "__main__":
                     Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                 else:
                     logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99.5% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
-                
+                 
                 if fracao_do_caixa > 0.005 and fracao_da_moeda < 0.95:
                     Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                 else:
@@ -87,6 +86,7 @@ if __name__ == "__main__":
             
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
+            ordens_enviadas = []
 
         #step 3: essa parte faz em loop de 6 minutos
         agora = datetime.now() 
@@ -98,10 +98,19 @@ if __name__ == "__main__":
             
             agora = datetime.now() 
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
+            
+            for ordem_enviada in ordens_enviadas:
+                if ordem_enviada not in ordens_abertas:
+                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada[0],ordem_enviada[1]))
+                    ordens_abertas.append(ordem_enviada)
+            
             qtd_ordens_abertas = len(ordens_abertas)
+            ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
                 cancelou = False
+                ordem_enviada = Ordem()
+                ordem_zeragem = Ordem()
                 ordem_leilao = Ordem()
                 ordem_leilao.id = ordem_aberta[0]
                 moeda = ordem_aberta[1]
@@ -114,7 +123,9 @@ if __name__ == "__main__":
                     
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                        Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                            ordens_enviadas.append([ordem_enviada.id,moeda])
                         
                         #agora vai logar pnl
                         if  ordem_zeragem.id != 0:
@@ -130,7 +141,7 @@ if __name__ == "__main__":
                             quantidade_executada_compra = ordem_leilao.quantidade_executada
                             quantidade_executada_venda = ordem_zeragem.quantidade_executada
 
-                            Util.adicionar_linha_em_operacoes(moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
+                            google_sheets.escrever_operacao([moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
 
                 elif ordem_leilao.direcao =='venda':
                     ordem_zeragem,cancelou = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True)
@@ -139,7 +150,9 @@ if __name__ == "__main__":
                         
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                        Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                            ordens_enviadas.append([ordem_enviada.id,moeda])
                     
                     #agora vai logar pnl
                     if ordem_zeragem.id != 0:
@@ -155,8 +168,7 @@ if __name__ == "__main__":
                             quantidade_executada_compra = ordem_zeragem.quantidade_executada
                             quantidade_executada_venda = ordem_leilao.quantidade_executada
 
-                            Util.adicionar_linha_em_operacoes(moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',str(datetime.now()))
-
+                            google_sheets.escrever_operacao([moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
             #step4: ir ao step 2
 
 

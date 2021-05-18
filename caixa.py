@@ -3,7 +3,6 @@ from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
 from uteis.googleSheets import GoogleSheets
-import time
 
 class Caixa:
     
