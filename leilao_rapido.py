@@ -110,6 +110,7 @@ if __name__ == "__main__":
             for ordem_aberta in ordens_abertas:
                 cancelou = False
                 ordem_enviada = Ordem()
+                ordem_zeragem = Ordem()
                 ordem_leilao = Ordem()
                 ordem_leilao.id = ordem_aberta[0]
                 moeda = ordem_aberta[1]
