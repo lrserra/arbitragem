@@ -8,6 +8,11 @@ import time
 
 print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
+corretora = 'BrasilBitcoin'
+
+retorno = Corretora(corretora).obter_todas_ordens_abertas()
+pass
+
 
 
 

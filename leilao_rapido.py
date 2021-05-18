@@ -86,6 +86,7 @@ if __name__ == "__main__":
             
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
+            ordens_enviadas = []
 
         #step 3: essa parte faz em loop de 6 minutos
         agora = datetime.now() 
@@ -98,9 +99,16 @@ if __name__ == "__main__":
             agora = datetime.now() 
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             qtd_ordens_abertas = len(ordens_abertas)
+            
+            for ordem_enviada in ordens_enviadas:
+                if ordem_enviada not in ordens_abertas:
+                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera desconsiderada!'.format(ordem_enviada[0],ordem_enviada[1]))
+            
+            ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
                 cancelou = False
+                ordem_enviada = Ordem()
                 ordem_leilao = Ordem()
                 ordem_leilao.id = ordem_aberta[0]
                 moeda = ordem_aberta[1]
@@ -113,7 +121,8 @@ if __name__ == "__main__":
                     
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                        Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordens_enviadas.append([ordem_enviada.id,moeda])
                         
                         #agora vai logar pnl
                         if  ordem_zeragem.id != 0:
@@ -138,7 +147,8 @@ if __name__ == "__main__":
                         
                         corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                         corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                        Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                        ordens_enviadas.append([ordem_enviada.id,moeda])
                     
                     #agora vai logar pnl
                     if ordem_zeragem.id != 0:
