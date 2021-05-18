@@ -92,10 +92,11 @@ class BrasilBitcoin:
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         
-        if res.status_code == 429:
-            return None
-        else:
-            return json.loads(res.text.encode('utf8'))
+        while res.status_code != 200:
+            time.sleep(1)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
+   
+        return json.loads(res.text.encode('utf8'))
 
 
 #---------------- MÉTODOS PÚBLICOS ----------------#    
@@ -126,7 +127,10 @@ class BrasilBitcoin:
         '''
         Obtém todas as ordens abertas
         '''
-        return self.__obterOrdensAbertas()
+        retorno = self.__obterOrdensAbertas()
+        if len(retorno)==0 or retorno is None:
+            retorno=[]
+        return retorno
 
     def cancelar_ordem(self, idOrdem):
         '''
@@ -149,12 +153,15 @@ class BrasilBitcoin:
         for ordem in ordens_abertas:
             self.cancelar_ordem(ordem['id'])
 
-    def obter_ordem_por_id(self, filterOrdem):
-        ordem = Ordem()
-        response = self.__obterOrdemPorId(filterOrdem)
+    def obter_ordem_por_id(self, ordem:Ordem):
+        
+        response = self.__obterOrdemPorId(ordem.id)
         ordem.status = response['data']['status']
-        ordem.quantidade_executada = response['data']['executed']
-        ordem.preco_executado = response['data']['price']
+        ordem.quantidade_executada = float(response['data']['executed'])
+        ordem.quantidade_enviada = float(response['data']['total'])
+        ordem.preco_executado = float(response['data']['price'])
+        ordem.preco_enviado = ordem.preco_executado
+        ordem.direcao = 'compra' if response['data']['type']=='buy' else 'venda'
         return ordem
 
     def enviar_ordem_compra(self, ordemCompra):

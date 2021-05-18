@@ -4,6 +4,7 @@ class Ordem:
        self.id = 0
        self.code = ''
        self.status = ''
+       self.direcao = ''
        self.tipo_ordem = ''
        self.mensagem = ''
        self.preco_enviado = 0.0
