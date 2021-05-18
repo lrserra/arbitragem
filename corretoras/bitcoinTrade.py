@@ -1,13 +1,10 @@
 import requests
-import hashlib
-import hmac
 import json
 import time
-import mimetypes
-from http import client
+import logging
 from urllib.parse import urlencode
 from uteis.util import Util
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from uteis.ordem import Ordem
 
 class BitcoinTrade:
@@ -122,7 +119,7 @@ class BitcoinTrade:
         response_json = self.__obterSaldo()
 
         while 'data' not in response_json.keys():
-            time.sleep(3)
+            time.sleep(1)
             response_json = self.__obterSaldo()
 
         # Inicializa todas as moedas
