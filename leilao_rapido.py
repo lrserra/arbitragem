@@ -98,12 +98,13 @@ if __name__ == "__main__":
             
             agora = datetime.now() 
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
-            qtd_ordens_abertas = len(ordens_abertas)
             
             for ordem_enviada in ordens_enviadas:
                 if ordem_enviada not in ordens_abertas:
-                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera desconsiderada!'.format(ordem_enviada[0],ordem_enviada[1]))
+                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada[0],ordem_enviada[1]))
+                    ordens_abertas.append(ordem_enviada)
             
+            qtd_ordens_abertas = len(ordens_abertas)
             ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
