@@ -68,6 +68,11 @@ class Corretora:
     def cancelar_todas_ordens(self, ativo='btc', ativo_contraparte='brl'):
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
+            qtd_ordens_abertas = len(ordens_abertas)
+            if qtd_ordens_abertas>0:
+                logging.warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
+            else:
+                logging.warning('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
 
             if self.nome == 'MercadoBitcoin':
                 MercadoBitcoin().cancelar_todas_ordens(ordens_abertas)
@@ -282,7 +287,7 @@ class Corretora:
             status_executado = 'filled'
             
         elif self.nome == 'BitcoinTrade':
-            status_executado = 'executed_completely'
+            status_executado = 'filled'
             
         elif self.nome == 'Novadax':
             status_executado = 'FILLED'
