@@ -61,10 +61,13 @@ if __name__ == "__main__":
 
         #step 2: else só pode ir ao proximo step se tem ordens abertas
         qtd_ordens_abertas = 0
+        ordens_enviadas = []
+
         while qtd_ordens_abertas==0:
 
             for moeda in lista_de_moedas:
             
+                ordem_enviada = Ordem()
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos
                 corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
@@ -75,28 +78,19 @@ if __name__ == "__main__":
                 fracao_da_moeda = round(corretoraLeilao.saldo[moeda]/(corretoraLeilao.saldo[moeda]+corretoraZeragem.saldo[moeda]),6)
                 
                 if fracao_do_caixa < 0.995 and fracao_da_moeda > 0.05:
-                    Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                    if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                        ordens_enviadas.append([ordem_enviada.id,moeda])
                 else:
                     logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99.5% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
                  
                 if fracao_do_caixa > 0.005 and fracao_da_moeda < 0.95:
-                    Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
+                    if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                        ordens_enviadas.append([ordem_enviada.id,moeda])
                 else:
                     logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 0.5% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))
             
-            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
-            qtd_ordens_abertas = len(ordens_abertas)
-            ordens_enviadas = []
-
-        #step 3: essa parte faz em loop de 6 minutos
-        agora = datetime.now() 
-        proximo_ciclo = agora + timedelta(minutes=6)
-        logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
-        logging.warning('no proximo ciclo serao consideradas apenas {} ordens!'.format(qtd_ordens_abertas))
-        
-        while agora < proximo_ciclo and qtd_ordens_abertas > 0:
-            
-            agora = datetime.now() 
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             
             for ordem_enviada in ordens_enviadas:
@@ -105,6 +99,16 @@ if __name__ == "__main__":
                     ordens_abertas.append(ordem_enviada)
             
             qtd_ordens_abertas = len(ordens_abertas)
+            
+        #step 3: essa parte faz em loop de 6 minutos
+        ordens_enviadas = []
+        agora = datetime.now() 
+        proximo_ciclo = agora + timedelta(minutes=6)
+        logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
+        logging.warning('no proximo ciclo serao consideradas apenas {} ordens!'.format(qtd_ordens_abertas))
+        
+        while agora < proximo_ciclo and qtd_ordens_abertas > 0:
+            
             ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
@@ -170,6 +174,15 @@ if __name__ == "__main__":
 
                             google_sheets.escrever_operacao([moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
             #step4: ir ao step 2
+            agora = datetime.now() 
+            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
+            
+            for ordem_enviada in ordens_enviadas:
+                if ordem_enviada not in ordens_abertas:
+                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada[0],ordem_enviada[1]))
+                    ordens_abertas.append(ordem_enviada)
+            
+            qtd_ordens_abertas = len(ordens_abertas)
 
 
 
@@ -189,7 +202,7 @@ class Leilao:
                     logging.info('leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_vender,2),round(preco_de_zeragem,2)))                                
 
                     # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
-                    gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
+                    gostaria_de_vender = corretoraLeilao.saldo[ativo] #/ 4
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                     maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender)

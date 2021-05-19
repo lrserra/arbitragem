@@ -96,7 +96,7 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 obterOrdem = BrasilBitcoin().obter_ordem_por_id(obterOrdem)
             elif self.nome == 'BitcoinTrade':
-                obterOrdem = BitcoinTrade().obter_ordem_por_id(obterOrdem.code)
+                obterOrdem = BitcoinTrade(ativo).obter_ordem_por_id(obterOrdem)
             elif self.nome == 'Novadax':
                 obterOrdem = Novadax().obter_ordem_por_id(obterOrdem.id)
             elif self.nome == 'BitRecife':
@@ -141,13 +141,13 @@ class Corretora:
             elif self.nome == 'BitcoinTrade':
                 ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
-                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
+                if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
                     if 'message' in response.keys():
                         logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
                         ordemFiltro = Ordem()
-                        ordemFiltro.code = response['data']['code']
+                        ordemFiltro.id = response['data']['code']
                         ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
                         logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
@@ -198,13 +198,13 @@ class Corretora:
             elif self.nome == 'BitcoinTrade':
                 ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
 
-                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
+                if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
                     if 'message' in response.keys():
                         logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
                         ordemFiltro = Ordem()
-                        ordemFiltro.code = response['data']['code']
+                        ordemFiltro.id = response['data']['code']
                         ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
                         logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))

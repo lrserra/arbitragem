@@ -118,6 +118,14 @@ class BitcoinTrade:
         
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
         
+        max_retries = 5
+        retries = 1
+        while res.status_code !=200 and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text['message']))
+            time.sleep(1)
+            res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
+            retries=+1
+        
         return json.loads(res.text.encode('utf8'))
 
 
@@ -131,9 +139,13 @@ class BitcoinTrade:
         
         response_json = self.__obterSaldo()
 
-        while 'data' not in response_json.keys():
+        max_retries = 5
+        retries = 1
+        while 'data' not in response_json.keys() and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque data nao esta em {}'.format('BitcoinTrade',retries,'__obterSaldo',response_json.keys()))
             time.sleep(1)
             response_json = self.__obterSaldo()
+            retries=+1
 
         # Inicializa todas as moedas
         lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
@@ -167,25 +179,25 @@ class BitcoinTrade:
     
     def obter_ordem_por_id(self, filterOrdem):
         ordem = Ordem()
-        response = self.__obterOrdemPorId(filterOrdem.code)
+        response = self.__obterOrdemPorId(filterOrdem.id)
         if 'data' in response.keys():
             if 'orders' in response['data']:
                 for ativo in response['data']['orders']:
-                    if ativo['code'] == filterOrdem.code:
+                    if ativo['code'] == filterOrdem.id:
                         ordem.status = ativo['status']
-                        ordem.code = ativo['code']
-                        ordem.id = ativo['id']
+                        ordem.id = ativo['code']
                         ordem.quantidade_executada = ativo['executed_amount']
                         ordem.preco_executado = ativo['unit_price']
+                        ordem.direcao = 'venda' if ativo['type'] == 'sell' else 'compra'
             if ordem.id == 0:
-                response = BitcoinTrade(ativo).obterOrdemPorIdStatusExecuted(filterOrdem.code)
+                response = BitcoinTrade(self.ativo_parte).obterOrdemPorIdStatusExecuted(filterOrdem.id)
                 for ativo in response['data']['orders']: 
-                    if ativo['code'] == filterOrdem.code:
+                    if ativo['code'] == filterOrdem.id:
                         ordem.status = ativo['status']
-                        ordem.code = ativo['code']
-                        ordem.id = ativo['id']
+                        ordem.id = ativo['code']
                         ordem.quantidade_executada = ativo['executed_amount']
                         ordem.preco_executado = ativo['unit_price']
+                        ordem.direcao = 'venda' if ativo['type'] == 'sell' else 'compra'
         return ordem
     
     def enviar_ordem_compra(self, ordemCompra):
@@ -200,12 +212,11 @@ class BitcoinTrade:
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
                 ordem.status = "filled"
-            ordem.code = response['data']['code']
-            ordem.id = response['data']['id']
+            ordem.id = response['data']['code']
             ordem.quantidade_executada = float(response['data']['amount'])
             ordem.preco_executado = float(response['data']['unit_price'])
         else:
-            mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+            mensagem = '{}: enviar_ordem_compra - {}'.format('BitcoinTrade', response['message'])
             print(mensagem)
         return ordem,response
 
@@ -221,11 +232,10 @@ class BitcoinTrade:
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
                 ordem.status = "filled"
-            ordem.code = response['data']['code']
-            ordem.id = response['data']['id']
+            ordem.id = response['data']['code']
             ordem.quantidade_executada = float(response['data']['amount'])
             ordem.preco_executado = float(response['data']['unit_price'])
         else:
-            mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+            mensagem = '{}: enviar_ordem_venda - {}'.format('BitcoinTrade', response['message'])
             print(mensagem)
         return ordem,response
