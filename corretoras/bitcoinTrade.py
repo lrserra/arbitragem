@@ -86,14 +86,27 @@ class BitcoinTrade:
     def __cancelarOrdem(self, idOrdem):
         
         payload = {
-            "id": idOrdem
+            "code": idOrdem
         }
         
         return self.__executarRequestBTCTrade('DELETE', json.dumps(payload), 'v3/market/user_orders/')
 
-    def __obterOrdensAbertas(self):
+    def __obterOrdensAbertas(self,todas_moedas):
         # objeto que será postado para o endpoint
-        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo_contraparte.upper(), self.ativo_parte.upper()))
+        ordens_abertas = []
+        ordem_aberta = {}
+
+        for moeda in todas_moedas:
+            retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
+            while 'data' not in retorno_json.keys():
+                time.sleep(1)
+                retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
+            for order in retorno_json['data']['orders']:
+                ordem_aberta['id']=order['code']
+                ordem_aberta['coin'] = moeda
+                ordens_abertas.append(ordem_aberta)
+
+        return ordens_abertas
 
     def __executarRequestBTCTrade(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
@@ -132,11 +145,11 @@ class BitcoinTrade:
         
         return saldo
 
-    def obter_ordens_abertas(self):
+    def obter_ordens_abertas(self,todas_moedas):
         '''
         Obtém todas as ordens abertas
         '''
-        return self.__obterOrdensAbertas()
+        return self.__obterOrdensAbertas(todas_moedas)
 
     def cancelar_ordem(self, idOrdem):
         '''
@@ -149,15 +162,8 @@ class BitcoinTrade:
         '''
         Cancelar todas as ordens abertas por ativo
         '''
-        for moeda in self.saldo.keys():
-            if ordens_abertas['message'] == 'Too Many Requests':
-                    time.sleep(1)
-            elif 'data' not in ordens_abertas.keys():
-                    logging.info(str(ordens_abertas))
-            
-            for ordem in ordens_abertas['data']['orders']:
-                    if 'pair_code' in ordem.keys():
-                        self.cancelar_ordem(moeda,ordem['id'])
+        for ordem in ordens_abertas:
+            self.cancelar_ordem(ordem['id'])
     
     def obter_ordem_por_id(self, filterOrdem):
         ordem = Ordem()

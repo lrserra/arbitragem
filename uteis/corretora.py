@@ -57,7 +57,8 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 return BrasilBitcoin(ativo).obter_ordens_abertas()
             elif self.nome == 'BitcoinTrade':
-                return BitcoinTrade(ativo).obter_ordens_abertas()
+                todas_moedas = Util.obter_lista_de_moedas()
+                return BitcoinTrade(ativo).obter_ordens_abertas(todas_moedas)
             elif self.nome == 'Novadax':            
                 return Novadax(ativo).obter_ordens_abertas()
         
@@ -204,7 +205,7 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     
             elif self.nome == 'Novadax':
-                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviarOrdemVenda(ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
+                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
             
             elif self.nome == 'BitRecife':
                 ordem,response = BitRecife().enviar_ordem_venda(ordem)
