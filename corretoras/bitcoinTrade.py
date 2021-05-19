@@ -94,14 +94,14 @@ class BitcoinTrade:
     def __obterOrdensAbertas(self,todas_moedas):
         # objeto que será postado para o endpoint
         ordens_abertas = []
-        ordem_aberta = {}
-
+        
         for moeda in todas_moedas:
             retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
             while 'data' not in retorno_json.keys():
                 time.sleep(1)
                 retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
             for order in retorno_json['data']['orders']:
+                ordem_aberta = {}
                 ordem_aberta['id']=order['code']
                 ordem_aberta['coin'] = moeda
                 ordens_abertas.append(ordem_aberta)
