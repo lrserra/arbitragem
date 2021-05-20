@@ -122,7 +122,7 @@ class BitcoinTrade:
             logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text['message']))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
-            retries=+1
+            retries+=1
         
         return json.loads(res.text.encode('utf8'))
 

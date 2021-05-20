@@ -24,7 +24,7 @@ class BrasilBitcoin:
             logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',res.status_code,res.text['message']))
             time.sleep(Util.frequencia())
             res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
-            retries=+1
+            retries+=1
 
 
         return res.json()
@@ -105,7 +105,7 @@ class BrasilBitcoin:
             logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',res.status_code,res.text['message']))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
-            retries=+1
+            retries+=1
    
         return json.loads(res.text.encode('utf8'))
 
