@@ -34,7 +34,7 @@ class MercadoBitcoin:
         return retorno_json.json()
 
     def _obter_tapi(self):
-        tapi_nonce = str(int((datetime.utcnow() - datetime(2021, 1, 9)).total_seconds() * 1000000))#microseconds!
+        tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
         self.tapi_nonce = tapi_nonce
         return tapi_nonce
 
