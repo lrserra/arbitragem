@@ -1,4 +1,5 @@
 import logging
+from os import execlp
 import requests
 import hashlib
 import hmac
@@ -21,10 +22,10 @@ class MercadoBitcoin:
     def obterBooks(self):
         retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
         
-        max_retries = 5
+        max_retries = 20
         retries = 1
         while retorno_json.status_code!=200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text['message']))
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text))
             time.sleep(Util.frequencia())
             retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
             retries+=1
@@ -160,8 +161,11 @@ class MercadoBitcoin:
             # Print response data to console
             response = conn.getresponse()
             response = response.read()
-
-            response_json = json.loads(response)
+            try:
+                response_json = json.loads(response)
+            except Exception as err:
+                logging.warning('{}: nao foi possivel carregar o json {} do metodo {}. Mensagem de Erro: {}'.format('MercadoBitcoin',response,'__executarRequestMercadoBTC',err))
+            
         finally:
             if conn:
                 conn.close()
@@ -183,7 +187,7 @@ class MercadoBitcoin:
         response_json = self.__obterSaldo()
         
         # Retentativa em caso de erro
-        max_retries = 5
+        max_retries = 20
         retries = 1
         while 'error_message' in response_json.keys() and retries<max_retries:
             logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message']))
