@@ -30,8 +30,15 @@ json.dump(conteudo, arquivo) # Salva o Json no arquivo
 arquivo.close() # Fecha o arquivo
 '''
 
-corretora_obj = Corretora('BrasilBitcoin')
-corretora_obj2 = Corretora('MercadoBitcoin')
+corretora_obj = Corretora('Novadax')
+corretora_obj2 = Corretora('BitcoinTrade')
+
+
+
+
+
+
+
 
 i = 0
 while i<5000:
@@ -49,15 +56,12 @@ pass
 
 
 i = 0
-while i<500:
-    corretora_obj.atualizar_saldo() 
+while i<5000:
+    corretora_obj.book.obter_ordem_book_por_indice('xrp','brl',0,True,True) 
+    #corretora_obj2.atualizar_saldo() 
     i+=1
     print('#{}'.format(i))
-    print(corretora_obj.saldo['brl'])
+    print(corretora_obj.book.preco_compra_segundo_na_fila)
+    #print(corretora_obj2.saldo['brl'])
 pass
-
-
-
-
-
 

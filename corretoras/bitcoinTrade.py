@@ -17,7 +17,17 @@ class BitcoinTrade:
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
-        return requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper())).json()
+        res = requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()))
+        
+        max_retries = 20
+        retries = 1
+        while res.status_code != 200 and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
+            time.sleep(Util.frequencia())
+            res = requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()))
+            retries+=1
+
+        return res.json()
 
     def __obterSaldo(self):
         return self.__executarRequestBTCTrade('GET', '','v3/wallets/balance')
@@ -135,6 +145,7 @@ class BitcoinTrade:
         '''
         saldo = {}
         
+        time.sleep(0.2)
         response_json = self.__obterSaldo()
 
         # Inicializa todas as moedas

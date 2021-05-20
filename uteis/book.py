@@ -77,6 +77,7 @@ class Book:
                     retorno_book['bids'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
 
             elif self.nome == 'Novadax':
+                retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
                     logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('Novadax','data'))
