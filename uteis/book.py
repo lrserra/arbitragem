@@ -13,6 +13,8 @@ class Book:
         self.nome = nome
         self.preco_compra = 0.0
         self.preco_venda = 0.0
+        self.preco_compra_segundo_na_fila = 0.0
+        self.preco_venda_segundo_na_fila = 0.0
         self.quantidade_compra = 0.0
         self.quantidade_venda = 0.0
 
@@ -25,6 +27,9 @@ class Book:
             self.quantidade_compra = float(self.book['asks'][indice][1])
             self.preco_venda = float(self.book['bids'][indice][0])
             self.quantidade_venda = float(self.book['bids'][indice][1])
+
+            self.preco_compra_segundo_na_fila = float(self.book['asks'][indice+1][0])
+            self.preco_venda_segundo_na_fila = float(self.book['bids'][indice+1][0])
                 
         except Exception as erro:
             raise Exception(erro)
