@@ -101,7 +101,6 @@ if __name__ == "__main__":
             qtd_ordens_abertas = len(ordens_abertas)
             
         #step 3: essa parte faz em loop de 6 minutos
-        ordens_enviadas = []
         agora = datetime.now() 
         proximo_ciclo = agora + timedelta(minutes=6)
         logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
@@ -202,7 +201,7 @@ class Leilao:
                     logging.info('leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_vender,2),round(preco_de_zeragem,2)))                                
 
                     # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
-                    gostaria_de_vender = corretoraLeilao.saldo[ativo] #/ 4
+                    gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                     maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender)
