@@ -16,6 +16,7 @@ class MercadoBitcoin:
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
+        self.tapi_nonce = self._obter_tapi()
         
 #---------------- MÉTODOS PRIVADOS ----------------#
 
@@ -201,7 +202,7 @@ class MercadoBitcoin:
         max_retries = 20
         retries = 1
         while 'error_message' in response_json.keys() and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message']))
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi:'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
             time.sleep(Util.frequencia())
             response_json = self.__obterSaldo()
             retries+=1
