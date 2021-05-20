@@ -54,7 +54,7 @@ class Book:
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
-                time.sleep(0.25)
+                time.sleep(0.5)
                 retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
