@@ -33,7 +33,8 @@ class MercadoBitcoin:
         return retorno_json.json()
 
     def _obter_tapi(self):
-        return str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
+        self.tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
+        return self.tapi_nonce
 
     def __obterSaldo(self):
         tapi_nonce = self._obter_tapi()
@@ -164,8 +165,17 @@ class MercadoBitcoin:
             try:
                 response_json = json.loads(response)
             except Exception as err:
-                logging.warning('{}: nao foi possivel carregar o json {} do metodo {}. Mensagem de Erro: {}'.format('MercadoBitcoin',response,'__executarRequestMercadoBTC',err))
-            
+                logging.warning('{}: vai aplicar retry pois nao foi possivel carregar o json {} do metodo {}. Mensagem de Erro: {}'.format('MercadoBitcoin',response,'__executarRequestMercadoBTC',err))
+                time.sleep(Util.frequencia())
+
+                conn = client.HTTPSConnection(REQUEST_HOST)
+                conn.request("POST", REQUEST_PATH, params, headers)
+
+                response = conn.getresponse()
+                response = response.read()
+
+                response_json = json.loads(response)
+
         finally:
             if conn:
                 conn.close()
@@ -184,6 +194,7 @@ class MercadoBitcoin:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
+        time.sleep(0.1)
         response_json = self.__obterSaldo()
         
         # Retentativa em caso de erro
