@@ -101,7 +101,7 @@ class BrasilBitcoin:
         
         max_retries = 20
         retries = 1
-        while res.status_code != 200 and retries<max_retries:
+        while res.status_code not in (200,418) and retries<max_retries:
             print('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
@@ -147,7 +147,7 @@ class BrasilBitcoin:
         retorno_cancel = self.__cancelarOrdem(idOrdem)
 
         if not retorno_cancel['success']:
-            logging.warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
+            logging.info('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
         
         if retorno_cancel['message']=='Ordem já removida.' or retorno_cancel['message']=='Ordem completamente executada.': #se a operacao ja ta cancelada, fala que cancelou
             return True 
