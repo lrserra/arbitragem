@@ -97,9 +97,7 @@ class BitcoinTrade:
         
         for moeda in todas_moedas:
             retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
-            while 'data' not in retorno_json.keys():
-                time.sleep(1)
-                retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
+            
             for order in retorno_json['data']['orders']:
                 ordem_aberta = {}
                 ordem_aberta['id']=order['code']
@@ -122,7 +120,7 @@ class BitcoinTrade:
         retries = 1
         while res.status_code !=200 and retries<max_retries:
             logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text['message']))
-            time.sleep(1)
+            time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
             retries=+1
         
@@ -138,14 +136,6 @@ class BitcoinTrade:
         saldo = {}
         
         response_json = self.__obterSaldo()
-
-        max_retries = 5
-        retries = 1
-        while 'data' not in response_json.keys() and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque data nao esta em {}'.format('BitcoinTrade',retries,'__obterSaldo',response_json.keys()))
-            time.sleep(1)
-            response_json = self.__obterSaldo()
-            retries=+1
 
         # Inicializa todas as moedas
         lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
@@ -203,11 +193,7 @@ class BitcoinTrade:
     def enviar_ordem_compra(self, ordemCompra):
         ordem = ordemCompra
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
-        if response['message'] != None:
-            logging.warning(response['message'])
-            time.sleep(1)
-            response = self.__enviarOrdemCompra.enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
-        elif 'data' not in response.keys():
+        if 'data' not in response.keys():
             logging.info(str(response))
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
@@ -223,11 +209,8 @@ class BitcoinTrade:
     def enviar_ordem_venda(self, ordemVenda):
         ordem = ordemVenda
         response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
-        if response['message'] != None:
-            logging.warning(response['message'])
-            time.sleep(1)
-            response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
-        elif 'data' not in response.keys():
+
+        if 'data' not in response.keys():
             logging.info(str(response))
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
