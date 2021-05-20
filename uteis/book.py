@@ -4,6 +4,7 @@ from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from uteis.util import Util
 import time
+import logging
 
 class Book:
     def __init__(self,nome):
@@ -49,12 +50,14 @@ class Book:
                 retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'bids' not in retorno_book.keys():
                     retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('MercadoBitcoin','bids'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
                 retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
@@ -65,6 +68,7 @@ class Book:
                 retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BitcoinTrade','data'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#BT precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
@@ -74,6 +78,7 @@ class Book:
             elif self.nome == 'Novadax':
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('Novadax','data'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#Novadax precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
