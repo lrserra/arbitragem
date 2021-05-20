@@ -34,8 +34,9 @@ class MercadoBitcoin:
         return retorno_json.json()
 
     def _obter_tapi(self):
-        self.tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
-        return self.tapi_nonce
+        tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
+        self.tapi_nonce = tapi_nonce
+        return tapi_nonce
 
     def __obterSaldo(self):
         tapi_nonce = self._obter_tapi()
@@ -202,7 +203,7 @@ class MercadoBitcoin:
         max_retries = 20
         retries = 1
         while 'error_message' in response_json.keys() and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi:'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
             time.sleep(Util.frequencia())
             response_json = self.__obterSaldo()
             retries+=1
@@ -233,7 +234,7 @@ class MercadoBitcoin:
         '''
         if len(ordens_abertas['response_data']['orders']) > 0:
                 for ordem in ordens_abertas['response_data']['orders']:
-                    self.cancelar_ordem(ativo,ordem['order_id'])
+                    self.cancelar_ordem(ordem['order_id'])
 
     def enviar_ordem_compra(self, ordemCompra):
         ordem = ordemCompra
