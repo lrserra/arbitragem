@@ -22,7 +22,6 @@ class Book:
     def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
         
         try:
-            time.sleep(Util.frequencia()/2)
             self.__carregar_ordem_books(ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas,ignorar_ordens_fantasmas)
             
             self.preco_compra = float(self.book['asks'][indice][0])
@@ -55,6 +54,7 @@ class Book:
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
+                time.sleep(0.25)
                 retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()

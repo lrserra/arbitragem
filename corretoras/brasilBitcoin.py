@@ -18,10 +18,10 @@ class BrasilBitcoin:
     def obterBooks(self):
         res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
         
-        max_retries = 5
+        max_retries = 10
         retries = 1
         while res.status_code != 200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',res.status_code,res.text['message']))
+            logging.warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
             retries+=1
@@ -99,10 +99,10 @@ class BrasilBitcoin:
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         
-        max_retries = 5
+        max_retries = 10
         retries = 1
         while res.status_code != 200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',res.status_code,res.text['message']))
+            print('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
             retries+=1
@@ -122,6 +122,7 @@ class BrasilBitcoin:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
+        time.sleep(0.25)
         response_json = self.__obterSaldo()
 
         for ativo in response_json.keys():
