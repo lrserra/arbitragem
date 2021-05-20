@@ -122,7 +122,7 @@ class BrasilBitcoin:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
-        time.sleep(0.25)
+        time.sleep(0.5)
         response_json = self.__obterSaldo()
 
         for ativo in response_json.keys():
