@@ -325,9 +325,9 @@ class Leilao:
                         
             corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) 
             #3: nao sou o primeiro da fila
-            if (ordem.preco_enviado != corretoraLeilao.book.preco_compra) or (ordem.preco_enviado != corretoraLeilao.book.preco_compra_segundo_na_fila-1):
+            if (ordem.preco_enviado != corretoraLeilao.book.preco_compra) or (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem.preco_enviado > 0.02):
                 
-                logging.info('LC3: leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou nao é um centavo melhor que o segundo {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
+                logging.info('LC3: leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
 
                 return retorno_compra, cancelou
@@ -399,9 +399,9 @@ class Leilao:
             
             corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
             #3: nao sou o primeiro da fila
-            if (ordem.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem.preco_enviado != corretoraLeilao.book.preco_venda_segundo_na_fila+1):
+            if (ordem.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
                 
-                logging.info('LV3: leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou nao é um centavo melhor que o segundo {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
+                logging.info('LV3: leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
                 return retorno_venda,cancelou
                 
