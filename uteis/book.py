@@ -45,19 +45,17 @@ class Book:
                 minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
                 minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
 
-            time.sleep(0.6)#importante, sempre antes de fazermos esse request esperamos
-
             if self.nome == 'MercadoBitcoin':
                 retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'bids' not in retorno_book.keys():
                     retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
-                    time.sleep(1) #se der pau esperamos um pouco mais
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
                 retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
-                    time.sleep(1) #se der pau esperamos um pouco mais
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
                 for preco_no_livro in retorno_book_sem_tratar['buy']:
@@ -67,7 +65,7 @@ class Book:
                 retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
-                    time.sleep(1) #se der pau esperamos um pouco mais
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#BT precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
                 for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
@@ -76,7 +74,7 @@ class Book:
             elif self.nome == 'Novadax':
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
-                    time.sleep(1) #se der pau esperamos um pouco mais
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#Novadax precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
                 for preco_no_livro in retorno_book_sem_tratar['data']['bids']:

@@ -20,9 +20,15 @@ class MercadoBitcoin:
 
     def obterBooks(self):
         retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
-        while retorno_json.status_code!=200:
-            time.sleep(1)
+        
+        max_retries = 5
+        retries = 1
+        while retorno_json.status_code!=200 and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text['message']))
+            time.sleep(Util.frequencia())
             retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+            retries=+1
+
         return retorno_json.json()
 
     def _obter_tapi(self):
@@ -177,10 +183,13 @@ class MercadoBitcoin:
         response_json = self.__obterSaldo()
         
         # Retentativa em caso de erro
-        while 'error_message' in response_json.keys():
-            logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
-            time.sleep(3)
+        max_retries = 5
+        retries = 1
+        while 'error_message' in response_json.keys() and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message']))
+            time.sleep(Util.frequencia())
             response_json = self.__obterSaldo()
+            retries=+1
 
         # Obtém o saldo em todas as moedas
         for ativo in response_json['response_data']['balance'].keys():

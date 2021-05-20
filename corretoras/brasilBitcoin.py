@@ -88,9 +88,13 @@ class BrasilBitcoin:
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         
-        while res.status_code != 200:
-            time.sleep(1)
+        max_retries = 5
+        retries = 1
+        while res.status_code != 200 and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',res.status_code,res.text['message']))
+            time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
+            retries=+1
    
         return json.loads(res.text.encode('utf8'))
 
@@ -108,10 +112,6 @@ class BrasilBitcoin:
             saldo[moeda] = 0
         
         response_json = self.__obterSaldo()
-
-        while response_json is None:
-            time.sleep(3)
-            response_json = self.__obterSaldo()
 
         for ativo in response_json.keys():
             if ativo != 'user_cpf':
