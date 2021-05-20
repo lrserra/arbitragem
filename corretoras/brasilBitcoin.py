@@ -16,7 +16,18 @@ class BrasilBitcoin:
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self):
-        return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
+        res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+        
+        max_retries = 5
+        retries = 1
+        while res.status_code != 200 and retries<max_retries:
+            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',res.status_code,res.text['message']))
+            time.sleep(Util.frequencia())
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+            retries=+1
+
+
+        return res.json()
 
     def __obterSaldo(self):
         retorno = self.__executarRequestBrasilBTC('GET', '','/api/get_balance')
