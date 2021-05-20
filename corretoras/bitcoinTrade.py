@@ -22,7 +22,7 @@ class BitcoinTrade:
         max_retries = 20
         retries = 1
         while res.status_code != 200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()))
             retries+=1
@@ -129,7 +129,7 @@ class BitcoinTrade:
         max_retries = 20
         retries = 1
         while res.status_code !=200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text))
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
             retries+=1

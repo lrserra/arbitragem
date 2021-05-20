@@ -21,7 +21,7 @@ class BrasilBitcoin:
         max_retries = 20
         retries = 1
         while res.status_code != 200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
             retries+=1
@@ -102,7 +102,7 @@ class BrasilBitcoin:
         max_retries = 20
         retries = 1
         while res.status_code not in (200,418) and retries<max_retries:
-            print('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
             retries+=1

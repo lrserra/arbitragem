@@ -26,7 +26,7 @@ class MercadoBitcoin:
         max_retries = 20
         retries = 1
         while retorno_json.status_code!=200 and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text))
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text))
             time.sleep(Util.frequencia())
             retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
             retries+=1
@@ -34,7 +34,7 @@ class MercadoBitcoin:
         return retorno_json.json()
 
     def _obter_tapi(self):
-        tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
+        tapi_nonce = str(int((datetime.utcnow() - datetime(2021, 1, 9)).total_seconds() * 1000000))#microseconds!
         self.tapi_nonce = tapi_nonce
         return tapi_nonce
 
@@ -203,7 +203,7 @@ class MercadoBitcoin:
         max_retries = 20
         retries = 1
         while 'error_message' in response_json.keys() and retries<max_retries:
-            logging.warning('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
             time.sleep(Util.frequencia())
             response_json = self.__obterSaldo()
             retries+=1
