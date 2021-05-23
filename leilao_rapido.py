@@ -140,8 +140,10 @@ if __name__ == "__main__":
                             
                             quantidade_executada_compra = ordem_leilao.quantidade_executada
                             quantidade_executada_venda = ordem_zeragem.quantidade_executada
+                            financeiro_compra = comprei_a * quantidade_executada_compra
+                            financeiro_venda = vendi_a * quantidade_executada_venda
 
-                            google_sheets.escrever_operacao([moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
+                            google_sheets.escrever_operacao([moeda,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
 
                 elif ordem_leilao.direcao =='venda':
                     ordem_zeragem,cancelou = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True)
@@ -167,8 +169,10 @@ if __name__ == "__main__":
                             
                             quantidade_executada_compra = ordem_zeragem.quantidade_executada
                             quantidade_executada_venda = ordem_leilao.quantidade_executada
+                            financeiro_compra = comprei_a * quantidade_executada_compra
+                            financeiro_venda = vendi_a * quantidade_executada_venda
 
-                            google_sheets.escrever_operacao([moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
+                            google_sheets.escrever_operacao([moeda,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
             #step4: ir ao step 2
 
 
