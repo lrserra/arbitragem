@@ -32,7 +32,7 @@ if __name__ == "__main__":
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
-    google_sheets = GoogleSheets()
+    
     
     '''
     nesse script vamos 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
             ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
-                cancelou = False
+                
                 ordem_leilao = Ordem()
                 ordem_leilao.id = ordem_aberta[0]
                 moeda = ordem_aberta[1]
@@ -241,6 +241,7 @@ class Leilao:
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
+        google_sheets = GoogleSheets()
 
         try:
             #IMPORTANTE ->qualquer uma dessas condições que for verdade, pode executar e sair do metodo
@@ -343,6 +344,7 @@ class Leilao:
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
+        google_sheets = GoogleSheets()
         
         try:
     
