@@ -304,6 +304,8 @@ class Leilao:
                 quantidade_executada_venda = ordem.quantidade_executada
 
                 google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
+                corretoraZeragem.atualizar_saldo()
+                corretoraLeilao.atualizar_saldo()
                 return ordem_enviada
 
             #3: nao sou o primeiro da fila
@@ -397,6 +399,8 @@ class Leilao:
                 quantidade_executada_venda = ordem_zeragem.quantidade_executada
 
                 google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
+                corretoraZeragem.atualizar_saldo()
+                corretoraLeilao.atualizar_saldo()
                 return ordem_enviada
 
             #3: nao sou o primeiro da fila
