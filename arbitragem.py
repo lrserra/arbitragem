@@ -22,14 +22,9 @@ class Arbitragem:
             corretoraVenda.atualizar_saldo()
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            if corretoraCompra.nome == corretora_mais_liquida: #dou preferencia pra carregar os preços da mais liquida por ultimo
-                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
-                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
-            else:
-                corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
-                corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
-
-
+            corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+            corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+        
             preco_de_compra = corretoraCompra.book.preco_compra #primeiro no book de ordens
             preco_de_venda = corretoraVenda.book.preco_venda #primeiro no book de ordens
 
@@ -55,7 +50,7 @@ class Arbitragem:
                 
                 #define pnl minimo para aceitarmos o trade
                 fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
-                pnl_minimo = 1 if fracao_do_caixa<0.2 else 0.1 # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
+                pnl_minimo = 2 if fracao_do_caixa<0.2 else 0.1 # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
                 pnl_minimo = 10 if fracao_do_caixa<0.05 else pnl_minimo # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
 
                 if qtdNegociada !=0:
@@ -84,15 +79,9 @@ class Arbitragem:
                                     quero_comprar_a = round(preco_de_compra,4)
                                     quero_vender_a = round(preco_de_venda,4)
 
-                                    #efetivamente envia as ordens
-                                    if corretoraCompra.nome == corretora_mais_liquida:
-                                        logging.info('arbitragem vai comprar primeiro {}{} @{} na {} e vender depois @{} na {} que tem {} de saldo'.format(round(qtdNegociada,4),ativo,quero_comprar_a,corretoraCompra.nome,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo]))
-                                        ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
-                                        ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
-                                    else:
-                                        logging.info('arbitragem vai vender primeiro {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
-                                        ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
-                                        ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
+                                    logging.info('arbitragem vai vender primeiro {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
+                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda,ativo)
+                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra,ativo)
 
                                     realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
                                     realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
