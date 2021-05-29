@@ -314,6 +314,9 @@ class Leilao:
                 
                 logging.info('LC3: leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+
+                if (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem.preco_enviado > 0.02):
+                    corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada
@@ -410,6 +413,10 @@ class Leilao:
                 
                 logging.info('LV3: leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+
+                if (ordem.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
+                    corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
+
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada
