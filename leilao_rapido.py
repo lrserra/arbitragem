@@ -163,8 +163,8 @@ class Leilao:
                 if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
                     
                     logging.info('leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_vender,2),round(preco_de_zeragem,2)))                                
-
-                    # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
+                    logging.info('leilao compra vai usar o saldo na corretora leilao e zeragem. Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
+                    # Gostaria de vender no leilão 0.6 do que eu tenho de saldo em crypto
                     gostaria_de_vender = corretoraLeilao.saldo[ativo] *0.6
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
@@ -209,7 +209,7 @@ class Leilao:
             # Valida se existe oportunidade de leilão
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
                 logging.info('leilao de venda aberta para moeda {} no preço de compra {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_comprar,2),round(preco_de_zeragem,2)))                   
-
+                logging.info('leilao venda vai usar o saldo na corretora leilao e zeragem. Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
                 gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
                 maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] *0.6
                 #se vc for executada nessa quantidade inteira, talvez nao tera lucro
@@ -306,6 +306,7 @@ class Leilao:
                 google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
+                logging.info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
                 return ordem_enviada
 
             #3: nao sou o primeiro da fila
@@ -401,6 +402,7 @@ class Leilao:
                 google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
+                logging.info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
                 return ordem_enviada
 
             #3: nao sou o primeiro da fila
