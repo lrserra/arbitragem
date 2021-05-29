@@ -18,6 +18,8 @@ if __name__ == "__main__":
     from uteis.googleSheets import GoogleSheets
     from caixa import Caixa
     from leilao_rapido import Leilao
+
+    google_sheets = GoogleSheets()
     
     #inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os warning ou acima
     logging.basicConfig(filename='leilao_rapido.log', level=logging.INFO,
@@ -123,13 +125,13 @@ if __name__ == "__main__":
                 
                 if ordem_leilao.direcao == 'compra':
 
-                    ordem_enviada = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas)
+                    ordem_enviada = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
                         
                 elif ordem_leilao.direcao =='venda':
                     
-                    ordem_enviada = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas)
+                    ordem_enviada = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
                     
@@ -236,13 +238,12 @@ class Leilao:
         
         return retorno_compra_corretora_leilao
 
-    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas):
+    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
 
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
-        google_sheets = GoogleSheets()
-
+        
         try:
             #IMPORTANTE ->qualquer uma dessas condições que for verdade, pode executar e sair do metodo
 
@@ -339,12 +340,11 @@ class Leilao:
 
         return ordem_enviada
 
-    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas):
+    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
 
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
-        google_sheets = GoogleSheets()
         
         try:
     
