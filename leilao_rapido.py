@@ -201,7 +201,7 @@ class Leilao:
                     logging.info('leilao de compra aberta para moeda {} no preço de venda {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_vender,2),round(preco_de_zeragem,2)))                                
 
                     # Gostaria de vender no leilão pelo 1/4 do que eu tenho de saldo em crypto
-                    gostaria_de_vender = corretoraLeilao.saldo[ativo] / 4
+                    gostaria_de_vender = corretoraLeilao.saldo[ativo] 
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                     maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada-corretoraZeragem.corretagem_mercado))
@@ -247,7 +247,7 @@ class Leilao:
                 logging.info('leilao de venda aberta para moeda {} no preço de compra {} e preço de zeragem {}'.format(ativo,round(preco_que_vou_comprar,2),round(preco_de_zeragem,2)))                   
 
                 gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
-                maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] / 4
+                maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] 
                 #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                 maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada-corretoraZeragem.corretagem_mercado))
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
