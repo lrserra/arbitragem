@@ -33,7 +33,7 @@ class Caixa:
         saldo = {}
         preco_venda = {}
 
-        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch','usdt','dai','eos']
+        lista_de_moedas_hardcoded = ['brl','btc','eth','xrp','ltc','bch']
         
         for moeda in lista_de_moedas_hardcoded:
             if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
