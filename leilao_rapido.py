@@ -110,6 +110,10 @@ if __name__ == "__main__":
         
         while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
+            #vamos atualizar saldo a cada ciclo, para evitar erros operacionais
+            corretoraZeragem.atualizar_saldo()
+            corretoraLeilao.atualizar_saldo()
+
             ordens_enviadas = []
 
             for ordem_aberta in ordens_abertas:
