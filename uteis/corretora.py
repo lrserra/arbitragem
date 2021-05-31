@@ -154,6 +154,10 @@ class Corretora:
                 
             elif self.nome == 'Novadax':
                 ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                if response['message'] != "Success":
+                    logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                    logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+
             elif self.nome == 'BitRecife':
                 ordem,response = BitRecife().enviar_ordem_compra(ordem)
         except Exception as erro:
@@ -211,6 +215,9 @@ class Corretora:
                     
             elif self.nome == 'Novadax':
                 ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                if response['message'] != "Success":
+                    logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                    logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
             
             elif self.nome == 'BitRecife':
                 ordem,response = BitRecife().enviar_ordem_venda(ordem)

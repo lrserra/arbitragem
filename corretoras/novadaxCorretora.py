@@ -116,9 +116,9 @@ class Novadax:
 
         ordem = ordemCompra
         if ordem.ativo =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+            ordem.quantidade_enviada = round(math.trunc(ordem.quantidade_enviada*100)/100,2) #trunca na segunda
         else:
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+            ordem.quantidade_enviada = round(math.trunc(ordem.quantidade_enviada*10000)/10000,2)#trunca na quarta
         
         
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
@@ -139,15 +139,15 @@ class Novadax:
             ordem.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
-            print(mensagem)
+            #print(mensagem)
         return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = ordemVenda
         if ordem.ativo =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+            ordem.quantidade_enviada = round(math.trunc(ordem.quantidade_enviada*100)/100,2)#trunca na segunda
         else:
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+            ordem.quantidade_enviada = round(math.trunc(ordem.quantidade_enviada*10000)/10000,2)#trunca na quarta
         
         
         
@@ -168,5 +168,5 @@ class Novadax:
             ordem.preco_executado = 0 if ordem_response['data']['averagePrice'] is None else float(ordem_response['data']['averagePrice'])
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
-            print(mensagem)
+            #print(mensagem)
         return ordem,response
