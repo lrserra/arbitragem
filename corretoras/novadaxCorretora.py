@@ -4,6 +4,7 @@ import json
 import time
 from uteis.util import Util
 from uteis.ordem import Ordem
+import math
 
 class Novadax:
 
@@ -112,7 +113,14 @@ class Novadax:
         return ordem
 
     def enviar_ordem_compra(self, ordemCompra):
+
         ordem = ordemCompra
+        if ordem.ativo =='xrp':
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+        else:
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+        
+        
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
                 
         if response['message'] == "Success":
@@ -136,6 +144,13 @@ class Novadax:
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = ordemVenda
+        if ordem.ativo =='xrp':
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*100)/100#trunca na segunda
+        else:
+            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+        
+        
+        
         response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
         if response['message'] == "Success":
             ordem_response = self.__obterOrdemPorId(response['data']['id'])
