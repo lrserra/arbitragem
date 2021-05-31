@@ -79,19 +79,19 @@ if __name__ == "__main__":
                 fracao_do_caixa = round(corretoraLeilao.saldo['brl']/(corretoraLeilao.saldo['brl']+corretoraZeragem.saldo['brl']),6)
                 fracao_da_moeda = round(corretoraLeilao.saldo[moeda]/(corretoraLeilao.saldo[moeda]+corretoraZeragem.saldo[moeda]),6)
                 
-                if fracao_do_caixa < 0.995 and fracao_da_moeda > 0.05:
+                if fracao_do_caixa < 0.99 and fracao_da_moeda > 0.05:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
                 else:
-                    logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99.5% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
+                    logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
                  
-                if fracao_do_caixa > 0.005 and fracao_da_moeda < 0.95:
+                if fracao_do_caixa > 0.01 and fracao_da_moeda < 0.95:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
                 else:
-                    logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 0.5% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))
+                    logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 1% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))
             
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
             
