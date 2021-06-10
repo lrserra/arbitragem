@@ -17,7 +17,17 @@ class BitcoinTrade:
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
-        return requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper())).json()
+        res = requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()))
+        
+        max_retries = 20
+        retries = 1
+        while res.status_code != 200 and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
+            time.sleep(Util.frequencia())
+            res = requests.get(url = self.urlBitcoinTrade + 'v3/public/{}{}/orders?limit=50'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()))
+            retries+=1
+
+        return res.json()
 
     def __obterSaldo(self):
         return self.__executarRequestBTCTrade('GET', '','v3/wallets/balance')
@@ -86,14 +96,25 @@ class BitcoinTrade:
     def __cancelarOrdem(self, idOrdem):
         
         payload = {
-            "id": idOrdem
+            "code": idOrdem
         }
         
         return self.__executarRequestBTCTrade('DELETE', json.dumps(payload), 'v3/market/user_orders/')
 
-    def __obterOrdensAbertas(self):
+    def __obterOrdensAbertas(self,todas_moedas):
         # objeto que será postado para o endpoint
-        return self.executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), self.ativo_contraparte.upper(), self.ativo_parte.upper()))
+        ordens_abertas = []
+        
+        for moeda in todas_moedas:
+            retorno_json = self.__executarRequestBTCTrade('GET', '', 'v3/market/user_orders/list?start_date={}&end_date={}&pair={}{}'.format(date.today()-timedelta(days=1), date.today(), 'BRL', moeda.upper()))
+            
+            for order in retorno_json['data']['orders']:
+                ordem_aberta = {}
+                ordem_aberta['id']=order['code']
+                ordem_aberta['coin'] = moeda
+                ordens_abertas.append(ordem_aberta)
+
+        return ordens_abertas
 
     def __executarRequestBTCTrade(self, requestMethod, payload, endpoint):
         config = Util.obterCredenciais()
@@ -104,6 +125,14 @@ class BitcoinTrade:
         }
         
         res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
+        
+        max_retries = 20
+        retries = 1
+        while res.status_code !=200 and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BitcoinTrade',retries,'__executarRequestBTCTrade',res.status_code,res.text))
+            time.sleep(Util.frequencia())
+            res = requests.request(requestMethod, self.urlBitcoinTrade+endpoint, headers=headers, data=payload)
+            retries+=1
         
         return json.loads(res.text.encode('utf8'))
 
@@ -116,11 +145,8 @@ class BitcoinTrade:
         '''
         saldo = {}
         
+        time.sleep(0.2)
         response_json = self.__obterSaldo()
-
-        while 'data' not in response_json.keys():
-            time.sleep(1)
-            response_json = self.__obterSaldo()
 
         # Inicializa todas as moedas
         lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
@@ -132,11 +158,11 @@ class BitcoinTrade:
         
         return saldo
 
-    def obter_ordens_abertas(self):
+    def obter_ordens_abertas(self,todas_moedas):
         '''
         Obtém todas as ordens abertas
         '''
-        return self.__obterOrdensAbertas()
+        return self.__obterOrdensAbertas(todas_moedas)
 
     def cancelar_ordem(self, idOrdem):
         '''
@@ -149,77 +175,61 @@ class BitcoinTrade:
         '''
         Cancelar todas as ordens abertas por ativo
         '''
-        for moeda in self.saldo.keys():
-            if ordens_abertas['message'] == 'Too Many Requests':
-                    time.sleep(1)
-            elif 'data' not in ordens_abertas.keys():
-                    logging.info(str(ordens_abertas))
-            
-            for ordem in ordens_abertas['data']['orders']:
-                    if 'pair_code' in ordem.keys():
-                        self.cancelar_ordem(moeda,ordem['id'])
+        for ordem in ordens_abertas:
+            self.cancelar_ordem(ordem['id'])
     
     def obter_ordem_por_id(self, filterOrdem):
         ordem = Ordem()
-        response = self.__obterOrdemPorId(filterOrdem.code)
+        response = self.__obterOrdemPorId(filterOrdem.id)
         if 'data' in response.keys():
             if 'orders' in response['data']:
                 for ativo in response['data']['orders']:
-                    if ativo['code'] == filterOrdem.code:
+                    if ativo['code'] == filterOrdem.id:
                         ordem.status = ativo['status']
-                        ordem.code = ativo['code']
-                        ordem.id = ativo['id']
+                        ordem.id = ativo['code']
                         ordem.quantidade_executada = ativo['executed_amount']
                         ordem.preco_executado = ativo['unit_price']
+                        ordem.direcao = 'venda' if ativo['type'] == 'sell' else 'compra'
             if ordem.id == 0:
-                response = BitcoinTrade(ativo).obterOrdemPorIdStatusExecuted(filterOrdem.code)
+                response = BitcoinTrade(self.ativo_parte).obterOrdemPorIdStatusExecuted(filterOrdem.id)
                 for ativo in response['data']['orders']: 
-                    if ativo['code'] == filterOrdem.code:
+                    if ativo['code'] == filterOrdem.id:
                         ordem.status = ativo['status']
-                        ordem.code = ativo['code']
-                        ordem.id = ativo['id']
+                        ordem.id = ativo['code']
                         ordem.quantidade_executada = ativo['executed_amount']
                         ordem.preco_executado = ativo['unit_price']
+                        ordem.direcao = 'venda' if ativo['type'] == 'sell' else 'compra'
         return ordem
     
     def enviar_ordem_compra(self, ordemCompra):
         ordem = ordemCompra
         response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
-        if response['message'] != None:
-            logging.warning(response['message'])
-            time.sleep(1)
-            response = self.__enviarOrdemCompra.enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
-        elif 'data' not in response.keys():
+        if 'data' not in response.keys():
             logging.info(str(response))
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
                 ordem.status = "filled"
-            ordem.code = response['data']['code']
-            ordem.id = response['data']['id']
+            ordem.id = response['data']['code']
             ordem.quantidade_executada = float(response['data']['amount'])
             ordem.preco_executado = float(response['data']['unit_price'])
         else:
-            mensagem = '{}: enviar_ordem_compra - {}'.format(self.nome, response['message'])
+            mensagem = '{}: enviar_ordem_compra - {}'.format('BitcoinTrade', response['message'])
             print(mensagem)
         return ordem,response
 
     def enviar_ordem_venda(self, ordemVenda):
         ordem = ordemVenda
         response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
-        if response['message'] != None:
-            logging.warning(response['message'])
-            time.sleep(1)
-            response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
-        elif 'data' not in response.keys():
+
+        if 'data' not in response.keys():
             logging.info(str(response))
         if response['code'] == None or response['code'] == 200:
             if response['message'] is None:
                 ordem.status = "filled"
-            ordem.code = response['data']['code']
-            ordem.id = response['data']['id']
+            ordem.id = response['data']['code']
             ordem.quantidade_executada = float(response['data']['amount'])
             ordem.preco_executado = float(response['data']['unit_price'])
         else:
-            mensagem = '{}: enviar_ordem_venda - {}'.format(self.nome, response['message'])
+            mensagem = '{}: enviar_ordem_venda - {}'.format('BitcoinTrade', response['message'])
             print(mensagem)
         return ordem,response

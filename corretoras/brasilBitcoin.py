@@ -16,7 +16,18 @@ class BrasilBitcoin:
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self):
-        return requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte)).json()
+        res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+        
+        max_retries = 20
+        retries = 1
+        while res.status_code != 200 and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
+            time.sleep(Util.frequencia())
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+            retries+=1
+
+
+        return res.json()
 
     def __obterSaldo(self):
         retorno = self.__executarRequestBrasilBTC('GET', '','/api/get_balance')
@@ -88,9 +99,13 @@ class BrasilBitcoin:
         # requisição básica com módulo requests
         res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
         
-        while res.status_code != 200:
-            time.sleep(1)
+        max_retries = 20
+        retries = 1
+        while res.status_code not in (200,418) and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
+            time.sleep(Util.frequencia())
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
+            retries+=1
    
         return json.loads(res.text.encode('utf8'))
 
@@ -107,11 +122,8 @@ class BrasilBitcoin:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
+        time.sleep(0.5)
         response_json = self.__obterSaldo()
-
-        while response_json is None:
-            time.sleep(3)
-            response_json = self.__obterSaldo()
 
         for ativo in response_json.keys():
             if ativo != 'user_cpf':
@@ -135,7 +147,7 @@ class BrasilBitcoin:
         retorno_cancel = self.__cancelarOrdem(idOrdem)
 
         if not retorno_cancel['success']:
-            logging.warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
+            logging.info('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
         
         if retorno_cancel['message']=='Ordem já removida.' or retorno_cancel['message']=='Ordem completamente executada.': #se a operacao ja ta cancelada, fala que cancelou
             return True 

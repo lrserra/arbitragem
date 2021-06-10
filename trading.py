@@ -7,6 +7,7 @@ from uteis.util import Util
 from datetime import datetime, timezone
 import time
 
+'''
 # Obter quantidades de moedas da planilha [0]: moeda [1]: valor
 quantidade_moeda = GoogleSheets().ler_quantidade_moeda()
 # Obter a lista moedas em operação
@@ -27,8 +28,39 @@ arquivo.close() # Fecha o arquivo que estava aberto como somente leitura
 arquivo = open("worksheetsettings.json", "w") # Sobrescreve o arquivo
 json.dump(conteudo, arquivo) # Salva o Json no arquivo
 arquivo.close() # Fecha o arquivo
+'''
+
+corretora_obj = Corretora('MercadoBitcoin')
+corretora_obj.book.obter_ordem_book_por_indice('ltc','brl',0,True,True) 
 
 
 
 
+
+
+
+i = 0
+while i<5000:
+    corretora_obj.book.obter_ordem_book_por_indice('xrp','brl',0,True,True) 
+    corretora_obj.atualizar_saldo() 
+    corretora_obj2.book.obter_ordem_book_por_indice('xrp','brl',0,True,True) 
+    corretora_obj2.atualizar_saldo() 
+    i+=1
+    print('#{}'.format(i))
+    print(corretora_obj.book.preco_compra_segundo_na_fila)
+    print(corretora_obj.saldo['brl'])
+    print(corretora_obj2.book.preco_compra_segundo_na_fila)
+    print(corretora_obj2.saldo['brl'])
+pass
+
+
+i = 0
+while i<5000:
+    corretora_obj.book.obter_ordem_book_por_indice('xrp','brl',0,True,True) 
+    #corretora_obj2.atualizar_saldo() 
+    i+=1
+    print('#{}'.format(i))
+    print(corretora_obj.book.preco_compra_segundo_na_fila)
+    #print(corretora_obj2.saldo['brl'])
+pass
 

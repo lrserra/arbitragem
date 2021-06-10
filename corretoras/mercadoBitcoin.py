@@ -1,4 +1,5 @@
 import logging
+from os import execlp
 import requests
 import hashlib
 import hmac
@@ -15,18 +16,27 @@ class MercadoBitcoin:
         self.ativo_parte = ativo_parte
         self.ativo_contraparte = ativo_contraparte
         self.urlMercadoBitcoin = 'https://www.mercadobitcoin.net/api/{}/orderbook/'
+        self.tapi_nonce = self._obter_tapi()
         
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
         retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
-        while retorno_json.status_code!=200:
-            time.sleep(1)
+        
+        max_retries = 20
+        retries = 1
+        while retorno_json.status_code!=200 and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text))
+            time.sleep(Util.frequencia())
             retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+            retries+=1
+
         return retorno_json.json()
 
     def _obter_tapi(self):
-        return str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000))
+        tapi_nonce = str(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000000))#microseconds!
+        self.tapi_nonce = tapi_nonce
+        return tapi_nonce
 
     def __obterSaldo(self):
         tapi_nonce = self._obter_tapi()
@@ -154,8 +164,20 @@ class MercadoBitcoin:
             # Print response data to console
             response = conn.getresponse()
             response = response.read()
+            try:
+                response_json = json.loads(response)
+            except Exception as err:
+                logging.warning('{}: vai aplicar retry pois nao foi possivel carregar o json {} do metodo {}. Mensagem de Erro: {}'.format('MercadoBitcoin',response,'__executarRequestMercadoBTC',err))
+                time.sleep(Util.frequencia())
 
-            response_json = json.loads(response)
+                conn = client.HTTPSConnection(REQUEST_HOST)
+                conn.request("POST", REQUEST_PATH, params, headers)
+
+                response = conn.getresponse()
+                response = response.read()
+
+                response_json = json.loads(response)
+
         finally:
             if conn:
                 conn.close()
@@ -174,13 +196,17 @@ class MercadoBitcoin:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
+        time.sleep(0.1)
         response_json = self.__obterSaldo()
         
         # Retentativa em caso de erro
-        while 'error_message' in response_json.keys():
-            logging.info('erro ao obters saldo na mercado: {}'.format(response_json['error_message']))
-            time.sleep(3)
+        max_retries = 20
+        retries = 1
+        while 'error_message' in response_json.keys() and retries<max_retries:
+            logging.info('{}: será feito retry automatico #{} do metodo {} porque error_message foi encontrado. Mensagem de Erro: {} Tapi: {}'.format('MercadoBitcoin',retries,'__obterSaldo',response_json['error_message'],self.tapi_nonce))
+            time.sleep(Util.frequencia())
             response_json = self.__obterSaldo()
+            retries+=1
 
         # Obtém o saldo em todas as moedas
         for ativo in response_json['response_data']['balance'].keys():
@@ -208,7 +234,7 @@ class MercadoBitcoin:
         '''
         if len(ordens_abertas['response_data']['orders']) > 0:
                 for ordem in ordens_abertas['response_data']['orders']:
-                    self.cancelar_ordem(ativo,ordem['order_id'])
+                    self.cancelar_ordem(ordem['order_id'])
 
     def enviar_ordem_compra(self, ordemCompra):
         ordem = ordemCompra
