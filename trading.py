@@ -30,9 +30,8 @@ json.dump(conteudo, arquivo) # Salva o Json no arquivo
 arquivo.close() # Fecha o arquivo
 '''
 
-corretora_obj = Corretora('Novadax')
-corretora_obj2 = Corretora('BitcoinTrade')
-
+corretora_obj = Corretora('MercadoBitcoin')
+corretora_obj.book.obter_ordem_book_por_indice('ltc','brl',0,True,True) 
 
 
 
