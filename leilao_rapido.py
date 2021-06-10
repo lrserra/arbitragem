@@ -139,7 +139,6 @@ if __name__ == "__main__":
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
                     
-                    
             #step4: ir ao step 2
             agora = datetime.now() 
             ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
