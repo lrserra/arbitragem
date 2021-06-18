@@ -410,16 +410,16 @@ if __name__ == "__main__":
                 teve_arb = True
                 while teve_arb:
                     teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                    if pnl_real < 10: #menor pnl aceitavel, do contrario fica de castigo
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)
-                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,10))
+                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,-10))
 
                 teve_arb = True
                 while teve_arb:
                     teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                    if pnl_real < 10: #menor pnl aceitavel, do contrario fica de castigo
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
-                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,10))
+                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,-10))
                                 
             except Exception as erro:        
                 logging.error(erro) 
