@@ -9,12 +9,11 @@ class Arbitragem:
 
     def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, executarOrdens = False):
         
-        fiz_arb = False
         
-        corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
-
         try:
+            fiz_arb = False
             pnl = 0
+            pnl_real = 0
             ordem_compra = corretoraCompra.ordem
             ordem_venda = corretoraVenda.ordem
 
@@ -117,22 +116,27 @@ class Arbitragem:
                                     else: 
                                         logging.info('operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,quero_vender_a,corretoraVenda.nome))
                                         logging.warning('operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
-                                                                            
+
+                                    return fiz_arb , pnl_real
+
                             else:
                                 logging.info('arbitragem nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo['brl'],2),corretoraVenda.saldo[ativo]))
+                                return fiz_arb , pnl_real
                         else: 
                             logging.info('arbitragem nao vai enviar ordem de {} porque qtde {} nao é maior que a minima {} ou o valor a pagar {} nao é maior que o minimo {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo),vou_pagar,Util.retorna_menor_valor_compra(ativo)))
+                            return fiz_arb , pnl_real
                     else:
                         logging.info('arbitragem nao vai enviar ordem de {} porque o pnl estimado: {}=({}-{}) nao é maior que nosso pnl minimo: {}'.format(ativo,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(pnl_minimo,2)))
-                        
+                        return fiz_arb , pnl_real   
                 else:
                     logging.info('acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
+                    return fiz_arb , pnl_real
             else:
                 logging.info('arbitragem nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
-                
+                return fiz_arb , pnl_real
 
         except Exception as erro:
-            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: simples.', erro)
+            msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de arbitragem, método: simples - ', erro)
             raise Exception(msg_erro)
 
     def paridade_compra(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, paridade, executarOrdens = False):
@@ -382,7 +386,9 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     #essa parte executa apenas uma vez
-    lista_de_moedas = Util.obter_lista_de_moedas()
+    white_list = Util.obter_lista_de_moedas()
+    black_list = []
+
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
     
@@ -390,6 +396,9 @@ if __name__ == "__main__":
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
     while True:
+
+        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
+
         for moeda in lista_de_moedas:
             try:
                 # Instancia das corretoras 
@@ -398,13 +407,19 @@ if __name__ == "__main__":
 
                 # Roda a arbitragem nas 2 corretoras
 
-                tem_arb = True
-                while tem_arb:
-                    tem_arb = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                
-                tem_arb = True
-                while tem_arb:
-                    tem_arb = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)   
+                teve_arb = True
+                while teve_arb:
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)
+                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,-10))
+
+                teve_arb = True
+                while teve_arb:
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)   
+                        logging.warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,pnl_real,-10))
                                 
             except Exception as erro:        
                 logging.error(erro) 

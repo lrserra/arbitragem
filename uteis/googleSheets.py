@@ -1,3 +1,4 @@
+import logging
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
@@ -22,12 +23,18 @@ class GoogleSheets:
         return client
 
     def escrever_operacao(self, operacao):
-        google_config = Util.retorna_config_google_api()
-        self.escrever(google_config['sheet_name'], google_config['operacoes'], operacao)
+        try:
+            google_config = Util.retorna_config_google_api()
+            self.escrever(google_config['sheet_name'], google_config['operacoes'], operacao)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_operacao: {}'.format(err))
 
     def escrever_saldo(self, saldo):
-        google_config = Util.retorna_config_google_api()
-        self.escrever(google_config['sheet_name'], google_config['saldo'], saldo)
+        try:
+            google_config = Util.retorna_config_google_api()
+            self.escrever(google_config['sheet_name'], google_config['saldo'], saldo)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_saldo: {}'.format(err))
 
     def escrever(self, planilha, aba, linha):
         client = self.retorna_google_sheets_client()
