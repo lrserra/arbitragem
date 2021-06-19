@@ -45,14 +45,34 @@ class GoogleSheets:
         sheet.insert_row(linha, row_count + 2, value_input_option='USER_ENTERED')
 
     def ler_quantidade_moeda(self):
+        saldo_inicial = {}
         google_config = Util.retorna_config_google_api()
         
-        # Obtem o número de moedas parametrizadas
-        contador_moeda = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'contador_moeda')
-        contador = int(contador_moeda[0][0]) + 2
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
         
-        retorno = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'I3:J{}'.format(str(contador)))
-        return retorno
+        saldo_index = tabela[0].index('Saldo Inicial')
+        for entrada in tabela[1:]:
+            saldo_inicial[entrada[0].lower()]=entrada[saldo_index]
+
+        return saldo_inicial
+
+    def ler_minimo_negociacao(self):
+        minimo_compra = {}
+        minimo_venda = {}
+        google_config = Util.retorna_config_google_api()
+        
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
+        
+        minimo_compra_index = tabela[0].index('Minimo Compra')
+        minimo_venda_index = tabela[0].index('Minimo Venda')
+
+        for entrada in tabela[1:]:
+            minimo_compra[entrada[0].lower()]=entrada[minimo_compra_index]
+            minimo_venda[entrada[0].lower()]=entrada[minimo_venda_index]
+
+        return minimo_compra, minimo_venda
 
     def ler(self, planilha, aba, descricao_range):
         client = self.retorna_google_sheets_client()
