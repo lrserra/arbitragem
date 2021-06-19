@@ -9,7 +9,7 @@ class Configuracao:
         try:
 
             # Obter a lista moedas em operação
-            white_list = Util.obter_lista_de_moedas()
+            white_list = Util.obter_white_list()
 
             # Abrir o arquivo de configuração para uso
             arquivo = open("worksheetsettings.json", "r")
@@ -26,7 +26,7 @@ class Configuracao:
             for moeda in white_list:
                 conteudo[moeda]['saldo_inicial'] = quantidade_moeda[moeda]
                 logging.warning('Configuracao: Saldo inicial da moeda {}: {}'.format(moeda, quantidade_moeda[moeda]))
-                conteudo[moeda]['valor_minima_compra'] = quantidade_minima_compra[moeda]
+                conteudo[moeda]['valor_minimo_compra'] = quantidade_minima_compra[moeda]
                 logging.warning('Configuracao: Qtd minima compra da moeda {}: {}'.format(moeda, quantidade_minima_compra[moeda]))
                 conteudo[moeda]['quantidade_minima_venda'] = quantidade_minima_venda[moeda]
                 logging.warning('Configuracao: Qtd minima venda da moeda {}: {}'.format(moeda, quantidade_minima_venda[moeda]))

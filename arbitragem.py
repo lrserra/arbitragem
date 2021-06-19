@@ -143,7 +143,6 @@ class Arbitragem:
 if __name__ == "__main__":
 
     from datetime import datetime
-    from caixa import Caixa
     from arbitragem import Arbitragem
     
 
@@ -154,7 +153,7 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     #essa parte executa apenas uma vez
-    white_list = Util.obter_lista_de_moedas()
+    white_list = Util.obter_lista_de_moedas('arbitragem_status')
     black_list = []
 
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
