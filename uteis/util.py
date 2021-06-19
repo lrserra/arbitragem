@@ -116,7 +116,7 @@ class Util:
             dic_completo = json.load(f)
 
         for moeda in dic_completo.keys():
-            saldo_inicial[moeda] == dic_completo[moeda]['saldo_inicial']
+            saldo_inicial[moeda] = dic_completo[moeda]['saldo_inicial']
 
         return saldo_inicial
 
@@ -127,11 +127,14 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)["lista_de_moedas"]
     
-    def obter_lista_de_moedas(estrategia_status):
+    def obter_lista_de_moedas(estrategia_status=''):
         '''
         retorna a lista de moedas que nosso script vai negociar
         '''
         lista_de_moedas = []
+        if estrategia_status == '':
+            return ['btc','eth','xrp','ltc','bch']
+
         with open('worksheetsettings.json') as f:
             dic_completo = json.load(f)
             for moeda in dic_completo.keys():
@@ -169,7 +172,7 @@ class Util:
         with open('worksheetsettings.json') as f:
             dic_completo = json.load(f)
 
-        return dic_completo[moeda]['valor_minimo_compra']
+        return float(dic_completo[moeda]['valor_minimo_compra'])
 
     def retorna_menor_quantidade_venda(moeda):
         '''
@@ -179,7 +182,7 @@ class Util:
         with open('worksheetsettings.json') as f:
             dic_completo = json.load(f)
 
-        return dic_completo[moeda]['quantidade_minima_venda']
+        return float(dic_completo[moeda]['quantidade_minima_venda'])
 
     def retorna_config_google_api():
         '''
