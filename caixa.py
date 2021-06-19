@@ -178,7 +178,7 @@ if __name__ == "__main__":
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
     Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
-    Caixa.zera_o_pnl_em_cripto(CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
+    Caixa.zera_o_pnl_em_cripto(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida,'',False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
