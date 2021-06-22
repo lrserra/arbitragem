@@ -45,14 +45,73 @@ class GoogleSheets:
         sheet.insert_row(linha, row_count + 2, value_input_option='USER_ENTERED')
 
     def ler_quantidade_moeda(self):
+        saldo_inicial = {}
         google_config = Util.retorna_config_google_api()
         
-        # Obtem o número de moedas parametrizadas
-        contador_moeda = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'contador_moeda')
-        contador = int(contador_moeda[0][0]) + 2
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
         
-        retorno = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'I3:J{}'.format(str(contador)))
-        return retorno
+        saldo_index = tabela[0].index('Saldo Inicial')
+        for entrada in tabela[1:]:
+            saldo_inicial[entrada[0].lower()]=entrada[saldo_index]
+
+        return saldo_inicial
+
+    def ler_minimo_negociacao(self):
+        minimo_compra = {}
+        minimo_venda = {}
+        google_config = Util.retorna_config_google_api()
+        
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
+        
+        minimo_compra_index = tabela[0].index('Minimo Compra')
+        minimo_venda_index = tabela[0].index('Minimo Venda')
+
+        for entrada in tabela[1:]:
+            minimo_compra[entrada[0].lower()]=entrada[minimo_compra_index]
+            minimo_venda[entrada[0].lower()]=entrada[minimo_venda_index]
+
+        return minimo_compra, minimo_venda
+
+    def ler_status_leilao(self):
+        leilao_ligado = {}
+        google_config = Util.retorna_config_google_api()
+        
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
+        
+        leilao_ligado_index = tabela[0].index('LEILAO')
+        for entrada in tabela[1:]:
+            leilao_ligado[entrada[0].lower()]=entrada[leilao_ligado_index]
+
+        return leilao_ligado
+
+    def ler_status_arbitragem(self):
+        arbitragem_ligado = {}
+        google_config = Util.retorna_config_google_api()
+        
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
+        
+        arbitragem_ligado_index = tabela[0].index('ARBITRAGEM')
+        for entrada in tabela[1:]:
+            arbitragem_ligado[entrada[0].lower()]=entrada[arbitragem_ligado_index]
+
+        return arbitragem_ligado
+
+    def ler_status_zeragem(self):
+        zeragem_ligado = {}
+        google_config = Util.retorna_config_google_api()
+        
+        # Obtem nossa tabela de configs
+        tabela = self.ler(google_config['sheet_name'], google_config['auxiliar'], 'tabela_config')
+        
+        zeragem_ligado_index = tabela[0].index('ZERAGEM')
+        for entrada in tabela[1:]:
+            zeragem_ligado[entrada[0].lower()]=entrada[zeragem_ligado_index]
+
+        return zeragem_ligado
 
     def ler(self, planilha, aba, descricao_range):
         client = self.retorna_google_sheets_client()

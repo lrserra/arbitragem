@@ -27,7 +27,7 @@ class Corretora:
         self.ordem = Ordem()
 
         #saldo inicia zerado
-        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        lista_de_moedas = ['brl','btc','eth','xrp','ltc','bch']
         for moeda in lista_de_moedas:
             self.saldo[moeda] = 0
 

@@ -106,34 +106,42 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)
 
-    def obter_saldo_inicial():
-        '''
-        retorna dicionario com saldo inicial de cada moeda
-        '''
-        with open('appsettings.json') as f:
-            return json.load(f)["saldo_inicial"]
-
     def obter_saldo_inicial_configuracao():
         '''
         retorna dicionario com saldo inicial de cada moeda de acordo com
         a configuração da planilha
         '''
+        saldo_inicial = {}
         with open('worksheetsettings.json') as f:
-            return json.load(f)["saldo_inicial"]
+            dic_completo = json.load(f)
 
-    def obter_balancear_carteira():
-        '''
-        retorna dicionario com moedas a balancear cripto
-        '''
-        with open('appsettings.json') as f:
-            return json.load(f)["balancear_carteira"]
+        for moeda in dic_completo.keys():
+            saldo_inicial[moeda] = dic_completo[moeda]['saldo_inicial']
 
-    def obter_lista_de_moedas():
+        return saldo_inicial
+
+    def obter_white_list():
         '''
         retorna a lista de moedas que nosso script vai negociar
         '''
         with open('appsettings.json') as f:
             return json.load(f)["lista_de_moedas"]
+    
+    def obter_lista_de_moedas(estrategia_status=''):
+        '''
+        retorna a lista de moedas que nosso script vai negociar
+        '''
+        lista_de_moedas = []
+        if estrategia_status == '':
+            return ['btc','eth','xrp','ltc','bch']
+
+        with open('worksheetsettings.json') as f:
+            dic_completo = json.load(f)
+            for moeda in dic_completo.keys():
+                if dic_completo[moeda][estrategia_status] == 'LIGADO':
+                    lista_de_moedas.append(str(moeda).lower())
+        
+        return lista_de_moedas
 
     def obter_corretora_de_maior_liquidez():
         '''
@@ -160,15 +168,21 @@ class Util:
         '''
         retorna o menor valor possivel que vc pode operar na mercado bitcoin
         '''
-        with open('appsettings.json') as f:
-            return json.load(f)[moeda]["valor_minima_compra"]
+        valor_minimo_compra = {}
+        with open('worksheetsettings.json') as f:
+            dic_completo = json.load(f)
+
+        return float(dic_completo[moeda]['valor_minimo_compra'])
 
     def retorna_menor_quantidade_venda(moeda):
         '''
         retorna a menor quantidade possivel que vc pode operar na mercado bitcoin
         '''
-        with open('appsettings.json') as f:
-            return json.load(f)[moeda]["quantidade_minima_venda"]
+        quantidade_minima_venda = {}
+        with open('worksheetsettings.json') as f:
+            dic_completo = json.load(f)
+
+        return float(dic_completo[moeda]['quantidade_minima_venda'])
 
     def retorna_config_google_api():
         '''

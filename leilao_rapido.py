@@ -22,7 +22,7 @@ if __name__ == "__main__":
     google_sheets = GoogleSheets()
     
     #inicializa arquivo de logs, no arquivo vai a porra toda, mas no console só os warning ou acima
-    logging.basicConfig(filename='leilao_rapido.log', level=logging.INFO,
+    logging.basicConfig(filename='Leilao.log', level=logging.INFO,
                         format='[%(asctime)s][%(levelname)s][%(message)s]')
     console = logging.StreamHandler()
     console.setLevel(logging.WARNING)
@@ -30,7 +30,10 @@ if __name__ == "__main__":
 
     #essa parte executa apenas uma vez
     #step 1
-    lista_de_moedas = Util.obter_lista_de_moedas()
+    lista_de_moedas = Util.obter_lista_de_moedas('leilao_status')
+    lista_de_moedas_zeragem = Util.obter_lista_de_moedas('zeragem_status')
+    lista_para_zerar = [moeda for moeda in lista_de_moedas if moeda in lista_de_moedas_zeragem]
+    
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
@@ -54,7 +57,7 @@ if __name__ == "__main__":
         corretoraLeilao = Corretora(corretora_menos_liquida)
         
         Caixa.atualiza_saldo_inicial(lista_de_moedas,corretoraZeragem,corretoraLeilao)
-        Caixa.zera_o_pnl_em_cripto(corretoraZeragem,corretoraLeilao,'',False)
+        Caixa.zera_o_pnl_em_cripto(lista_para_zerar,corretoraZeragem,corretoraLeilao,'',False)
 
         corretoraZeragem.atualizar_saldo()
         corretoraLeilao.atualizar_saldo()
