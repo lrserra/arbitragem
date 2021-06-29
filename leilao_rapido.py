@@ -33,6 +33,8 @@ if __name__ == "__main__":
     lista_de_moedas = Util.obter_lista_de_moedas('leilao_status')
     lista_de_moedas_zeragem = Util.obter_lista_de_moedas('zeragem_status')
     lista_para_zerar = [moeda for moeda in lista_de_moedas if moeda in lista_de_moedas_zeragem]
+    white_list = lista_de_moedas
+    black_list = []
     
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
@@ -52,7 +54,9 @@ if __name__ == "__main__":
     '''
     #essa parte faz a cada 5 minutos
     while True:
-    
+        
+        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
+
         corretoraZeragem = Corretora(corretora_mais_liquida)
         corretoraLeilao = Corretora(corretora_menos_liquida)
         
@@ -132,15 +136,21 @@ if __name__ == "__main__":
                 
                 if ordem_leilao.direcao == 'compra':
 
-                    ordem_enviada = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
+                    ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)   
+                        logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
                         
                 elif ordem_leilao.direcao =='venda':
                     
-                    ordem_enviada = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
+                    ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas.append([ordem_enviada.id,moeda])
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)   
+                        logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
                     
             #step4: ir ao step 2
             agora = datetime.now() 
@@ -249,6 +259,7 @@ class Leilao:
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
+        pnl = 0
         
         try:
             #IMPORTANTE ->qualquer uma dessas condições que for verdade, pode executar e sair do metodo
@@ -313,7 +324,7 @@ class Leilao:
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
                 logging.info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                return ordem_enviada
+                return ordem_enviada, pnl
 
             #3: nao sou o primeiro da fila
             if (ordem.preco_enviado != corretoraLeilao.book.preco_compra) or (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem.preco_enviado > 0.02):
@@ -325,7 +336,7 @@ class Leilao:
                     corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
 
             corretoraZeragem.atualizar_saldo()
             #4: estou sem saldo para zerar
@@ -335,7 +346,7 @@ class Leilao:
                 cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem.id)
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
 
             #5: esta dando pnl negativo para zerar tudo
             if (ordem.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.obter_preco_medio_de_compra(ordem.quantidade_enviada)):
@@ -344,19 +355,20 @@ class Leilao:
                 cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem.id)
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
                             
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_compra. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
 
-        return ordem_enviada
+        return ordem_enviada, pnl
 
     def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
 
         ordem_enviada = Ordem()
         ordem_zeragem = Ordem()
         cancelou = False
+        pnl = 0
         
         try:
     
@@ -412,7 +424,7 @@ class Leilao:
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
                 logging.info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                return ordem_enviada
+                return ordem_enviada, pnl
 
             #3: nao sou o primeiro da fila
             if (ordem.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
@@ -425,7 +437,7 @@ class Leilao:
 
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
                 
             #4: estou sem saldo para zerar
             corretoraZeragem.atualizar_saldo()
@@ -435,7 +447,7 @@ class Leilao:
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
 
             #5: esta dando pnl negativo para zerar tudo    
             if (ordem.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.obter_preco_medio_de_venda(ordem.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
@@ -444,12 +456,12 @@ class Leilao:
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                return ordem_enviada
+                return ordem_enviada, pnl
                 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_venda. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
         
-        return ordem_enviada
+        return ordem_enviada, pnl
 
 
