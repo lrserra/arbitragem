@@ -55,8 +55,6 @@ if __name__ == "__main__":
     #essa parte faz a cada 5 minutos
     while True:
         
-        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
-
         corretoraZeragem = Corretora(corretora_mais_liquida)
         corretoraLeilao = Corretora(corretora_menos_liquida)
         
@@ -71,6 +69,8 @@ if __name__ == "__main__":
         #step 2: else só pode ir ao proximo step se tem ordens abertas
         qtd_ordens_abertas = 0
         ordens_enviadas = []
+
+        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)] #atualiza lista conforme blacklist
 
         while qtd_ordens_abertas==0:
 
