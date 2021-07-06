@@ -99,8 +99,9 @@ class Caixa:
                     ordem_venda = CorretoraMaisLiquida.enviar_ordem_venda(CorretoraMaisLiquida.ordem,moeda)
                     vendi_a = ordem_venda.preco_executado
                     quantidade_executada_venda = ordem_venda.quantidade_executada
+                    financeiro_venda = vendi_a * quantidade_executada_venda
 
-                    google_sheets.escrever_operacao([moeda,'',0,0,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now())])
+                    google_sheets.escrever_operacao([moeda,'',0,0,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now()),0,financeiro_venda])
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
@@ -113,8 +114,9 @@ class Caixa:
                     ordem_venda = CorretoraMenosLiquida.enviar_ordem_venda(CorretoraMenosLiquida.ordem,moeda)
                     vendi_a = ordem_venda.preco_executado
                     quantidade_executada_venda = ordem_venda.quantidade_executada
+                    financeiro_venda = vendi_a * quantidade_executada_venda
 
-                    google_sheets.escrever_operacao([moeda,'',0,0,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now())])
+                    google_sheets.escrever_operacao([moeda,'',0,0,CorretoraMenosLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now()),0,financeiro_venda])
 
                     CorretoraMenosLiquida.atualizar_saldo()
                     
@@ -132,8 +134,9 @@ class Caixa:
                     ordem_compra = CorretoraMaisLiquida.enviar_ordem_compra(CorretoraMaisLiquida.ordem,moeda)
                     comprei_a = ordem_compra.preco_executado
                     quantidade_executada_compra = ordem_compra.quantidade_executada
+                    financeiro_compra = comprei_a * quantidade_executada_compra
 
-                    google_sheets.escrever_operacao([moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', Util.excel_date(datetime.now())])
+                    google_sheets.escrever_operacao([moeda,CorretoraMaisLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', Util.excel_date(datetime.now()),financeiro_compra,0])
 
                     CorretoraMaisLiquida.atualizar_saldo()
                     
@@ -146,8 +149,9 @@ class Caixa:
                     ordem_compra = CorretoraMenosLiquida.enviar_ordem_compra(CorretoraMenosLiquida.ordem,moeda)
                     comprei_a = ordem_compra.preco_executado
                     quantidade_executada_compra = ordem_compra.quantidade_executada
+                    financeiro_compra = comprei_a * quantidade_executada_compra
 
-                    google_sheets.escrever_operacao([moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', Util.excel_date(datetime.now())])
+                    google_sheets.escrever_operacao([moeda,CorretoraMenosLiquida.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', Util.excel_date(datetime.now()),financeiro_compra,0])
 
                     CorretoraMenosLiquida.atualizar_saldo()
                     

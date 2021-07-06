@@ -319,8 +319,10 @@ class Leilao:
                 
                 quantidade_executada_compra = ordem_zeragem.quantidade_executada
                 quantidade_executada_venda = ordem.quantidade_executada
+                financeiro_compra = comprei_a * quantidade_executada_compra
+                financeiro_venda = vendi_a * quantidade_executada_venda
 
-                google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now())])
+                google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
                 logging.info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
@@ -419,8 +421,10 @@ class Leilao:
                 
                 quantidade_executada_compra = ordem.quantidade_executada
                 quantidade_executada_venda = ordem_zeragem.quantidade_executada
+                financeiro_compra = comprei_a * quantidade_executada_compra
+                financeiro_venda = vendi_a * quantidade_executada_venda
 
-                google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now())])
+                google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
                 corretoraZeragem.atualizar_saldo()
                 corretoraLeilao.atualizar_saldo()
                 logging.info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
