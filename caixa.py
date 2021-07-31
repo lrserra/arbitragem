@@ -74,14 +74,8 @@ class Caixa:
             saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
 
             pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
+            quantidade_a_zerar = round(abs(pnl_em_moeda),4)
             
-            #para evitar erros operacionais, é melhor só zerar se temos ctz que nao é uma transf de moeda
-            if abs(pnl_em_moeda)< float(saldo_inicial[moeda])/2:              
-                quantidade_a_zerar = round(abs(pnl_em_moeda),4)
-            else:
-                logging.warning('caixa não vai zerar pnl de {} porque estamos transferindo cripto'.format(moeda))
-                quantidade_a_zerar = 0
-
             #carrego os books de ordem mais recentes
             CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
             
