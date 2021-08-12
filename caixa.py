@@ -75,7 +75,10 @@ class Caixa:
 
             pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
-            
+
+            if CorretoraMaisLiquida.saldo[moeda]==0 or CorretoraMenosLiquida.saldo[moeda]==0:
+                quantidade_a_zerar = 0
+
             #carrego os books de ordem mais recentes
             CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
             
