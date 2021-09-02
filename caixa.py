@@ -76,7 +76,12 @@ class Caixa:
             pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
 
-            if CorretoraMaisLiquida.saldo[moeda]==0 or CorretoraMenosLiquida.saldo[moeda]==0:
+            if CorretoraMaisLiquida.saldo[moeda]==0:
+                logging.warning('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMaisLiquida.nome))
+                quantidade_a_zerar = 0
+
+            elif CorretoraMenosLiquida.saldo[moeda]==0:
+                logging.warning('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMenosLiquida.nome))
                 quantidade_a_zerar = 0
 
             #carrego os books de ordem mais recentes
