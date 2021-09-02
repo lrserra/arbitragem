@@ -16,8 +16,16 @@ class BrasilBitcoin:
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self):
-        res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
-        
+        try:
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+        except Exception as err:
+            logging.error('a chamada da BrasilBitcoin falhou com o erro')
+            logging.error(err)
+            logging.error('vai aguardar 30 segundos e tentar novamente')
+            time.sleep(30)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+
+
         max_retries = 20
         retries = 1
         while res.status_code != 200 and retries<max_retries:
