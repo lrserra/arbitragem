@@ -21,8 +21,17 @@ class MercadoBitcoin:
 #---------------- MÉTODOS PRIVADOS ----------------#
 
     def obterBooks(self):
-        retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
         
+        try:
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+        except Exception as err:
+            logging.error('a chamada da MercadoBitcoin falhou com o erro')
+            logging.error(err)
+            logging.error('vai aguardar 30 segundos e tentar novamente')
+            time.sleep(30)
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+
+
         max_retries = 20
         retries = 1
         while retorno_json.status_code!=200 and retries<max_retries:
