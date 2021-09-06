@@ -23,13 +23,13 @@ class MercadoBitcoin:
     def obterBooks(self):
         
         try:
-            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte), timeout =5) 
         except Exception as err:
             logging.error('a chamada da MercadoBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
-            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte), timeout =5) 
 
 
         max_retries = 20
@@ -37,7 +37,7 @@ class MercadoBitcoin:
         while retorno_json.status_code!=200 and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('MercadoBitcoin',retries,'obterBooks',retorno_json.status_code,retorno_json.text))
             time.sleep(Util.frequencia())
-            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte)) 
+            retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte), timeout =5) 
             retries+=1
 
         return retorno_json.json()

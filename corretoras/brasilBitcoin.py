@@ -17,13 +17,13 @@ class BrasilBitcoin:
     
     def obterBooks(self):
         try:
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =5)
         except Exception as err:
             logging.error('a chamada da BrasilBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =5)
 
 
         max_retries = 20
@@ -31,7 +31,7 @@ class BrasilBitcoin:
         while res.status_code != 200 and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte))
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =5)
             retries+=1
 
 
@@ -105,14 +105,14 @@ class BrasilBitcoin:
             'Content-type': 'application/json'
         }
         # requisição básica com módulo requests
-        res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
+        res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =5)
         
         max_retries = 20
         retries = 1
         while res.status_code not in (200,418) and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =5)
             retries+=1
    
         return json.loads(res.text.encode('utf8'))
