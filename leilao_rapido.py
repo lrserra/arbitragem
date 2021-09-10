@@ -32,43 +32,44 @@ if __name__ == "__main__":
     #step 1
     lista_de_moedas = Util.obter_lista_de_moedas('leilao_status')
     lista_de_moedas_zeragem = Util.obter_lista_de_moedas('zeragem_status')
-    lista_para_zerar = [moeda for moeda in lista_de_moedas if moeda in lista_de_moedas_zeragem]
+    lista_para_zerar = [moeda for moeda in lista_de_moedas_zeragem if moeda in lista_de_moedas]
     white_list = lista_de_moedas
     black_list = []
     
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
-    
-    
+        
     '''
     nesse script vamos 
     1 - listar todas moedas que queremos negociar 
+    2 - zerar o caixa dessas moedas
     2 - enviar ordem de leilao (se valer a pena) para todas moedas
-    3 - listar ordem abertas e verificar por moeda (falta verificar ordens executadas completamente)
+    3 - listar ordem abertas e verificar por moeda 
         a) se fui executado zerar
         b) se precisar recolocar ordem, cancela e recoloca
         c) loga pnl se executado
     4 - após um tempo x no loop (3), voltar pro (2)
 
     '''
-    #essa parte faz a cada 5 minutos
+    corretoraZeragem = Corretora(corretora_mais_liquida)
+    corretoraLeilao = Corretora(corretora_menos_liquida)
+    
+    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretoraZeragem,corretoraLeilao)
+    Caixa.zera_o_pnl_em_cripto(lista_para_zerar,corretoraZeragem,corretoraLeilao,'',False)
+
+    corretoraZeragem.atualizar_saldo()
+    corretoraLeilao.atualizar_saldo()
+
+    Caixa.envia_saldo_google(corretoraZeragem,corretoraLeilao)
+
+    #essa parte faz a cada 6 minutos
+    ordens_abertas = {}
     while True:
-        
-        corretoraZeragem = Corretora(corretora_mais_liquida)
-        corretoraLeilao = Corretora(corretora_menos_liquida)
-        
-        Caixa.atualiza_saldo_inicial(lista_de_moedas,corretoraZeragem,corretoraLeilao)
-        Caixa.zera_o_pnl_em_cripto(lista_para_zerar,corretoraZeragem,corretoraLeilao,'',False)
-
-        corretoraZeragem.atualizar_saldo()
-        corretoraLeilao.atualizar_saldo()
-
-        Caixa.envia_saldo_google(corretoraZeragem,corretoraLeilao)
 
         #step 2: else só pode ir ao proximo step se tem ordens abertas
         qtd_ordens_abertas = 0
-        ordens_enviadas = []
+        ordens_enviadas = {}
 
         lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)] #atualiza lista conforme blacklist
 
@@ -86,28 +87,31 @@ if __name__ == "__main__":
                 fracao_do_caixa = round(corretoraLeilao.saldo['brl']/(corretoraLeilao.saldo['brl']+corretoraZeragem.saldo['brl']),6)
                 fracao_da_moeda = round(corretoraLeilao.saldo[moeda]/(corretoraLeilao.saldo[moeda]+corretoraZeragem.saldo[moeda]),6)
                 
-                if fracao_do_caixa < 0.99 and fracao_da_moeda > 0.05:
+                if fracao_do_caixa < 0.99 and fracao_da_moeda > 0.05 and ('{}_{}'.format(moeda,'sell') not in ordens_abertas.keys()):
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                        ordens_enviadas['{}_{}'.format(moeda,'sell')]=ordem_enviada.id
                 else:
                     logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
                  
-                if fracao_do_caixa > 0.01 and fracao_da_moeda < 0.95:
+                if fracao_do_caixa > 0.01 and fracao_da_moeda < 0.95 and ('{}_{}'.format(moeda,'buy') not in ordens_abertas.keys()):
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                       ordens_enviadas['{}_{}'.format(moeda,'buy')]=ordem_enviada.id
                 else:
                     logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 1% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))
             
-            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
+            for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
+                if ordem_aberta['coin'].lower() in lista_de_moedas:
+                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]=ordem_aberta['id']
+
+
+            for ordem_enviada in ordens_enviadas.keys():
+                if ordem_enviada not in ordens_abertas.keys():
+                    logging.warning('ordem enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))
+                    ordens_abertas[ordem_enviada]=ordens_enviadas[ordem_enviada]
             
-            for ordem_enviada in ordens_enviadas:
-                if ordem_enviada not in ordens_abertas:
-                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada[0],ordem_enviada[1]))
-                    ordens_abertas.append(ordem_enviada)
-            
-            qtd_ordens_abertas = len(ordens_abertas)
+            qtd_ordens_abertas = len(ordens_abertas.keys())
             
         #step 3: essa parte faz em loop de 6 minutos
         agora = datetime.now() 
@@ -121,48 +125,50 @@ if __name__ == "__main__":
             corretoraZeragem.atualizar_saldo()
             corretoraLeilao.atualizar_saldo()
 
-            ordens_enviadas = []
+            ordens_enviadas = {}
 
-            for ordem_aberta in ordens_abertas:
+            for ordem_aberta in ordens_abertas.keys():
                 
                 ordem_leilao = Ordem()
-                ordem_leilao.id = ordem_aberta[0]
-                moeda = ordem_aberta[1]
+                ordem_leilao.id = ordens_abertas[ordem_aberta]
+                moeda = ordem_aberta[:3]
                 ordem_leilao = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
                 
                 #a partir daqui é correria! 
                 corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 
-                if ordem_leilao.direcao == 'compra':
+                if ordem_leilao.direcao == 'buy':
 
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                        ordens_enviadas['{}_{}'.format(moeda,'buy')]=ordem_enviada.id
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
                         
-                elif ordem_leilao.direcao =='venda':
+                elif ordem_leilao.direcao =='sell':
                     
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas.append([ordem_enviada.id,moeda])
+                        ordens_enviadas['{}_{}'.format(moeda,'sell')]=ordem_enviada.id
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
                     
             #step4: ir ao step 2
-            agora = datetime.now() 
-            ordens_abertas = [[ordem_aberta['id'],ordem_aberta['coin'].lower()] for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas() if ordem_aberta['coin'].lower() in lista_de_moedas]
-            
-            for ordem_enviada in ordens_enviadas:
-                if ordem_enviada not in ordens_abertas:
-                    logging.warning('ordem enviada {} de {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada[0],ordem_enviada[1]))
-                    ordens_abertas.append(ordem_enviada)
-            
-            qtd_ordens_abertas = len(ordens_abertas)
+            ordens_abertas = {}
+            for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
+                if ordem_aberta['coin'].lower() in lista_de_moedas:
+                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]=ordem_aberta['id']
 
+            for ordem_enviada in ordens_enviadas.keys():
+                if ordem_enviada not in ordens_abertas.keys():
+                    logging.warning('ordem enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))
+                    ordens_abertas[ordem_enviada]=ordens_enviadas[ordem_enviada]
+            
+            qtd_ordens_abertas = len(ordens_abertas.keys())
+            agora = datetime.now() 
 
 
 class Leilao:

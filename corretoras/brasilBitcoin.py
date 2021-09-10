@@ -184,7 +184,7 @@ class BrasilBitcoin:
         ordem.quantidade_enviada = float(response['data']['total'])
         ordem.preco_executado = float(response['data']['price'])
         ordem.preco_enviado = ordem.preco_executado
-        ordem.direcao = 'compra' if response['data']['type']=='buy' else 'venda'
+        ordem.direcao = response['data']['type']
         return ordem
 
     def enviar_ordem_compra(self, ordemCompra):
