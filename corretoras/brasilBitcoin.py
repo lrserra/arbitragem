@@ -194,8 +194,8 @@ class BrasilBitcoin:
         if response['success'] == True:
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
-            ordem.quantidade_executada = float(response['data']['amount'])
-            ordem.preco_executado = float(response['data']['price'])
+            ordem.quantidade_executada = 0
+            ordem.preco_executado = 0
             i = 0
             qtd = len(response['data']['fills']) #quantidade de execuções parciais
             while i < qtd:
@@ -220,8 +220,8 @@ class BrasilBitcoin:
         if response['success'] == True:
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
-            ordem.quantidade_venda = float(response['data']['amount'])
-            ordem.preco_venda = float(response['data']['price'])
+            ordem.quantidade_executada = 0
+            ordem.preco_executado = 0
             i = 0
             qtd = len(response['data']['fills']) #quantidade de execuções parciais
             while i < qtd:
