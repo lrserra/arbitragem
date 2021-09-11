@@ -17,13 +17,13 @@ class BrasilBitcoin:
     
     def obterBooks(self):
         try:
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =15)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
         except Exception as err:
             logging.error('a chamada da BrasilBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =15)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
 
 
         max_retries = 20
@@ -31,7 +31,7 @@ class BrasilBitcoin:
         while res.status_code != 200 and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =15)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
             retries+=1
 
 
@@ -106,20 +106,20 @@ class BrasilBitcoin:
         }
         # requisição básica com módulo requests
         try:
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =15)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
         except Exception as err:
             logging.error('a chamada da BrasilBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =15)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
         
         max_retries = 20
         retries = 1
         while res.status_code not in (200,418) and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =15)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
             retries+=1
    
         return json.loads(res.text.encode('utf8'))
@@ -197,12 +197,18 @@ class BrasilBitcoin:
             ordem.quantidade_executada = float(response['data']['amount'])
             ordem.preco_executado = float(response['data']['price'])
             i = 0
-            qtd = len(response['data']['fills'])
+            qtd = len(response['data']['fills']) #quantidade de execuções parciais
             while i < qtd:
-                ordem.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                valor = response['data']['fills'][i]['price'].replace('.','')
-                ordem.preco_executado = float(valor.replace(',','.'))
+                quantidade_parcial = float(response['data']['fills'][i]['amount'])
+                ordem.quantidade_executada += quantidade_parcial
+
+                preco_executado_parcial = response['data']['fills'][i]['price'].replace('.','')
+                preco_executado_parcial = float(preco_executado_parcial.replace(',','.'))
+
+                ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
+            ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
+
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
@@ -217,12 +223,17 @@ class BrasilBitcoin:
             ordem.quantidade_venda = float(response['data']['amount'])
             ordem.preco_venda = float(response['data']['price'])
             i = 0
-            qtd = len(response['data']['fills'])
+            qtd = len(response['data']['fills']) #quantidade de execuções parciais
             while i < qtd:
-                ordem.quantidade_executada += float(response['data']['fills'][i]['amount'])
-                valor = response['data']['fills'][i]['price'].replace('.','')
-                ordem.preco_executado = float(valor.replace(',','.'))
+                quantidade_parcial = float(response['data']['fills'][i]['amount'])
+                ordem.quantidade_executada += quantidade_parcial
+
+                preco_executado_parcial = response['data']['fills'][i]['price'].replace('.','')
+                preco_executado_parcial = float(preco_executado_parcial.replace(',','.'))
+
+                ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
+            ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
