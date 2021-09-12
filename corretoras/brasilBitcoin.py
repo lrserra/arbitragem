@@ -207,8 +207,10 @@ class BrasilBitcoin:
 
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
-            ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
-
+            if ordem.quantidade_executada==0: #para evitar divisão por zero
+                ordem.preco_executado = preco_executado_parcial 
+            else:    
+                ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
             mensagem = '{}: enviar_ordem_compra - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
@@ -233,7 +235,10 @@ class BrasilBitcoin:
 
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
-            ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
+            if ordem.quantidade_executada==0: #para evitar divisão por zero
+                ordem.preco_executado = preco_executado_parcial 
+            else:    
+                ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
             mensagem = '{}: enviar_ordem_venda - {}'.format('BrasilBitcoin', response['message'])
             print(mensagem)
