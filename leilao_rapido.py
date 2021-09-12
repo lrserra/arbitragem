@@ -199,7 +199,7 @@ class Leilao:
                         
                         if executarOrdens and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
                             
-                            logging.info('Leilão compra rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,preco_que_vou_vender,qtdNegociada))
+                            logging.info('Leilão compra rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,round(preco_que_vou_vender,2),round(qtdNegociada,4)))
                             corretoraLeilao.ordem.preco_enviado = preco_que_vou_vender
                             corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                             corretoraLeilao.ordem.tipo_ordem = 'limited'
@@ -243,7 +243,7 @@ class Leilao:
 
                     if executarOrdens:
 
-                        logging.info('Leilão compra rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,preco_que_vou_comprar,qtdNegociada))
+                        logging.info('Leilão compra rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,round(preco_que_vou_comprar,2),round(qtdNegociada,4)))
                         corretoraLeilao.ordem.preco_enviado = preco_que_vou_comprar
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'    
