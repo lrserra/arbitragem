@@ -208,7 +208,7 @@ class BrasilBitcoin:
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
             if ordem.quantidade_executada==0: #para evitar divisão por zero
-                ordem.preco_executado = preco_executado_parcial 
+                ordem.preco_executado = ordem.preco_enviado 
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
@@ -236,7 +236,7 @@ class BrasilBitcoin:
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
             if ordem.quantidade_executada==0: #para evitar divisão por zero
-                ordem.preco_executado = preco_executado_parcial 
+                ordem.preco_executado = ordem.preco_enviado 
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
