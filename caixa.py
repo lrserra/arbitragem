@@ -49,9 +49,12 @@ class Caixa:
                 CorretoraMaisLiquida.saldo[moeda] = 0
                 saldo[moeda] = 0
                 preco_venda[moeda] = 0
+        
+        CorretoraMaisLiquida.book.obter_ordem_book_por_indice('usdc','brl',0,False,False)
+        preco_venda['usdc']=CorretoraMaisLiquida.book.preco_venda
 
         logging.warning('caixa vai enviar saldo para o google')
-        GoogleSheets().escrever_saldo([saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'], Util.excel_date(datetime.now())])
+        GoogleSheets().escrever_saldo([saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'], Util.excel_date(datetime.now()),preco_venda['usdc']])
 
 
     def zera_o_pnl_em_cripto(lista_de_moedas,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,ativo='',atualizar_saldo=True):
