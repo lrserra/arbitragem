@@ -183,14 +183,15 @@ class Leilao:
 
                 # Valida se existe oportunidade de leilão
                 if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
-                    logging.info('******************************************************************')    
-                    logging.info('Leilão compra aberta: Moeda - {} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(preco_que_vou_vender,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))                               
                     # Gostaria de vender no leilão 0.4 do que eu tenho de saldo em crypto
                     gostaria_de_vender = corretoraLeilao.saldo[ativo] *0.4
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                     maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada)*(1-corretoraZeragem.corretagem_mercado))
                     qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
+                    logging.info('******************************************************************')
+                    logging.info('Leilão compra rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_vender,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
+                    logging.info('******************************************************************')
 
                     # Nao pode ter saldo na mercado de menos de um real
                     if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo['brl'] > Util.retorna_menor_valor_compra(ativo)):
@@ -198,7 +199,6 @@ class Leilao:
                         
                         if executarOrdens and qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
                             
-                            logging.info('Leilão compra rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,round(preco_que_vou_vender,2),round(qtdNegociada,4)))
                             corretoraLeilao.ordem.preco_enviado = preco_que_vou_vender
                             corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                             corretoraLeilao.ordem.tipo_ordem = 'limited'
@@ -229,20 +229,21 @@ class Leilao:
 
             # Valida se existe oportunidade de leilão
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
-                logging.info('******************************************************************')
-                logging.info('Leilão venda rapida aberta: Moeda - {} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(preco_que_vou_comprar,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))                               
+                                               
                 gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
                 maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] *0.4
                 #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                 maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada)*(1+corretoraZeragem.corretagem_mercado))
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
-
+                logging.info('******************************************************************')
+                logging.info('Leilão venda rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_comprar,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
+                logging.info('******************************************************************')
+                
                 # Se quantidade negociada maior que a quantidade mínima permitida de venda
                 if qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
 
                     if executarOrdens:
 
-                        logging.info('Leilão venda rapida vai enviar ordem: Moeda - {} /Preco - {} /Quantidade - {} '.format(ativo,round(preco_que_vou_comprar,2),round(qtdNegociada,4)))
                         corretoraLeilao.ordem.preco_enviado = preco_que_vou_comprar
                         corretoraLeilao.ordem.quantidade_enviada = qtdNegociada
                         corretoraLeilao.ordem.tipo_ordem = 'limited'    
