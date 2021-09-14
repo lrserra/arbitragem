@@ -77,6 +77,7 @@ if __name__ == "__main__":
 
             for moeda in lista_de_moedas:
             
+                logging.info('******************************************************************')                
                 ordem_enviada = Ordem()
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos
                 corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
@@ -117,7 +118,8 @@ if __name__ == "__main__":
         agora = datetime.now() 
         proximo_ciclo = agora + timedelta(minutes=6)
         logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
-        logging.warning('no proximo ciclo serao consideradas apenas {} ordens!'.format(qtd_ordens_abertas))
+        logging.warning('no proximo ciclo serao consideradas apenas as seguintes {} ordens:'.format(qtd_ordens_abertas))
+        logging.warning('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
         
         while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
@@ -129,6 +131,8 @@ if __name__ == "__main__":
 
             for ordem_aberta in ordens_abertas.keys():
                 
+                logging.info('**************************************************')
+                logging.info('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
                 ordem_leilao = Ordem()
                 ordem_leilao.id = ordens_abertas[ordem_aberta]
                 moeda = ordem_aberta[:3]
@@ -173,6 +177,12 @@ if __name__ == "__main__":
 
 class Leilao:
 
+    def monta_string_de_ordens(ordens_abertas):
+        retorno = ''
+        for ordem in ordens_abertas.keys():
+            retorno += '* ' +ordem 
+        return retorno
+
     def envia_leilao_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, qtd_de_moedas, executarOrdens = False):
 
             retorno_venda_corretora_leilao = Ordem()
@@ -189,10 +199,9 @@ class Leilao:
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                     maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada)*(1-corretoraZeragem.corretagem_mercado))
                     qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
-                    logging.info('******************************************************************')
+                    
                     logging.info('Leilão compra rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_vender,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                    logging.info('******************************************************************')
-
+                    
                     # Nao pode ter saldo na mercado de menos de um real
                     if (qtdNegociada*preco_que_vou_vender > Util.retorna_menor_valor_compra(ativo) and corretoraZeragem.saldo['brl'] > Util.retorna_menor_valor_compra(ativo)):
                         
@@ -235,9 +244,8 @@ class Leilao:
                 #se vc for executada nessa quantidade inteira, talvez nao tera lucro
                 maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada)*(1+corretoraZeragem.corretagem_mercado))
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
-                logging.info('******************************************************************')
+                
                 logging.info('Leilão venda rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_comprar,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                logging.info('******************************************************************')
                 
                 # Se quantidade negociada maior que a quantidade mínima permitida de venda
                 if qtdNegociada > Util.retorna_menor_quantidade_venda(ativo):
