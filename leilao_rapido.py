@@ -372,6 +372,8 @@ class Leilao:
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
+            
+            logging.info('LC0: nao precisei cancelar a ordem {} de {} e colocar outra'.format(ordem.id,ativo))
                             
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_compra. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
@@ -475,7 +477,9 @@ class Leilao:
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
-                
+
+            logging.info('LV0: nao precisei cancelar a ordem {} de {} e colocar outra'.format(ordem.id,ativo))
+
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_venda. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
