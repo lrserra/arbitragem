@@ -3,7 +3,7 @@ import os
 
 directory_path = os.getcwd() #pega diretorio raiz
 foldername = 'log_backup_'+datetime.now().strftime('%Y%m%d')
-destination_folder = directory_path+'//'+foldername
+destination_folder = directory_path+'//Logs//'+foldername
 
 if not os.path.isdir(destination_folder):
     os.mkdir(destination_folder) #cria diretorio se nao existe
