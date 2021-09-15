@@ -319,9 +319,9 @@ class Corretora:
             corretagem_mercado = 0.004
 
         elif self.nome == 'Binance':
-            corretagem_limitada = 0.002
-            corretagem_mercado = 0.004
-
+            corretagem_limitada = 0.001
+            corretagem_mercado = 0.001
+            
         return corretagem_limitada, corretagem_mercado
 
     #metodo privado
