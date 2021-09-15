@@ -1,3 +1,4 @@
+from corretoras.binance import Binance
 from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
@@ -86,6 +87,9 @@ class Book:
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
                 for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
                     retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+
+            elif self.nome == 'Binance':
+                retorno_book = Binance(ativo_parte,ativo_contraparte).obterBooks()
 
             if ignorar_ordens_fantasmas:
                 

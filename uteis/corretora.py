@@ -1,4 +1,5 @@
 
+from corretoras.binance import Binance
 import logging
 import math
 from corretoras.mercadoBitcoin import MercadoBitcoin
@@ -40,6 +41,8 @@ class Corretora:
                 self.saldo = MercadoBitcoin().obter_saldo()
             elif self.nome == 'BrasilBitcoin':
                 self.saldo = BrasilBitcoin().obter_saldo()
+            elif self.nome == 'Binance':
+                self.saldo = Binance().obter_saldo()
             elif self.nome == 'BitcoinTrade':
                 self.saldo = BitcoinTrade().obter_saldo()
             elif self.nome == 'Novadax':
@@ -56,6 +59,8 @@ class Corretora:
                 return MercadoBitcoin(ativo).obter_ordens_abertas()
             elif self.nome == 'BrasilBitcoin':
                 return BrasilBitcoin(ativo).obter_ordens_abertas()
+            elif self.nome == 'Binance':
+                return Binance(ativo).obter_ordens_abertas()
             elif self.nome == 'BitcoinTrade':
                 todas_moedas = Util.obter_lista_de_moedas()
                 return BitcoinTrade(ativo).obter_ordens_abertas(todas_moedas)
@@ -69,6 +74,7 @@ class Corretora:
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
             qtd_ordens_abertas = len(ordens_abertas)
+            
             if qtd_ordens_abertas>0:
                 logging.warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
             else:
@@ -78,6 +84,8 @@ class Corretora:
                 MercadoBitcoin().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'BrasilBitcoin':
                 BrasilBitcoin().cancelar_todas_ordens(ordens_abertas)
+            elif self.nome == 'Binance':
+                Binance().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'BitcoinTrade':
                 BitcoinTrade().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'Novadax':            
@@ -95,6 +103,8 @@ class Corretora:
                 pass
             elif self.nome == 'BrasilBitcoin':
                 obterOrdem = BrasilBitcoin().obter_ordem_por_id(obterOrdem)
+            elif self.nome == 'Binance':
+                obterOrdem = Binance().obter_ordem_por_id(obterOrdem)
             elif self.nome == 'BitcoinTrade':
                 obterOrdem = BitcoinTrade(ativo).obter_ordem_por_id(obterOrdem)
             elif self.nome == 'Novadax':
@@ -129,6 +139,18 @@ class Corretora:
             elif self.nome == 'BrasilBitcoin':
                 ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                
+                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        logging.error('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
+                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+            
+            elif self.nome == 'Binance':
+                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem.lower() == 'limit' else ordem.tipo_ordem
+                ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
                 
                 if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
                     if 'message' in response.keys():
@@ -197,6 +219,18 @@ class Corretora:
                     else:
                         logging.error('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+            
+            elif self.nome == 'Binance':
+                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem.lower() == 'limit' else ordem.tipo_ordem
+                ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
+                
+                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
+                    if 'message' in response.keys():
+                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                    else:
+                        logging.error('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
+                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
 
             elif self.nome == 'BitcoinTrade':
@@ -232,6 +266,8 @@ class Corretora:
                 return MercadoBitcoin(ativo_parte).cancelar_ordem(idOrdem)
             elif self.nome == 'BrasilBitcoin':
                 return BrasilBitcoin(ativo_parte).cancelar_ordem(idOrdem)
+            elif self.nome == 'Binance':
+                return Binance(ativo_parte).cancelar_ordem(idOrdem)
             elif self.nome == 'BitcoinTrade':
                 return BitcoinTrade(ativo_parte).cancelar_ordem(idOrdem)
             elif self.nome == 'Novadax':
@@ -282,6 +318,10 @@ class Corretora:
             corretagem_limitada = 0.002
             corretagem_mercado = 0.004
 
+        elif self.nome == 'Binance':
+            corretagem_limitada = 0.002
+            corretagem_mercado = 0.004
+
         return corretagem_limitada, corretagem_mercado
 
     #metodo privado
@@ -301,6 +341,9 @@ class Corretora:
 
         elif self.nome == 'BitRecife':
             status_executado = 'ok'
-            
+
+        elif self.nome == 'Binance':
+            status_executado = 'FILLED'    
+        
         return status_executado
 
