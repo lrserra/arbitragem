@@ -15,7 +15,7 @@ class Caixa:
         '''
         saldo_inicial = {}
         
-        #CorretoraMenosLiquida.cancelar_todas_ordens()
+        CorretoraMenosLiquida.cancelar_todas_ordens()
         CorretoraMaisLiquida.atualizar_saldo()
         CorretoraMenosLiquida.atualizar_saldo()
         
