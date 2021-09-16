@@ -1,17 +1,17 @@
-from http import client
-
-from binance.spot import Spot
-from binance.spot.market import book_ticker
+from uteis.util import Util
+from uteis.ordem import Ordem
 from uteis.corretora import Corretora
-from corretoras.binance import Binance
 
 corrBinance = Corretora('Binance')
-corrBinance.atualizar_saldo()
 
-# client = Spot()
-# print(client.time())
 
-# client = Spot(key='111mhhYaDk71X41XbiGswaB4ZQ6zEbf8JKRZrFANVx4bfElkwpQLhgi9bBxTklB6', secret='i8uYlRe8SMgDeZuf5nNpDcTW8UpiD2GPhLs4lIH84bhKKz9rEC4xVJTic0UTyO0p')
+ordem_venda_limitada = Ordem()
 
-# # Get account information
-# print(client.account())
+ordem_venda_limitada.quantidade_enviada = 4
+ordem_venda_limitada.preco_enviado = 7
+ordem_venda_limitada.tipo_ordem = 'market'
+
+ret_compra = corrBinance.enviar_ordem_venda(ordem_venda_limitada, Util.CCYXRP(), Util.CCYBRL())
+
+
+

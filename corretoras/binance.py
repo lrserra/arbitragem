@@ -34,30 +34,62 @@ class Binance:
 
     def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
-        payload = {
-            'symbol': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
-            'type': tipoOrdem.upper(),
-            'side': 'BUY',
-            'quantity': quantity,
-            'price': precoCompra
-        }
+
+        symbol = '{}{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper())
+        type = tipoOrdem.upper()
+        side = 'BUY'
+
+        # "timeInForce": "GTC" - só é obrigatório na ordem limitada
+        # Ordem a mercado não precisa informar o preço
+        if type == 'LIMIT':
+            payload = {
+                'symbol': symbol,
+                'side': side,
+                'type': type,
+                "timeInForce": "GTC",
+                'quantity': quantity,
+                'price': precoCompra
+            }
+        else:
+            payload = {
+                'symbol': symbol,
+                'side': side,
+                'type': type,
+                'quantity': quantity
+            }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        res = self.client.new_order(payload)
+        #res = self.client.new_order(symbol, side, type, payload)
+        res = self.client.new_order(**payload)
         return res
 
     def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
-        payload = {
-            'symbol': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
-            'type': tipoOrdem.upper(),
-            'side': 'SELL',
-            'quantity': quantity,
-            'price': precoVenda
-        }
+
+        symbol = '{}{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper())
+        type = tipoOrdem.upper()
+        side = 'SELL'
+
+        if type == 'LIMIT':
+            payload = {
+                'symbol': symbol,
+                'side': side,
+                'type': type,
+                "timeInForce": "GTC",
+                'quantity': quantity,
+                'price': precoVenda
+            }
+        else:
+            payload = {
+                'symbol': symbol,
+                'side': side,
+                'type': type,
+                'quantity': quantity
+            }
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
-        res = self.client.new_order(payload)
+        #res = self.client.new_order(symbol, side, type, payload)
+        res = self.client.new_order(**payload)
         return res
 
     def __cancelarOrdem(self, idOrdem):
@@ -145,8 +177,7 @@ class Binance:
                 quantidade_parcial = float(response['fills'][i]['qty'])
                 ordem.quantidade_executada += quantidade_parcial
 
-                preco_executado_parcial = response['fills'][i]['price'].replace('.','')
-                preco_executado_parcial = float(preco_executado_parcial.replace(',','.'))
+                preco_executado_parcial = float(response['fills'][i]['price'])
 
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
@@ -174,8 +205,7 @@ class Binance:
                 quantidade_parcial = float(response['fills'][i]['qty'])
                 ordem.quantidade_executada += quantidade_parcial
 
-                preco_executado_parcial = response['fills'][i]['price'].replace('.','')
-                preco_executado_parcial = float(preco_executado_parcial.replace(',','.'))
+                preco_executado_parcial = float(response['fills'][i]['price'])
 
                 ordem.preco_executado += preco_executado_parcial*quantidade_parcial
                 i += 1
