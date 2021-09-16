@@ -14,8 +14,14 @@ class Caixa:
         retorna dicionario com saldo inicial de cada moeda
         '''
         saldo_inicial = {}
+        cancelei_todas = False
         
-        CorretoraMenosLiquida.cancelar_todas_ordens()
+        try:
+            CorretoraMenosLiquida.cancelar_todas_ordens()
+            cancelei_todas = True
+        except Exception as err:
+            logging.error('erro no cancelamento de todas ordens: ' + err)
+        
         CorretoraMaisLiquida.atualizar_saldo()
         CorretoraMenosLiquida.atualizar_saldo()
         
@@ -28,7 +34,7 @@ class Caixa:
             
             logging.warning('saldo inicial em {}: {} ({}% na {} e {}% na {})'.format(moeda,saldo_inicial[moeda],porcentagem_mais_liquida,CorretoraMaisLiquida.nome,porcentagem_menos_liquida,CorretoraMenosLiquida.nome))
             
-        return saldo_inicial
+        return cancelei_todas
 
     
     def envia_saldo_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
@@ -202,8 +208,9 @@ if __name__ == "__main__":
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
-    Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    if cancelei_todas:
+        Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
