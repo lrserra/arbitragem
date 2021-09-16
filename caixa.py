@@ -159,7 +159,7 @@ class Caixa:
             quantidade_executada_venda = ordem_venda.quantidade_executada
             financeiro_venda = vendi_a * quantidade_executada_venda
 
-            google_sheets.escrever_operacao([moeda,'',0,0,CorretoraMaisLiquida.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now()),0,financeiro_venda])
+            google_sheets.escrever_operacao([moeda,'',0,0,corretora.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', Util.excel_date(datetime.now()),0,financeiro_venda])
             corretora.atualizar_saldo()
         
         elif direcao == 'compra':
