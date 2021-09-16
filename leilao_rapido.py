@@ -54,9 +54,10 @@ if __name__ == "__main__":
     '''
     corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
-    
-    Caixa.atualiza_saldo_inicial(lista_de_moedas,corretoraZeragem,corretoraLeilao)
-    Caixa.zera_o_pnl_em_cripto(lista_para_zerar,corretoraZeragem,corretoraLeilao,'',False)
+
+    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_de_moedas,corretoraZeragem,corretoraLeilao)
+    if cancelei_todas:
+        Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_para_zerar,corretoraZeragem,corretoraLeilao,False)
 
     corretoraZeragem.atualizar_saldo()
     corretoraLeilao.atualizar_saldo()
