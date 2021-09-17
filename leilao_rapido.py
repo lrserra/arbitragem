@@ -8,7 +8,6 @@ from uteis.ordem import Ordem
 if __name__ == "__main__":
 
     #bibliotecas do python
-
     import logging
     from datetime import datetime, timedelta
     
@@ -92,22 +91,20 @@ if __name__ == "__main__":
                 if fracao_do_caixa < 0.99 and fracao_da_moeda > 0.05 and ('{}_{}'.format(moeda,'sell') not in ordens_abertas.keys()):
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas['{}_{}'.format(moeda,'sell')]=ordem_enviada.id
+                        ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                 else:
                     logging.info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
                  
                 if fracao_do_caixa > 0.01 and fracao_da_moeda < 0.95 and ('{}_{}'.format(moeda,'buy') not in ordens_abertas.keys()):
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,True)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                       ordens_enviadas['{}_{}'.format(moeda,'buy')]=ordem_enviada.id
+                       ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}                       
                 else:
                     logging.info('leilao rapido de venda nao enviara ordem de {} porque a fracao de caixa {} é menor que 1% ou a fracao de moeda {} é maior que 95%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))
             
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
-                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]=ordem_aberta['id']
-
-
+                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
             for ordem_enviada in ordens_enviadas.keys():
                 if ordem_enviada not in ordens_abertas.keys():
                     logging.warning('ordem enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))
@@ -134,29 +131,33 @@ if __name__ == "__main__":
                 
                 logging.info('**************************************************')
                 logging.info('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
+                
                 ordem_leilao = Ordem()
-                ordem_leilao.id = ordens_abertas[ordem_aberta]
-                moeda = ordem_aberta[:3]
-                ordem_leilao = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                ordem_leilao.id = ordens_abertas[ordem_aberta]['id']
+                ordem_leilao.preco_enviado = ordens_abertas[ordem_aberta]['price']
+                ordem_leilao.quantidade_enviada = ordens_abertas[ordem_aberta]['amount']
+                
+                moeda = ordem_aberta.split('_')[0]
+                direcao = ordem_aberta.split('_')[1]
                 
                 #a partir daqui é correria! 
                 corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 
-                if ordem_leilao.direcao == 'buy':
+                if direcao == 'buy':
 
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas['{}_{}'.format(moeda,'buy')]=ordem_enviada.id
+                        ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
                         
-                elif ordem_leilao.direcao =='sell':
+                elif direcao =='sell':
                     
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
-                        ordens_enviadas['{}_{}'.format(moeda,'sell')]=ordem_enviada.id
+                        ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         logging.warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
@@ -165,7 +166,7 @@ if __name__ == "__main__":
             ordens_abertas = {}
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
-                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]=ordem_aberta['id']
+                    ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
 
             for ordem_enviada in ordens_enviadas.keys():
                 if ordem_enviada not in ordens_abertas.keys():
@@ -269,112 +270,112 @@ class Leilao:
         
         return retorno_compra_corretora_leilao
 
-    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
+    def zera_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, executarOrdens,google_sheets):
+
+        ordem_zeragem = Ordem()
+        pnl = 0
+        #1: executada completamente
+        if executarOrdens and ordem_antiga.status == corretoraLeilao.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            
+            if corretoraZeragem.nome == 'MercadoBitcoin':
+                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+            else:
+                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+            
+            logging.info('Leilao compra vai zerar na {} ordem executada completamente {} de {}'.format(corretoraZeragem.nome,ordem_antiga.id,ativo))
+            corretoraZeragem.ordem.tipo_ordem = 'market'
+            ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
+            
+        #2: executada parcialmente, mais que o valor minimo
+        elif executarOrdens and ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > 0:
+        
+            if ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
+            
+                # Zera o risco na outra corretora com uma operação à mercado
+                if corretoraZeragem.nome == 'MercadoBitcoin':
+                    corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+                else:
+                    corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
+                
+                logging.info('Leilao compra vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(corretoraZeragem.ordem.quantidade_enviada,4),ordem_antiga.id,ativo))
+                corretoraZeragem.ordem.preco_enviado = corretoraZeragem.book.preco_compra
+                corretoraZeragem.ordem.tipo_ordem = 'market'
+                ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
+
+            else:
+                fui_executado = round(ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra,4)
+                valor_minimo = round(Util.retorna_menor_valor_compra(ativo),4)
+                logging.info('Leilao compra de {} nao vai fazer nada porque fui executado em {} reais que é menos que o valor minimo de {} reais'.format(ativo,fui_executado,valor_minimo))
+                    
+        #agora vai logar pnl
+        if ordem_zeragem.id != 0:
+                    
+            comprei_a = round(ordem_zeragem.preco_executado,2)
+            vendi_a = round(ordem_antiga.preco_enviado,2)
+            quantidade = round(ordem_zeragem.quantidade_executada,4)
+
+            pnl = round((vendi_a * (1-corretoraLeilao.corretagem_limitada) - comprei_a * (1+corretoraZeragem.corretagem_mercado)) * quantidade,2)
+
+            logging.warning('Leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
+            
+            quantidade_executada_compra = ordem_zeragem.quantidade_executada
+            quantidade_executada_venda = ordem_antiga.quantidade_executada
+            financeiro_compra = comprei_a * quantidade_executada_compra
+            financeiro_venda = vendi_a * quantidade_executada_venda
+
+            google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
+            corretoraZeragem.atualizar_saldo()
+            corretoraLeilao.atualizar_saldo()
+            logging.info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
+            return pnl
+
+    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
 
         ordem_enviada = Ordem()
-        ordem_zeragem = Ordem()
         cancelou = False
         pnl = 0
         
         try:
-            #IMPORTANTE ->qualquer uma dessas condições que for verdade, pode executar e sair do metodo
-
-            #1: executada completamente
-            if executarOrdens and ordem.status == corretoraLeilao.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            #1: nao sou o primeiro da fila
+            if (ordem_antiga.preco_enviado != corretoraLeilao.book.preco_compra) or (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado > 0.02):
                 
-                cancelou = True
-                if cancelou: #irrelevante, mas vou manter para ficar igual aos outros
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
+                logging.info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
 
-                if corretoraZeragem.nome == 'MercadoBitcoin':
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-                else:
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
-                corretoraZeragem.ordem.tipo_ordem = 'market'
-                logging.info('LC1: leilao compra vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem.id,ativo))
-                ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
-                
-            #2: executada parcialmente, mais que o valor minimo
-            
-            elif executarOrdens and ordem.quantidade_executada * corretoraZeragem.book.preco_compra > 0:
-            
-                if ordem.quantidade_executada * corretoraZeragem.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
-                
-                    logging.info('LC2: leilao compra vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem.id,ativo))
-                    cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem.id)
-                    if cancelou:
-                        ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-
-                    # Zera o risco na outra corretora com uma operação à mercado
-                    if corretoraZeragem.nome == 'MercadoBitcoin':
-                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-                    else:
-                        corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
-                    
-                    logging.info('LC2: leilao compra vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem.id,ativo))
-                    corretoraZeragem.ordem.preco_enviado = float(ordem.preco_executado)
-                    corretoraZeragem.ordem.tipo_ordem = 'market'
-                    ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
-
-                else:
-                    fui_executado = round(ordem.quantidade_executada * corretoraZeragem.book.preco_compra,4)
-                    valor_minimo = round(Util.retorna_menor_valor_compra(ativo),4)
-                    logging.info('LC6: leilao compra de {} nao vai fazer nada porque fui executado em {} reais que é menos que o valor minimo de {} reais'.format(ativo,fui_executado,valor_minimo))
-                        
-            #agora vai logar pnl
-            if ordem_zeragem.id != 0:
-                        
-                comprei_a = round(ordem_zeragem.preco_executado,2)
-                vendi_a = round(ordem.preco_enviado,2)
-                quantidade = round(ordem_zeragem.quantidade_executada,4)
-
-                pnl = round((vendi_a * (1-corretoraLeilao.corretagem_limitada) - comprei_a * (1+corretoraZeragem.corretagem_mercado)) * quantidade,2)
-
-                logging.warning('operou leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
-                
-                quantidade_executada_compra = ordem_zeragem.quantidade_executada
-                quantidade_executada_venda = ordem.quantidade_executada
-                financeiro_compra = comprei_a * quantidade_executada_compra
-                financeiro_venda = vendi_a * quantidade_executada_venda
-
-                google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
-                corretoraZeragem.atualizar_saldo()
-                corretoraLeilao.atualizar_saldo()
-                logging.info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                return ordem_enviada, pnl
-
-            #3: nao sou o primeiro da fila
-            if (ordem.preco_enviado != corretoraLeilao.book.preco_compra) or (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem.preco_enviado > 0.02):
-                
-                logging.info('LC3: leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
-                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
-
-                if (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem.preco_enviado > 0.02):
+                if (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado > 0.02):
                     corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
 
+            #2: estou sem saldo para zerar
             corretoraZeragem.atualizar_saldo()
-            #4: estou sem saldo para zerar
-            if (corretoraZeragem.saldo['brl'] < ordem.quantidade_enviada*ordem.preco_enviado):
+            if (corretoraZeragem.saldo['brl'] < ordem_antiga.quantidade_enviada*ordem_antiga.preco_enviado):
                 
-                logging.info('LC4: leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem.id,ativo,corretoraZeragem.saldo['brl'],ordem.quantidade_enviada*ordem.preco_enviado))
-                cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+                logging.info('Leilao compra vai cancelar ordem {} de {} pq meu saldo brl {} nao consegue comprar {}'.format(ordem_antiga.id,ativo,corretoraZeragem.saldo['brl'],ordem_antiga.quantidade_enviada*ordem_antiga.preco_enviado))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+                
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
 
-            #5: esta dando pnl negativo para zerar tudo
-            if (ordem.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.obter_preco_medio_de_compra(ordem.quantidade_enviada)):
+            #3: esta dando pnl negativo para zerar tudo
+            if (ordem_antiga.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.obter_preco_medio_de_compra(ordem_antiga.quantidade_enviada)):
                 
-                logging.info('LC5: leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
-                cancelou =corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+                logging.info('Leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_antiga.id,ativo))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+                
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
             
-            logging.info('LC0: nao precisei cancelar a ordem {} de {} e colocar outra'.format(ordem.id,ativo))
+            logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
                             
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_compra. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
@@ -382,104 +383,103 @@ class Leilao:
 
         return ordem_enviada, pnl
 
-    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
+    def zera_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, executarOrdens,google_sheets):
+
+        ordem_zeragem = Ordem()
+        pnl = 0
+        #1: executada completamente
+        if executarOrdens and ordem_antiga.status == corretoraLeilao.descricao_status_executado:# verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
+            
+            corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)
+            
+            logging.info('Leilao venda vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem_antiga.id,ativo))
+            corretoraZeragem.ordem.tipo_ordem = 'market'
+            ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+            
+        #2: executada parcialmente, mais que o valor minimo
+        elif executarOrdens and ordem_antiga.quantidade_executada > 0:
+        
+            if ordem_antiga.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
+            
+                logging.info('Leilao venda vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(corretoraZeragem.ordem.quantidade_enviada,4),ordem_antiga.id,ativo))
+                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)             
+                corretoraZeragem.ordem.tipo_ordem = 'market'
+                ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
+                
+            else:
+                fui_executado = round(ordem_antiga.quantidade_executada,4)
+                valor_minimo = round(Util.retorna_menor_quantidade_venda(ativo),4)
+                logging.info('Leilao venda de {} nao vai fazer nada porque fui executado em {} que é menos que o valor minimo de {}'.format(ativo,fui_executado,valor_minimo))
+
+        if  ordem_zeragem.id != 0:
+
+            vendi_a = round(ordem_zeragem.preco_executado,2)
+            comprei_a = round(ordem_antiga.preco_enviado,2)
+            quantidade = round(ordem_zeragem.quantidade_executada,4)
+
+            pnl = round(((vendi_a*(1-corretoraZeragem.corretagem_mercado))-(comprei_a*(1+corretoraLeilao.corretagem_limitada))) * quantidade,2)
+
+            logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
+            
+            quantidade_executada_compra = ordem_antiga.quantidade_executada
+            quantidade_executada_venda = ordem_zeragem.quantidade_executada
+            financeiro_compra = comprei_a * quantidade_executada_compra
+            financeiro_venda = vendi_a * quantidade_executada_venda
+
+            google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
+            corretoraZeragem.atualizar_saldo()
+            corretoraLeilao.atualizar_saldo()
+            logging.info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
+            return pnl
+
+
+    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, executarOrdens,qtd_de_moedas,google_sheets):
 
         ordem_enviada = Ordem()
-        ordem_zeragem = Ordem()
         cancelou = False
         pnl = 0
         
         try:
-    
-            #IMPORTANTE ->qualquer uma dessas condições que for verdade, pode executar e sair do metodo
-
-            #1: executada completamente
-            if executarOrdens and ordem.status == corretoraLeilao.descricao_status_executado:
+            #1: nao sou o primeiro da fila
+            if (ordem_antiga.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem_antiga.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
                 
-                cancelou = True
-                if cancelou: #irrelevante, mas vou manter para ficar igual aos outros
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
+                logging.info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
 
-                corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)
-                corretoraZeragem.ordem.tipo_ordem = 'market'
-                logging.info('LV1: leilao venda vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem.id,ativo))
-                ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
-                
-            #2: executada parcialmente, mais que o valor minimo
-            elif executarOrdens and ordem.quantidade_executada > 0:
-            
-                if ordem.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
-                
-                    logging.info('LV2: leilao venda vai cancelar ordem {} de {} pq fui executado mais que o valor minimo'.format(ordem.id,ativo,Util.retorna_menor_quantidade_venda(ativo)))
-                    cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
-
-                    if cancelou:
-                        ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
-                
-                    logging.info('LV2: leilao venda vai zerar na {} ordem executada {} de {}'.format(corretoraZeragem.nome,ordem.id,ativo))
-                    corretoraZeragem.ordem.quantidade_enviada = ordem.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)             
-                    corretoraZeragem.ordem.tipo_ordem = 'market'
-                    ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
-                    
-                else:
-                    fui_executado = round(ordem.quantidade_executada,4)
-                    valor_minimo = round(Util.retorna_menor_quantidade_venda(ativo),4)
-                    logging.info('LV6: leilao venda de {} nao vai fazer nada porque fui executado em {} que é menos que o valor minimo de {}'.format(ativo,fui_executado,valor_minimo))
-
-            if  ordem_zeragem.id != 0:
-
-                vendi_a = round(ordem_zeragem.preco_executado,2)
-                comprei_a = round(ordem.preco_enviado,2)
-                quantidade = round(ordem_zeragem.quantidade_executada,4)
-
-                pnl = round(((vendi_a*(1-corretoraZeragem.corretagem_mercado))-(comprei_a*(1+corretoraLeilao.corretagem_limitada))) * quantidade,2)
-
-                logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
-                
-                quantidade_executada_compra = ordem.quantidade_executada
-                quantidade_executada_venda = ordem_zeragem.quantidade_executada
-                financeiro_compra = comprei_a * quantidade_executada_compra
-                financeiro_venda = vendi_a * quantidade_executada_venda
-
-                google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
-                corretoraZeragem.atualizar_saldo()
-                corretoraLeilao.atualizar_saldo()
-                logging.info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
-                return ordem_enviada, pnl
-
-            #3: nao sou o primeiro da fila
-            if (ordem.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
-                
-                logging.info('LV3: leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem.id,ativo,ordem.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
-                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
-
-                if (ordem.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
+                if (ordem_antiga.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
                     corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
-
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
                 
-            #4: estou sem saldo para zerar
+            #2: estou sem saldo para zerar
             corretoraZeragem.atualizar_saldo()
-            if (corretoraZeragem.saldo[ativo] < ordem.quantidade_enviada):
+            if (corretoraZeragem.saldo[ativo] < ordem_antiga.quantidade_enviada):
                 
-                logging.info('LV4: leilao venda vai cancelar ordem {} de {} pq meu saldo em cripto {} é menor que oq eu queria vender {}'.format(ordem.id,ativo,corretoraZeragem.saldo[ativo],ordem.quantidade_enviada))
-                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+                logging.info('Leilao venda vai cancelar ordem {} de {} pq meu saldo em cripto {} é menor que oq eu queria vender {}'.format(ordem_antiga.id,ativo,corretoraZeragem.saldo[ativo],ordem_antiga.quantidade_enviada))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+                
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
 
-            #5: esta dando pnl negativo para zerar tudo    
-            if (ordem.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.obter_preco_medio_de_venda(ordem.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
+            #3: esta dando pnl negativo para zerar tudo    
+            if (ordem_antiga.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.obter_preco_medio_de_venda(ordem_antiga.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
                 
-                logging.info('LV5: leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem.id,ativo))
-                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem.id)
+                logging.info('Leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_antiga.id,ativo))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(moeda,ordem_leilao)
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
 
-            logging.info('LV0: nao precisei cancelar a ordem {} de {} e colocar outra'.format(ordem.id,ativo))
+            logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_venda. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
