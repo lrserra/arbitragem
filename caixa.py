@@ -154,7 +154,7 @@ class Caixa:
 
         if direcao == 'venda':
             
-            logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,corretora.nome))
+            logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,corretora.nome))
             
             corretora.ordem.quantidade_enviada = quantidade_a_zerar
             corretora.ordem.tipo_ordem = 'market'

@@ -164,13 +164,23 @@ if __name__ == "__main__":
                     
             #step4: ir ao step 2
             ordens_abertas = {}
+            logging.info('**************************************************')
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
+                    logging.info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],ordem_aberta['price'],ordem_aberta['amount']))
                     ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
 
             for ordem_enviada in ordens_enviadas.keys():
+                
+                moeda = ordem_enviada.split('_')[0]
+                direcao = ordem_enviada.split('_')[1]
+                id = ordens_enviadas[ordem_enviada]['id']
+                preco_enviado = float(ordens_enviadas[ordem_enviada]['price'])
+                quantidade_enviada = float(ordens_enviadas[ordem_enviada]['amount'])
+                logging.info('Ordem Enviada: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(moeda,direcao,id,preco_enviado,quantidade_enviada))
+                
                 if ordem_enviada not in ordens_abertas.keys():
-                    logging.warning('ordem enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))
+                    logging.warning('Ordem Enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))
                     ordens_abertas[ordem_enviada]=ordens_enviadas[ordem_enviada]
             
             qtd_ordens_abertas = len(ordens_abertas.keys())
