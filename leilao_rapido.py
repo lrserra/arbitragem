@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 if direcao == 'buy':
 
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
-                    if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                    if ordem_enviada.id != 0:
                         ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                 elif direcao =='sell':
                     
                     ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,True,qtd_de_moedas,google_sheets)
-                    if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
+                    if ordem_enviada.id != 0:
                         ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
@@ -167,7 +167,7 @@ if __name__ == "__main__":
             logging.info('**************************************************')
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
-                    logging.info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],ordem_aberta['price'],ordem_aberta['amount']))
+                    logging.info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],round(float(ordem_aberta['price']),4),round(float(ordem_aberta['amount']),4)))
                     ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
 
             for ordem_enviada in ordens_enviadas.keys():
@@ -175,8 +175,8 @@ if __name__ == "__main__":
                 moeda = ordem_enviada.split('_')[0]
                 direcao = ordem_enviada.split('_')[1]
                 id = ordens_enviadas[ordem_enviada]['id']
-                preco_enviado = float(ordens_enviadas[ordem_enviada]['price'])
-                quantidade_enviada = float(ordens_enviadas[ordem_enviada]['amount'])
+                preco_enviado = round(float(ordens_enviadas[ordem_enviada]['price']),4)
+                quantidade_enviada = round(float(ordens_enviadas[ordem_enviada]['amount']),4)
                 logging.info('Ordem Enviada: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(moeda,direcao,id,preco_enviado,quantidade_enviada))
                 
                 if ordem_enviada not in ordens_abertas.keys():
@@ -386,12 +386,11 @@ class Leilao:
                 return ordem_enviada, pnl
             
             logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
-                            
+            return ordem_antiga, pnl
+
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_compra. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
-
-        return ordem_enviada, pnl
 
     def zera_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, executarOrdens,google_sheets):
 
@@ -490,11 +489,12 @@ class Leilao:
                 return ordem_enviada, pnl
 
             logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
+            return ordem_antiga, pnl
 
         except Exception as erro:
             msg_erro = Util.retorna_erros_objeto_exception('Erro na estratégia de leilão rapido, método: atualiza_leilao_de_venda. (Ativo: {} | Quant: {})'.format(ativo, corretoraZeragem.ordem.quantidade_enviada), erro)
             raise Exception(msg_erro)
         
-        return ordem_enviada, pnl
+        
 
 
