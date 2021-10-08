@@ -133,7 +133,7 @@ class BrasilBitcoin:
         '''
         saldo = {}
 
-        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
+        lista_de_moedas = Util.obter_lista_de_moedas()+[Util.CCYBRL()]
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
