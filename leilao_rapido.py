@@ -167,7 +167,7 @@ if __name__ == "__main__":
             logging.info('**************************************************')
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
-                    logging.info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],round(float(ordem_aberta['price']),4),round(float(ordem_aberta['amount']),4)))
+                    logging.info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],round(float(ordem_aberta['price']),4),round(float(ordem_aberta['amount']),8)))
                     ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
 
             for ordem_enviada in ordens_enviadas.keys():
@@ -176,7 +176,7 @@ if __name__ == "__main__":
                 direcao = ordem_enviada.split('_')[1]
                 id = ordens_enviadas[ordem_enviada]['id']
                 preco_enviado = round(float(ordens_enviadas[ordem_enviada]['price']),4)
-                quantidade_enviada = round(float(ordens_enviadas[ordem_enviada]['amount']),4)
+                quantidade_enviada = round(float(ordens_enviadas[ordem_enviada]['amount']),8)
                 logging.info('Ordem Enviada: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(moeda,direcao,id,preco_enviado,quantidade_enviada))
                 
                 if ordem_enviada not in ordens_abertas.keys():
@@ -200,7 +200,10 @@ class Leilao:
             retorno_venda_corretora_leilao = Ordem()
             
             try:
-                preco_que_vou_vender = corretoraLeilao.book.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
+                if (Util.eh_171(corretoraLeilao.book.quantidade_compra)):
+                    preco_que_vou_vender = corretoraLeilao.book.preco_compra #se for 171 eu coloco ordem no mesmo preço
+                else:
+                    preco_que_vou_vender = corretoraLeilao.book.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
                 preco_de_zeragem = corretoraZeragem.book.preco_compra # zeragem no primeiro book de ordens
 
                 # Valida se existe oportunidade de leilão
@@ -244,8 +247,10 @@ class Leilao:
         retorno_compra_corretora_leilao = Ordem()
 
         try:
-
-            preco_que_vou_comprar = corretoraLeilao.book.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
+            if (Util.eh_171(corretoraLeilao.book.quantidade_venda)):
+                preco_que_vou_comprar = corretoraLeilao.book.preco_venda #se for 171 eu chego junto
+            else:
+                preco_que_vou_comprar = corretoraLeilao.book.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
             preco_de_zeragem = corretoraZeragem.book.preco_venda # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão
@@ -384,7 +389,18 @@ class Leilao:
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
-            
+            #4: fui executado
+            ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
+            if (ordem_antiga.status == corretoraLeilao.descricao_status_executado or ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > 0):
+                
+                logging.info('Leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_antiga.id,ativo))
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+
+                if cancelou:
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
+                return ordem_enviada, pnl 
+
             logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
             return ordem_antiga, pnl
 
@@ -487,6 +503,18 @@ class Leilao:
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
+
+            #4: fui executado
+            ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
+            if (ordem_antiga.status == corretoraLeilao.descricao_status_executado or ordem_antiga.quantidade_executada > 0):
+                
+                logging.info('Leilao venda vai cancelar ordem {} de {} pq fui executado'.format(ordem_antiga.id,ativo))
+                cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
+                pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
+
+                if cancelou:
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
+                return ordem_enviada, pnl 
 
             logging.info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
             return ordem_antiga, pnl
