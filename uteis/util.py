@@ -1,9 +1,29 @@
 
 import json
+import math
 import requests
 from datetime import datetime
 
 class Util:
+
+    def coloca_171(moeda,qtd):
+        
+        if moeda in ['ada','xrp']:
+            qtd_final = math.trunc(qtd*10)/10 #trunca na segunda
+            qtd_final = qtd_final +0.1*171/1000 #mete o 171
+        elif moeda in ['eth','bch','ltc']:
+            qtd_final = math.trunc(qtd*1000)/1000 #trunca na quarta
+            qtd_final = qtd_final +0.001*171/1000 #mete o 171
+        elif moeda in ['btc']:
+            qtd_final = math.trunc(qtd*10000)/10000 #trunca na quinta
+            qtd_final = qtd_final +0.0001*171/1000 #mete o 171
+        else:
+            qtd_final = qtd 
+
+        return qtd_final
+
+    def eh_171(qtd):
+        return str(qtd)[-3:]=='171'
 
     def excel_date(date1):
         temp = datetime(1899, 12, 30)    # Note, not 31st Dec but 30th!

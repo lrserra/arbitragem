@@ -118,10 +118,8 @@ class Corretora:
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
-        if ativo_parte =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000)/1000#trunca na terceira
-        else:
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+        if ordem.tipo_ordem == 'limited':
+            ordem.quantidade_enviada = Util.coloca_171(ativo_parte,ordem.quantidade_enviada)
 
         try:
             if self.nome == 'MercadoBitcoin':
@@ -188,12 +186,8 @@ class Corretora:
 
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
-        mensagem = ''
-
-        if ativo_parte =='xrp':
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*1000)/1000#trunca na terceira
-        else:
-            ordem.quantidade_enviada = math.trunc(ordem.quantidade_enviada*10000)/10000#trunca na quarta
+        if ordem.tipo_ordem == 'limited':
+            ordem.quantidade_enviada = Util.coloca_171(ativo_parte,ordem.quantidade_enviada)
 
         try:
             if self.nome == 'MercadoBitcoin':
