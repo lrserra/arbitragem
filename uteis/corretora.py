@@ -119,7 +119,9 @@ class Corretora:
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
         if ordem.tipo_ordem == 'limited':
-            ordem.quantidade_enviada = Util.coloca_171(ativo_parte,ordem.quantidade_enviada)
+            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
+        else:
+            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
 
         try:
             if self.nome == 'MercadoBitcoin':
@@ -187,7 +189,9 @@ class Corretora:
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
         if ordem.tipo_ordem == 'limited':
-            ordem.quantidade_enviada = Util.coloca_171(ativo_parte,ordem.quantidade_enviada)
+            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
+        else:
+            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
 
         try:
             if self.nome == 'MercadoBitcoin':
