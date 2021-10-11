@@ -72,7 +72,7 @@ class Arbitragem:
                                     ordem_compra.preco_enviado = preco_de_compra
                                     ordem_compra.tipo_ordem = 'market'
 
-                                    ordem_venda.quantidade_enviada = qtdNegociada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
+                                    ordem_venda.quantidade_enviada = qtdNegociada
                                     ordem_venda.preco_enviado = preco_de_venda
                                     ordem_venda.tipo_ordem = 'market'
 
