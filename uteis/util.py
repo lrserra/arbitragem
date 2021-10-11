@@ -9,14 +9,14 @@ class Util:
     def trunca_171(moeda,qtd,numero_magico = 0):
         
         if moeda in ['ada','xrp']:
-            qtd_final = math.trunc(qtd*10)/10 #trunca na segunda
-            qtd_final = qtd_final +0.1*numero_magico/1000 #mete o 171
+            qtd_final = math.trunc(qtd*100)/100 #trunca na terceira
+            qtd_final = qtd_final +0.01*numero_magico/1000 #mete o 171
         elif moeda in ['eth','bch','ltc']:
-            qtd_final = math.trunc(qtd*1000)/1000 #trunca na quarta
-            qtd_final = qtd_final +0.001*numero_magico/1000 #mete o 171
-        elif moeda in ['btc']:
             qtd_final = math.trunc(qtd*10000)/10000 #trunca na quinta
             qtd_final = qtd_final +0.0001*numero_magico/1000 #mete o 171
+        elif moeda in ['btc']:
+            qtd_final = math.trunc(qtd*100000)/100000 #trunca na sexta
+            qtd_final = qtd_final +0.00001*numero_magico/1000 #mete o 171
         else:
             qtd_final = qtd 
 
