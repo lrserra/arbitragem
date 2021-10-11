@@ -72,11 +72,7 @@ class Arbitragem:
                                     ordem_compra.preco_enviado = preco_de_compra
                                     ordem_compra.tipo_ordem = 'market'
 
-                                    # Atualiza ordem de venda
-                                    if corretoraCompra.nome == 'MercadoBitcoin':
-                                        ordem_venda.quantidade_enviada = qtdNegociada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-                                    else:
-                                        ordem_venda.quantidade_enviada = qtdNegociada*(1-corretoraCompra.corretagem_mercado)
+                                    ordem_venda.quantidade_enviada = qtdNegociada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
                                     ordem_venda.preco_enviado = preco_de_venda
                                     ordem_venda.tipo_ordem = 'market'
 

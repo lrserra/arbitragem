@@ -292,12 +292,8 @@ class Leilao:
         #1: executada completamente
         if executarOrdens and ordem_antiga.status == corretoraLeilao.descricao_status_executado: # verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
             
-            if corretoraZeragem.nome == 'MercadoBitcoin':
-                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-            else:
-                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
-            
             logging.info('Leilao compra vai zerar na {} ordem executada completamente {} de {}'.format(corretoraZeragem.nome,ordem_antiga.id,ativo))
+            corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada 
             corretoraZeragem.ordem.tipo_ordem = 'market'
             ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
             
@@ -306,13 +302,8 @@ class Leilao:
         
             if ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
             
-                # Zera o risco na outra corretora com uma operação à mercado
-                if corretoraZeragem.nome == 'MercadoBitcoin':
-                    corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada #quando vc compra na mercado, ele compra um pouco a mais e pega pra ele de corretagem, é só vender a mesma qtd
-                else:
-                    corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada/(1-corretoraZeragem.corretagem_mercado)
-                
-                logging.info('Leilao compra vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(corretoraZeragem.ordem.quantidade_enviada,4),ordem_antiga.id,ativo))
+                logging.info('Leilao compra vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(ordem_antiga.quantidade_executada,4),ordem_antiga.id,ativo))
+                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada
                 corretoraZeragem.ordem.preco_enviado = corretoraZeragem.book.preco_compra
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
@@ -415,9 +406,8 @@ class Leilao:
         #1: executada completamente
         if executarOrdens and ordem_antiga.status == corretoraLeilao.descricao_status_executado:# verifica se a ordem foi executada totalmente (Nesse caso o ID = False)
             
-            corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)
-            
             logging.info('Leilao venda vai zerar ordem executada completamente {} de {} na outra corretora'.format(ordem_antiga.id,ativo))
+            corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada
             corretoraZeragem.ordem.tipo_ordem = 'market'
             ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
             
@@ -426,8 +416,8 @@ class Leilao:
         
             if ordem_antiga.quantidade_executada > Util.retorna_menor_quantidade_venda(ativo): 
             
-                logging.info('Leilao venda vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(corretoraZeragem.ordem.quantidade_enviada,4),ordem_antiga.id,ativo))
-                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada*(1-corretoraLeilao.corretagem_limitada)             
+                logging.info('Leilao venda vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(ordem_antiga.quantidade_executada,4),ordem_antiga.id,ativo))
+                corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada             
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 ordem_zeragem = corretoraZeragem.enviar_ordem_venda(corretoraZeragem.ordem,ativo)
                 

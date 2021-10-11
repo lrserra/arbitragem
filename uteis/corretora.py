@@ -118,13 +118,15 @@ class Corretora:
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
-        if ordem.tipo_ordem == 'limited':
+        if ordem.tipo_ordem in ['limited','limit']:
+            ordem.tipo_ordem = 'limited'
             ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
-        else:
-            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
 
         try:
             if self.nome == 'MercadoBitcoin':
+                if ordem.tipo_ordem == 'market':
+                    ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
+            
                 ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
                 if ordem.status != 'filled' and ordem.status != 'open':
@@ -137,7 +139,10 @@ class Corretora:
                     #raise Exception(mensagem)
             
             elif self.nome == 'BrasilBitcoin':
-                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
+                if ordem.tipo_ordem == 'market':
+                    ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
+                    ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
+
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
                 
                 if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
@@ -188,11 +193,12 @@ class Corretora:
 
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
-        if ordem.tipo_ordem == 'limited':
+        if ordem.tipo_ordem in ['limited','limit']:
+            ordem.tipo_ordem = 'limited'
             ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
-        else:
+        elif ordem.tipo_ordem == 'market':
             ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
-
+          
         try:
             if self.nome == 'MercadoBitcoin':
                 ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
@@ -206,7 +212,6 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
             elif self.nome == 'BrasilBitcoin':
-                ordem.tipo_ordem = 'limited' if ordem.tipo_ordem == 'limit' else ordem.tipo_ordem
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
                 if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
