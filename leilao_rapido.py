@@ -318,17 +318,18 @@ class Leilao:
                     
             comprei_a = round(ordem_zeragem.preco_executado,2)
             vendi_a = round(ordem_antiga.preco_enviado,2)
-            quantidade = round(ordem_zeragem.quantidade_executada,4)
+            quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
-            pnl = round((vendi_a * (1-corretoraLeilao.corretagem_limitada) - comprei_a * (1+corretoraZeragem.corretagem_mercado)) * quantidade,2)
+            financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado)
+            financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)
+
+            pnl = round((financeiro_venda -financeiro_compra) * quantidade,2)
 
             logging.warning('Leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
             
             quantidade_executada_compra = ordem_zeragem.quantidade_executada
             quantidade_executada_venda = ordem_antiga.quantidade_executada
-            financeiro_compra = comprei_a * quantidade_executada_compra
-            financeiro_venda = vendi_a * quantidade_executada_venda
-
+            
             google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
             corretoraZeragem.atualizar_saldo()
             corretoraLeilao.atualizar_saldo()
@@ -430,17 +431,18 @@ class Leilao:
 
             vendi_a = round(ordem_zeragem.preco_executado,2)
             comprei_a = round(ordem_antiga.preco_enviado,2)
-            quantidade = round(ordem_zeragem.quantidade_executada,4)
+            quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
-            pnl = round(((vendi_a*(1-corretoraZeragem.corretagem_mercado))-(comprei_a*(1+corretoraLeilao.corretagem_limitada))) * quantidade,2)
+            financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)
+            financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)
+
+            pnl = round((financeiro_venda-financeiro_compra) * quantidade,2)
 
             logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
             
             quantidade_executada_compra = ordem_antiga.quantidade_executada
             quantidade_executada_venda = ordem_zeragem.quantidade_executada
-            financeiro_compra = comprei_a * quantidade_executada_compra
-            financeiro_venda = vendi_a * quantidade_executada_venda
-
+            
             google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
             corretoraZeragem.atualizar_saldo()
             corretoraLeilao.atualizar_saldo()

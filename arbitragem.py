@@ -96,10 +96,8 @@ class Arbitragem:
 
                                     quantidade_executada_compra = ordem_compra.quantidade_executada
                                     quantidade_executada_venda = ordem_venda.quantidade_executada
-                                    financeiro_compra = comprei_a * quantidade_executada_compra
-                                    financeiro_venda = vendi_a * quantidade_executada_venda
-
-                                    GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now()),financeiro_compra,financeiro_venda])
+                                    
+                                    GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now()),realmente_paguei,realmente_ganhei])
                                 
                                     if ordem_compra.status != ordem_compra.descricao_status_executado:
                                         logging.error('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
