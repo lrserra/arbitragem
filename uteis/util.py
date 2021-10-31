@@ -168,7 +168,7 @@ class Util:
         '''
         lista_de_moedas = []
         if estrategia_status == '':
-            return ['btc','eth','xrp','ltc','bch','ada']
+            return ['btc','eth','xrp','ltc','bch','ada','doge','usdt']
 
         with open('worksheetsettings.json') as f:
             dic_completo = json.load(f)
