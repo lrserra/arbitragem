@@ -29,11 +29,11 @@ if __name__ == "__main__":
 
     #essa parte executa apenas uma vez
     #step 1
-    lista_de_moedas = Util.obter_lista_de_moedas('leilao_status')
-    lista_de_moedas_zeragem = Util.obter_lista_de_moedas('zeragem_status')
-    lista_para_zerar = [moeda for moeda in lista_de_moedas_zeragem if moeda in lista_de_moedas]
-    white_list = lista_de_moedas
+    white_list = Util.obter_white_list()
     black_list = []
+    
+    lista_de_moedas = [moeda for moeda in Util.obter_lista_de_moedas('leilao_status') if moeda in white_list]
+    lista_para_zerar = [moeda for moeda in Util.obter_lista_de_moedas('zeragem_status') if moeda in white_list]
     
     qtd_de_moedas = len(lista_de_moedas)
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         qtd_ordens_abertas = 0
         ordens_enviadas = {}
 
-        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)] #atualiza lista conforme blacklist
+        lista_de_moedas = [moeda for moeda in lista_de_moedas if (moeda not in black_list)] #atualiza lista conforme blacklist
 
         while qtd_ordens_abertas==0:
 

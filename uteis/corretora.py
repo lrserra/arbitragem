@@ -125,6 +125,7 @@ class Corretora:
         try:
             if self.nome == 'MercadoBitcoin':
                 if ordem.tipo_ordem == 'market':
+                    ordem.quantidade_enviada = ordem.quantidade_enviada*0.999
                     ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
             
                 ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
@@ -154,9 +155,13 @@ class Corretora:
                         logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
             
             elif self.nome == 'Binance':
+                if ordem.tipo_ordem == 'market':
+                    ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
+                    ordem.quantidade_enviada = Util.trunca_moeda(ativo_parte,ordem.quantidade_enviada)
+
                 ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
                 
-                if ordem.status.lower() not in (self.descricao_status_executado, 'new','partially_filled'):
+                if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
                     if 'message' in response.keys():
                         logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
                         logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
@@ -223,6 +228,8 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
             
             elif self.nome == 'Binance':
+                if ordem.tipo_ordem == 'market':
+                    ordem.quantidade_enviada = Util.trunca_moeda(ativo_parte,ordem.quantidade_enviada)
                 ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
                 if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
@@ -301,11 +308,11 @@ class Corretora:
 
         if self.nome == 'MercadoBitcoin':
             corretagem_limitada = 0.0015
-            corretagem_mercado = 0.007
+            corretagem_mercado = 0.006
             
         elif self.nome == 'BrasilBitcoin':
-            corretagem_limitada = 0.0018
-            corretagem_mercado = 0.0045
+            corretagem_limitada = 0.0008
+            corretagem_mercado = 0.002
             
         elif self.nome == 'BitcoinTrade':
             corretagem_limitada = 0.0025

@@ -10,7 +10,7 @@ from uteis.ordem import Ordem
 class Binance:
 
     def __init__(self, ativo_parte = Util.CCYBTC(),ativo_contraparte = Util.CCYBRL()):
-        self.ativo_parte = ativo_parte
+        self.ativo_parte = ativo_parte if ativo_parte !='usdc' else 'usdt'
         self.ativo_contraparte = ativo_contraparte
         self.urlBinance = 'https://api.binance.com/'
         self.nome_corretora = 'Binance'
@@ -21,7 +21,10 @@ class Binance:
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self):
-        res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
+        if self.ativo_parte in ['bch','usdc']:
+            res = {'asks':[[1000,1000],[1000,1000]],'bids':[[1000,1000],[1000,1000]]}
+        else:
+            res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
         return res
 
     def __obterSaldo(self):
@@ -112,7 +115,6 @@ class Binance:
         for moeda in lista_de_moedas:
             saldo[moeda] = 0
         
-        time.sleep(0.5)
         response_json = self.__obterSaldo()
 
         for item in response_json['balances']:

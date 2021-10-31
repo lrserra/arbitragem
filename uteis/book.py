@@ -89,7 +89,11 @@ class Book:
                     retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
 
             elif self.nome == 'Binance':
-                retorno_book = Binance(ativo_parte,ativo_contraparte).obterBooks()
+                retorno_book_sem_tratar = Binance(ativo_parte,ativo_contraparte).obterBooks()
+                for preco_no_livro in retorno_book_sem_tratar['asks']:
+                    retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+                for preco_no_livro in retorno_book_sem_tratar['bids']:
+                    retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
 
             if ignorar_ordens_fantasmas:
                 

@@ -1,3 +1,6 @@
+import sys,os
+sys.path.append(os.getcwd())
+
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
 from uteis.util import Util

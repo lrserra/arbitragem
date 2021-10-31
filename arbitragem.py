@@ -99,16 +99,16 @@ class Arbitragem:
                                     
                                     GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now()),realmente_paguei,realmente_ganhei])
                                 
-                                    if ordem_compra.status != ordem_compra.descricao_status_executado:
+                                    if ordem_compra.status.lower() != ordem_compra.descricao_status_executado.lower():
                                         logging.error('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
-                                        logging.info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,quero_comprar_a,corretoraCompra.nome))
+                                        logging.info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,round(quero_comprar_a,6),corretoraCompra.nome))
                                         logging.warning('Arbitragem: operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                         
-                                    if ordem_venda.status != ordem_venda.descricao_status_executado:
+                                    if ordem_venda.status.lower() != ordem_venda.descricao_status_executado.lower():
                                         logging.error('Arbitragem: NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
                                     else: 
-                                        logging.info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,quero_vender_a,corretoraVenda.nome))
+                                        logging.info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,round(quero_vender_a,6),corretoraVenda.nome))
                                         logging.warning('Arbitragem: operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
 
                                     return fiz_arb , pnl_real
@@ -147,7 +147,8 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     #essa parte executa apenas uma vez
-    white_list = Util.obter_lista_de_moedas('arbitragem_status')
+    white_list = Util.obter_white_list()
+    white_list = [moeda for moeda in white_list if moeda in Util.obter_lista_de_moedas('arbitragem_status')]
     black_list = []
 
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()

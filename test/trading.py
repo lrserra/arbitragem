@@ -1,3 +1,7 @@
+import sys,os
+sys.path.append(os.getcwd())
+
+
 from uteis.util import Util
 from uteis.googleSheets import GoogleSheets
 from uteis.corretora import Corretora
