@@ -24,7 +24,22 @@ class Binance:
         if self.ativo_parte in ['bch','usdc']:
             res = {'asks':[[1000,1000],[1000,1000]],'bids':[[1000,1000],[1000,1000]]}
         else:
-            res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
+            try:
+                res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
+                if len(res['asks'])<2:
+                    logging.error('a chamada de book da Binance nao retornou nada')
+                    logging.error('vai aguardar 30 segundos e tentar novamente')
+                    time.sleep(30)
+                    res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
+            
+            except Exception as err:
+                logging.error('a chamada de book da Binance falhou com o erro:')
+                logging.error(err)
+                logging.error('vai aguardar 30 segundos e tentar novamente')
+                time.sleep(30)
+                res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
+          
+
         return res
 
     def __obterSaldo(self):

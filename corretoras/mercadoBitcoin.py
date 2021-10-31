@@ -28,7 +28,7 @@ class MercadoBitcoin:
             else:
                 retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte), timeout =30) 
         except Exception as err:
-            logging.error('a chamada da MercadoBitcoin falhou com o erro')
+            logging.error('a chamada de book da MercadoBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
