@@ -320,8 +320,8 @@ class Leilao:
             vendi_a = round(ordem_antiga.preco_enviado,2)
             quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
-            financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado)
-            financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)
+            financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado) * quantidade
+            financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)* quantidade
 
             pnl = round((financeiro_venda -financeiro_compra) * quantidade,2)
 
@@ -433,8 +433,8 @@ class Leilao:
             comprei_a = round(ordem_antiga.preco_enviado,2)
             quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
-            financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)
-            financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)
+            financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)* quantidade
+            financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)* quantidade
 
             pnl = round((financeiro_venda-financeiro_compra) * quantidade,2)
 
