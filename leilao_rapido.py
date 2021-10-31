@@ -323,7 +323,7 @@ class Leilao:
             financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado) * quantidade
             financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)* quantidade
 
-            pnl = round((financeiro_venda -financeiro_compra) * quantidade,2)
+            pnl = round((financeiro_venda -financeiro_compra),2)
 
             logging.warning('Leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
             
@@ -436,7 +436,7 @@ class Leilao:
             financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)* quantidade
             financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)* quantidade
 
-            pnl = round((financeiro_venda-financeiro_compra) * quantidade,2)
+            pnl = round((financeiro_venda-financeiro_compra),2)
 
             logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
             
