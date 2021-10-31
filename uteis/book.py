@@ -30,10 +30,13 @@ class Book:
             self.preco_venda = float(self.book['bids'][indice][0])
             self.quantidade_venda = float(self.book['bids'][indice][1])
 
-            self.preco_compra_segundo_na_fila = float(self.book['asks'][indice+1][0])
-            self.preco_venda_segundo_na_fila = float(self.book['bids'][indice+1][0])
+            self.preco_compra_segundo_na_fila = float(self.book['asks'][indice+1][0]) if len(self.book['asks'])>1 else self.preco_compra
+            self.preco_venda_segundo_na_fila = float(self.book['bids'][indice+1][0]) if len(self.book['bids'])>1 else self.preco_venda
                 
         except Exception as erro:
+            logging.error('nao foi possivel carregar o book de {} da {}'.format(self.ativo_parte,self.nome))
+            logging.error('book ask: {}'.format(self.book['asks']))
+            logging.error('book bid: {}'.format(self.book['bids']))
             raise Exception(erro)
 
     #metodo privado   
@@ -97,29 +100,29 @@ class Book:
 
             if ignorar_ordens_fantasmas:
                 
-                for preco_no_livro in retorno_book['bids'][:20]:#apenas olhamos as 20 primeiras ordens
+                for preco_no_livro in retorno_book['bids'][:30]:#apenas olhamos as 30 primeiras ordens
                     indice = retorno_book['bids'].index(preco_no_livro)
                     if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser menor que o de compra
                         preco_no_livro.append('DESCONSIDERAR')
 
             if ignorar_quantidades_pequenas:
                 
-                for preco_no_livro in retorno_book['asks'][:20]:#apenas olhamos as 20 primeiras ordens
+                for preco_no_livro in retorno_book['asks'][:30]:#apenas olhamos as 30 primeiras ordens
                     indice = retorno_book['asks'].index(preco_no_livro)
                     if float(preco_no_livro[1])*float(preco_no_livro[0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
                         preco_no_livro.append('DESCONSIDERAR')
                         
 
-                for preco_no_livro in retorno_book['bids'][:20]:#apenas olhamos as 20 primeiras ordens
+                for preco_no_livro in retorno_book['bids'][:30]:#apenas olhamos as 30 primeiras ordens
                     indice = retorno_book['bids'].index(preco_no_livro)
                     if float(preco_no_livro[1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
                         preco_no_livro.append('DESCONSIDERAR')
             
-            for preco_no_livro in retorno_book['asks'][:20]:#apenas olhamos as 20 primeiras ordens
+            for preco_no_livro in retorno_book['asks'][:30]:#apenas olhamos as 30 primeiras ordens
                 if 'DESCONSIDERAR' not in preco_no_livro:
                     self.book['asks'].append(preco_no_livro)
             
-            for preco_no_livro in retorno_book['bids'][:20]:#apenas olhamos as 20 primeiras ordens
+            for preco_no_livro in retorno_book['bids'][:30]:#apenas olhamos as 30 primeiras ordens
                 if 'DESCONSIDERAR' not in preco_no_livro:
                     self.book['bids'].append(preco_no_livro)
 
