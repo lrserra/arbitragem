@@ -204,7 +204,9 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     #essa parte executa apenas uma vez
-    lista_de_moedas = Util.obter_lista_de_moedas('zeragem_status')
+    white_list = Util.obter_white_list()
+    lista_para_zerar = [moeda for moeda in Util.obter_lista_de_moedas('zeragem_status') if moeda in white_list]
+    
     corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
     corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
 
@@ -212,9 +214,9 @@ if __name__ == "__main__":
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
     if cancelei_todas:
-        Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_de_moedas,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+        Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
