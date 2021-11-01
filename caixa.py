@@ -111,7 +111,8 @@ class Caixa:
                     #A mais liquida é a mais vantajosa para vender    
                     quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMaisLiquida.saldo[moeda])
                     quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
-                    self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida,google_sheets)
+                    if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):    
+                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida,google_sheets)
                     if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
                         self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMenosLiquida,google_sheets)
                 
@@ -119,7 +120,8 @@ class Caixa:
                     #A menos liquida é a mais vantajosa para vender    
                     quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMenosLiquida.saldo[moeda])
                     quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
-                    self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida,google_sheets)
+                    if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):
+                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida,google_sheets)
                     if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
                         self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMaisLiquida,google_sheets)
 
@@ -132,16 +134,18 @@ class Caixa:
                     #A mais liquida é a mais vantajosa para comprar
                     quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar))
                     quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
-                    self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida,google_sheets)
-                    if quantidade_que_restou>Util.retorna_menor_valor_compra(moeda):
+                    if quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida,google_sheets)
+                    if quantidade_que_restou*CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
                         self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMenosLiquida,google_sheets)
 
                 elif CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar):
                     #A menos liquida é a mais vantajosa para comprar
                     quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar))
                     quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
-                    self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida,google_sheets)
-                    if quantidade_que_restou>Util.retorna_menor_valor_compra(moeda):
+                    if quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida,google_sheets)
+                    if quantidade_que_restou*CorretoraMaisLiquida.book.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
                         self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida,google_sheets)
 
             else:
