@@ -70,9 +70,10 @@ class Corretora:
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('obter_todas_ordens_abertas', self.nome, erro))
         
-    def cancelar_todas_ordens(self, ativo='btc', ativo_contraparte='brl'):
+    def cancelar_todas_ordens(self):
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
+            white_list = Util.obter_white_list()
             qtd_ordens_abertas = len(ordens_abertas)
             
             if qtd_ordens_abertas>0:
@@ -81,17 +82,17 @@ class Corretora:
                 logging.warning('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
 
             if self.nome == 'MercadoBitcoin':
-                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas)
+                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'BrasilBitcoin':
-                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas)
+                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'Binance':
-                Binance().cancelar_todas_ordens(ordens_abertas)
+                Binance().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'BitcoinTrade':
-                BitcoinTrade().cancelar_todas_ordens(ordens_abertas)
+                BitcoinTrade().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'Novadax':            
-                Novadax().cancelar_todas_ordens(ordens_abertas)
+                Novadax().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'BitRecife':            
-                BitRecife().cancelar_todas_ordens(ordens_abertas)
+                BitRecife().cancelar_todas_ordens(ordens_abertas,white_list)
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('cancelar_todas_ordens', self.nome, erro))
     #metodos eclusivos por ordem

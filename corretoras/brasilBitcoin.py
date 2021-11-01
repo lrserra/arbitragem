@@ -169,12 +169,13 @@ class BrasilBitcoin:
 
         return retorno_cancel['success']
 
-    def cancelar_todas_ordens(self, ordens_abertas):
+    def cancelar_todas_ordens(self, ordens_abertas,white_list):
         '''
         Cancelar todas as ordens abertas por ativo
         '''
         for ordem in ordens_abertas:
-            self.cancelar_ordem(ordem['id'])
+            if ordem['coin'].lower() in white_list:
+                self.cancelar_ordem(ordem['id'])
 
     def obter_ordem_por_id(self, ordem:Ordem):
         
