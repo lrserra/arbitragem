@@ -7,7 +7,7 @@ from uteis.googleSheets import GoogleSheets
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
 import time
-
+#isso é um teste do git
 corrMercado = Corretora('MercadoBitcoin')
 corrBrasilBTC = Corretora('BrasilBitcoin')
 corrMercado.book.obter_ordem_book_por_indice('usdc','brl',0)
