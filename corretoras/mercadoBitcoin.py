@@ -25,6 +25,7 @@ class MercadoBitcoin:
         try:
             if self.ativo_parte in ['doge','usdt']:
                 retorno_json = {'asks':[[1000,1000],[1000,1000]],'bids':[[1000,1000],[1000,1000]]}
+                return retorno_json
             else:
                 retorno_json = requests.get(url = self.urlMercadoBitcoin.format(self.ativo_parte), timeout =30) 
         except Exception as err:

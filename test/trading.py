@@ -10,7 +10,7 @@ import time
 
 corrMercado = Corretora('MercadoBitcoin')
 corrBrasilBTC = Corretora('BrasilBitcoin')
-corrMercado.book.obter_ordem_book_por_indice('xrp','brl',0)
+corrMercado.book.obter_ordem_book_por_indice('doge','brl',0)
 
 corrMercado.atualizar_saldo()
 print(corrMercado.saldo['xrp'])
