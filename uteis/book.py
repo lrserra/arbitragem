@@ -34,7 +34,7 @@ class Book:
             self.preco_venda_segundo_na_fila = float(self.book['bids'][indice+1][0]) if len(self.book['bids'])>1 else self.preco_venda
                 
         except Exception as erro:
-            logging.error('nao foi possivel carregar o book de {} da {}'.format(self.ativo_parte,self.nome))
+            logging.error('nao foi possivel carregar o book de {} da {}'.format(ativo_parte,self.nome))
             logging.error('book ask: {}'.format(self.book['asks']))
             logging.error('book bid: {}'.format(self.book['bids']))
             raise Exception(erro)
@@ -47,7 +47,7 @@ class Book:
             self.book={'asks':[],'bids':[]}
 
             if ignorar_quantidades_pequenas:
-                minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
+                minimo_que_posso_comprar = 9#Util.retorna_menor_valor_compra(ativo_parte)
                 minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
 
             if self.nome == 'MercadoBitcoin':
