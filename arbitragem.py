@@ -50,16 +50,16 @@ class Arbitragem:
                 #define pnl minimo para aceitarmos o trade
                 fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
                 
-                pnl_minimo = 0.1
-                pnl_minimo = 2 if fracao_do_caixa<0.2 else pnl_minimo # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
-                pnl_minimo = 10 if fracao_do_caixa<0.05 else pnl_minimo # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
-
-                if fracao_do_caixa>0.99 and (pnl/vou_pagar)>(-1/10000): #condicao kamikaze estou desesperado
-                    pnl_minimo =-1
-
+                rentabilidade_minima = -1/10000
+                rentabilidade_minima = 0 if fracao_do_caixa<0.9 else rentabilidade_minima
+                rentabilidade_minima = 1/10000 if fracao_do_caixa<0.8 else rentabilidade_minima
+                rentabilidade_minima = 2/10000 if fracao_do_caixa<0.5 else rentabilidade_minima
+                rentabilidade_minima = 10/10000 if fracao_do_caixa<0.2 else rentabilidade_minima # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
+                rentabilidade_minima = 200/10000 if fracao_do_caixa<0.1 else rentabilidade_minima # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
+                
                 if qtdNegociada !=0:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
-                    if pnl>pnl_minimo:#nao vamos o trade por menos que o pnl minimo
+                    if (pnl/vou_pagar)>rentabilidade_minima:#só fazemos se a rentabilidade for maior que isso
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
                         if (vou_pagar > Util.retorna_menor_valor_compra(ativo)) and (qtdNegociada > Util.retorna_menor_quantidade_venda(ativo)):
                             #se tenho saldo, prossigo
@@ -120,13 +120,13 @@ class Arbitragem:
                             logging.info('Arbitragem: nao vai enviar ordem de {} porque qtde {} nao é maior que a minima {} ou o valor a pagar {} nao é maior que o minimo {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo),vou_pagar,Util.retorna_menor_valor_compra(ativo)))
                             return fiz_arb , pnl_real
                     else:
-                        logging.info('Arbitragem: nao vai enviar ordem de {} porque o pnl estimado: {}=({}-{}) nao é maior que nosso pnl minimo: {}'.format(ativo,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(pnl_minimo,2)))
+                        logging.info('Arbitragem: nao vai enviar ordem de {} porque o pnl estimado: {}=({}-{}) nao é maior que nossa rentabilidade minima:{}%>{}/{}'.format(ativo,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(100*rentabilidade_minima,2),round(pnl,2),round(vou_pagar,2)))
                         return fiz_arb , pnl_real   
                 else:
                     logging.info('Arbitragem: acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
                     return fiz_arb , pnl_real
             else:
-                logging.info('Arbitragem: nao vai enviar ordem de {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
+                logging.info('Arbitragem: nao vai comprar {} na {} porque preco compra {} na {} é maior que preco venda {} na {}'.format(ativo,corretoraCompra.nome,round(preco_de_compra,2),corretoraCompra.nome,round(preco_de_venda,2),corretoraVenda.nome))
                 return fiz_arb , pnl_real
 
         except Exception as erro:
