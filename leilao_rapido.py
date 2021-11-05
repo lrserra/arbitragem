@@ -112,9 +112,9 @@ if __name__ == "__main__":
             
             qtd_ordens_abertas = len(ordens_abertas.keys())
             
-        #step 3: essa parte faz em loop de 6 minutos
+        #step 3: essa parte faz em loop de 3 minutos
         agora = datetime.now() 
-        proximo_ciclo = agora + timedelta(minutes=6)
+        proximo_ciclo = agora + timedelta(minutes=3)
         logging.warning('proximo ciclo até: {} '.format(proximo_ciclo))
         logging.warning('no proximo ciclo serao consideradas apenas as seguintes {} ordens:'.format(qtd_ordens_abertas))
         logging.warning('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
