@@ -50,6 +50,9 @@ class Arbitragem:
                 #define pnl minimo para aceitarmos o trade
                 fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
                 
+                pnl_minimo = -1
+                pnl_minimo = 0.1 if fracao_do_caixa<0.9 else pnl_minimo
+
                 rentabilidade_minima = -1/10000
                 rentabilidade_minima = 0 if fracao_do_caixa<0.9 else rentabilidade_minima
                 rentabilidade_minima = 1/10000 if fracao_do_caixa<0.8 else rentabilidade_minima
@@ -57,7 +60,7 @@ class Arbitragem:
                 rentabilidade_minima = 10/10000 if fracao_do_caixa<0.2 else rentabilidade_minima # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
                 rentabilidade_minima = 200/10000 if fracao_do_caixa<0.1 else rentabilidade_minima # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
                 
-                if qtdNegociada !=0:
+                if qtdNegociada !=0 and pnl>pnl_minimo:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
                     if (pnl/vou_pagar)>rentabilidade_minima:#só fazemos se a rentabilidade for maior que isso
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
