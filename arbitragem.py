@@ -123,7 +123,7 @@ class Arbitragem:
                             logging.info('Arbitragem: nao vai enviar ordem de {} porque qtde {} nao é maior que a minima {} ou o valor a pagar {} nao é maior que o minimo {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo),vou_pagar,Util.retorna_menor_valor_compra(ativo)))
                             return fiz_arb , pnl_real
                     else:
-                        logging.info('Arbitragem: nao vai enviar ordem de {} porque o pnl estimado: {}=({}-{}) nao é maior que nossa rentabilidade minima:{}%>{}/{}'.format(ativo,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(100*rentabilidade_minima,2),round(pnl,2),round(vou_pagar,2)))
+                        logging.info('Arbitragem: nao vai enviar ordem de {} porque comprando na  {}, o pnl estimado: {}=({}-{}) nao atinge nossa rentabilidade minima:{}%>{}/{}'.format(ativo,corretoraCompra.nome,round(pnl,2),round(vou_pagar,2),round(vou_ganhar,2),round(100*rentabilidade_minima,4),round(pnl,2),round(vou_pagar,2)))
                         return fiz_arb , pnl_real   
                 else:
                     logging.info('Arbitragem: acabaram as {} na {} ou acabou o saldo em brl na {}'.format(ativo,corretoraVenda.nome,corretoraCompra.nome))
