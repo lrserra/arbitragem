@@ -1,8 +1,8 @@
 from teste_stress import Teste_Stress
 
-ativo = 'btc'
+ativo = 'xrp'
 frequencia = 0
-corretora = 'BrasilBitcoin'
+corretora = 'Binance'
 
 Teste_Stress.carrega_books(corretora,ativo,frequencia)
 

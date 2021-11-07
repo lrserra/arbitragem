@@ -23,7 +23,7 @@ class Teste_Stress:
                 time.sleep(frequencia)
                 time_intermediario = datetime.datetime.now()
                 i+=1
-                corretora_obj.book.obter_ordem_book_por_indice(ativo,'brl',0)
+                corretora_obj.book.obter_ordem_book_por_indice(ativo,'brl',0,True,False)
                 pc1=corretora_obj.book.preco_compra
                 pc2=corretora_obj.book.preco_compra_segundo_na_fila 
                 pv1=corretora_obj.book.preco_venda
