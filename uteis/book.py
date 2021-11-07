@@ -100,13 +100,13 @@ class Book:
 
             if ignorar_ordens_fantasmas:
                 
-                for preco_no_livro in retorno_book['bids'][:10]:
+                for preco_no_livro in retorno_book['bids'][:5]:
                     indice = retorno_book['bids'].index(preco_no_livro)
                     if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser maior que o de compra
                         preco_no_livro.append('DESCONSIDERAR')
                         preco_no_livro.append('ORDEM FANTASMA')
 
-                for preco_no_livro in retorno_book['asks'][:10]:
+                for preco_no_livro in retorno_book['asks'][:5]:
                     indice = retorno_book['asks'].index(preco_no_livro)
                     if float(preco_no_livro[0]) < float(retorno_book['bids'][indice][0]): #o preco de compra tem que ser menor que o de venda
                         preco_no_livro.append('DESCONSIDERAR')
@@ -114,13 +114,13 @@ class Book:
 
             if ignorar_quantidades_pequenas:
                 
-                for preco_no_livro in retorno_book['asks'][:10]:
+                for preco_no_livro in retorno_book['asks'][:5]:
                     indice = retorno_book['asks'].index(preco_no_livro)
                     if float(preco_no_livro[1])*float(preco_no_livro[0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
                         preco_no_livro.append('DESCONSIDERAR')
                         preco_no_livro.append('QTD PEQUENA')
 
-                for preco_no_livro in retorno_book['bids'][:10]:
+                for preco_no_livro in retorno_book['bids'][:5]:
                     indice = retorno_book['bids'].index(preco_no_livro)
                     if float(preco_no_livro[1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
                         preco_no_livro.append('DESCONSIDERAR')
