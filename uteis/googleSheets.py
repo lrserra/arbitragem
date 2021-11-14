@@ -22,6 +22,20 @@ class GoogleSheets:
 
         return client
 
+    def escrever_margem(self, margem=[]):
+        try:
+            google_config = Util.retorna_config_google_api()
+            self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'margem', margem)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_margem: {}'.format(err))
+
+    def escrever_futuros(self, operacoes=[]):
+        try:
+            google_config = Util.retorna_config_google_api()
+            self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'update_futuros', operacoes)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_margem: {}'.format(err))
+
     def escrever_operacao(self, operacao):
         try:
             google_config = Util.retorna_config_google_api()
@@ -35,7 +49,12 @@ class GoogleSheets:
             self.escrever(google_config['sheet_name'], google_config['saldo'], saldo)
         except Exception as err:
             logging.error('GoogleSheets - escrever_saldo: {}'.format(err))
-
+    
+    def sobrescrever(self, planilha, aba,range, linhas=[]):
+        client = self.retorna_google_sheets_client()
+        sheet = client.open(planilha).worksheet(aba)
+        sheet.update(range, linhas)
+        
     def escrever(self, planilha, aba, linha):
         client = self.retorna_google_sheets_client()
         sheet = client.open(planilha).worksheet(aba)
