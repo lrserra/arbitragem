@@ -23,7 +23,7 @@ class MercadoBitcoin:
     def obterBooks(self):
         
         try:
-            if self.ativo_parte in ['doge','usdt']:
+            if self.ativo_parte in ['usdt']:
                 retorno_json = {'asks':[[1000,1000],[1000,1000]],'bids':[[1000,1000],[1000,1000]]}
                 return retorno_json
             else:
