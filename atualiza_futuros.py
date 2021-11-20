@@ -29,7 +29,7 @@ while True:
         GoogleSheets().append_futuros(lista_append)
         append_historico = False
 
-    time.sleep(60)
+    time.sleep(30)
 
    
 
