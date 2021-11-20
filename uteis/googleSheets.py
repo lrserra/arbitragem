@@ -1,4 +1,5 @@
 import logging
+import time
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
@@ -29,6 +30,43 @@ class GoogleSheets:
             self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'margem', margem)
         except Exception as err:
             logging.error('GoogleSheets - escrever_margem: {}'.format(err))
+
+    def limpa_saldo(self):
+        try:
+            google_config = Util.retorna_config_google_api()
+            client = self.retorna_google_sheets_client()
+            sheet = client.open(google_config['sheet_name']).worksheet(google_config['saldo'])
+            data = sheet.col_values(27)
+            linhas_a_deletar = []
+            today_date = datetime.now()
+            for row in data:
+                current_index = data.index(row)
+                if row.find('/')!=-1 and current_index<len(data)-1:
+                    
+                    current_date = datetime.strptime(row, '%m/%d/%Y %H:%M:%S')
+                    previous_date = datetime.strptime(data[current_index-1], '%m/%d/%Y %H:%M:%S') if data[current_index-1].find('/')!=-1 else 0
+                    next_date = datetime.strptime(data[current_index+1], '%m/%d/%Y %H:%M:%S') if data[current_index+1].find('/')!=-1 else 0
+                    
+                    if previous_date !=0 and next_date !=0:
+                        if current_date.day==today_date.day and current_date.month == today_date.month:
+                            pass #hj nao apaga
+                        if current_date.day!=today_date.day and current_date.month == today_date.month:
+                            #desse mes mas nao é hoje
+                            if previous_date.day == current_date.day and next_date.day == current_date.day:
+                                linhas_a_deletar.append([current_index+1,current_date]) #vamos deixar só primeiro e ultimo de cada dia
+                        if current_date.day!=today_date.day and current_date.month != today_date.month:
+                            #meses diferentes
+                            if previous_date.month == current_date.month and next_date.month == current_date.month:
+                                linhas_a_deletar.append([current_index+1,current_date]) #vamos deixar só primeiro e ultimo de cada mes
+
+            for linha_a_deletar in reversed(linhas_a_deletar):
+                print('deletando a linha {}'.format(linha_a_deletar[1]))
+                time.sleep(1)
+                sheet.delete_row(linha_a_deletar[0])
+       
+        except Exception as err:
+            logging.error('GoogleSheets - limpa_saldo: {}'.format(err))
+
 
     def append_futuros(self, linha=[[]]):
         try:
