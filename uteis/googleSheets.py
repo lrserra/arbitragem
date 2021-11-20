@@ -22,19 +22,33 @@ class GoogleSheets:
 
         return client
 
-    def escrever_margem(self, margem=[]):
+    def atualiza_margem(self, operacoes=[],margem=[]):
         try:
             google_config = Util.retorna_config_google_api()
+            self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'update_futuros', operacoes)
             self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'margem', margem)
         except Exception as err:
             logging.error('GoogleSheets - escrever_margem: {}'.format(err))
 
-    def escrever_futuros(self, operacoes=[]):
+    def append_futuros(self, linha=[[]]):
         try:
             google_config = Util.retorna_config_google_api()
-            self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'update_futuros', operacoes)
+            client = self.retorna_google_sheets_client()
+            sheet = client.open(google_config['sheet_name']).worksheet(google_config['futuros'])
+            data = sheet.col_values(2)
+            row_count = 1
+            today_date = datetime.now()
+            for row in data:
+                if row.find('/')!=-1:
+                    data_format = datetime.strptime(row, '%m/%d/%Y %H:%M:%S')
+                    if not(data_format.day == today_date.day and data_format.month == today_date.month and data_format.year == today_date.year):
+                        row_count +=1 
+                else:
+                    row_count +=1
+            sheet.update('B{}:G{}'.format(row_count,row_count),linha)
+            
         except Exception as err:
-            logging.error('GoogleSheets - escrever_margem: {}'.format(err))
+            logging.error('GoogleSheets - append_futuros: {}'.format(err))
 
     def escrever_operacao(self, operacao):
         try:
