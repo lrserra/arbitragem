@@ -60,7 +60,7 @@ class GoogleSheets:
                                 linhas_a_deletar.append([current_index+1,current_date]) #vamos deixar só primeiro e ultimo de cada mes
 
             for linha_a_deletar in reversed(linhas_a_deletar):
-                print('deletando a linha {}'.format(linha_a_deletar[1]))
+                logging.info('deletando a linha {} com data {}'.format(linha_a_deletar[0],linha_a_deletar[1]))
                 time.sleep(1)
                 sheet.delete_row(linha_a_deletar[0])
        
