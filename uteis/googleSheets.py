@@ -122,6 +122,14 @@ class GoogleSheets:
             logging.error('GoogleSheets - limpa_operacoes: {}'.format(err))
 
 
+    def retornar_volume(self):
+        try:
+            google_config = Util.retorna_config_google_api()
+
+        except Exception as err:
+            logging.error('GoogleSheets - retornar_volume: {}'.format(err))
+
+        
     def limpa_saldo(self):
         try:
             google_config = Util.retorna_config_google_api()
