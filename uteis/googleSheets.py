@@ -4,7 +4,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
 from uteis.util import Util
-from datetime import datetime
+from datetime import datetime, timedelta
 from gspread_formatting import *
 
 class GoogleSheets:
@@ -30,6 +30,97 @@ class GoogleSheets:
             self.sobrescrever(google_config['sheet_name'], google_config['futuros'],'margem', margem)
         except Exception as err:
             logging.error('GoogleSheets - escrever_margem: {}'.format(err))
+
+    def limpa_operacoes(self):
+        try:
+            google_config = Util.retorna_config_google_api()
+            client = self.retorna_google_sheets_client()
+            sheet = client.open(google_config['sheet_name']).worksheet(google_config['operacoes'])
+            todos_dados = sheet.get_all_records()
+            
+            today_date = datetime.now()
+            today_minus_30_date = today_date - timedelta(days=30)
+
+            compressao_diaria =[]
+            linhas_a_adicionar = []
+            linhas_a_excluir = []
+            for linha in todos_dados:
+                linha['DATA'] = datetime.strptime(linha['DATA'], '%m/%d/%Y %H:%M:%S')
+                comprimido = linha['COMPRIMIDO'] =='TRUE'
+                if linha['DATA'] > today_minus_30_date and linha['DATA'].day!=today_date.day and not comprimido:
+                    linha['ROW'] = todos_dados.index(linha)+2
+                    compressao_diaria.append(linha)
+                  
+            for linha in compressao_diaria:
+                trades_a_comprimir_nesse_dia = [row for row in compressao_diaria if row['DATA'].day==linha['DATA'].day]
+                corretoras = list(set([row['CORRETORA COMPRA'] for row in trades_a_comprimir_nesse_dia if row['CORRETORA COMPRA']!='']+[row['CORRETORA VENDA'] for row in trades_a_comprimir_nesse_dia if row['CORRETORA VENDA']!='']))
+                estrategias = list(set([row['ESTRATEGIA'] for row in trades_a_comprimir_nesse_dia]))
+                moedas = list(set([row['MOEDA'] for row in trades_a_comprimir_nesse_dia]))
+
+                for corretora in corretoras:
+                    for estrategia in estrategias:
+                        for moeda in moedas:
+                            #cria trade comprimido e escreve
+                            compressed_trade = []
+
+                            corretora_compra = corretora
+                            corretora_venda = corretoras[0] if corretoras[0] == corretora else corretoras[1]
+
+                            trades_a_comprimir = [trade for trade in trades_a_comprimir_nesse_dia if trade['CORRETORA COMPRA'] == corretora_compra and trade['MOEDA']==moeda and trade['ESTRATEGIA']==estrategia]
+
+                            if len(trades_a_comprimir)>1:
+                                precos_compra = [row['PRECO COMPRA'] for row in trades_a_comprimir]
+                                preco_compra = sum(precos_compra)/len(precos_compra)
+                                precos_venda = [row['PRECO VENDA'] for row in trades_a_comprimir]
+                                preco_venda = sum(precos_venda)/len(precos_venda)
+                                quantidade_compra = sum([row['QTD COMPRA'] for row in trades_a_comprimir])
+                                quantidade_venda = sum([row['QTD VENDA'] for row in trades_a_comprimir])
+                                pnl = sum([float(row['PNL'].replace('$','').replace(',','')) for row in trades_a_comprimir])
+                                data = linha['DATA']
+                                financeiro_compra = sum([float(row['FIN COMPRA'].replace('$','').replace(',','')) for row in trades_a_comprimir])
+                                financeiro_venda = sum([float(row['FIN VENDA'].replace('$','').replace(',','')) for row in trades_a_comprimir])
+                                
+                                compressed_trade.append(moeda)
+                                compressed_trade.append(corretora_compra)
+                                compressed_trade.append(preco_compra)
+                                compressed_trade.append(quantidade_compra)
+                                compressed_trade.append(corretora_venda)
+                                compressed_trade.append(preco_venda)
+                                compressed_trade.append(quantidade_venda)
+                                compressed_trade.append(pnl)
+                                compressed_trade.append(estrategia)
+                                compressed_trade.append(Util.excel_date(data))
+                                compressed_trade.append(financeiro_compra)
+                                compressed_trade.append(financeiro_venda)
+                                compressed_trade.append(True)
+
+                                linhas_a_adicionar.append(compressed_trade)
+                                linhas_a_excluir = linhas_a_excluir+[linha['ROW'] for linha in trades_a_comprimir]
+
+                for trade in trades_a_comprimir_nesse_dia:
+                    #remove da lista de compressao diaria, todos ja foram comprimidos quando necessario
+                    compressao_diaria.remove(trade)
+
+            index = 1
+            lista_final =[]
+            for linha in todos_dados:
+                if index not in linhas_a_excluir:
+                    lista_final.append([linha['MOEDA'],linha['CORRETORA COMPRA'],linha['PRECO COMPRA'],linha['QTD COMPRA'],linha['CORRETORA VENDA'],linha['PRECO VENDA'],linha['QTD VENDA'],linha['PNL'],linha['ESTRATEGIA'],Util.excel_date(linha['DATA']),linha['FIN COMPRA'],linha['FIN VENDA'],linha['COMPRIMIDO']])
+                if index == sorted(linhas_a_excluir)[0]:
+                    for linha_a_adicionar in linhas_a_adicionar:
+                        lista_final.append(linha_a_adicionar)
+                index+=1
+
+            while len(lista_final)<len(todos_dados):
+                lista_final.append(['','','','','','','','','','','','',''])
+            
+            
+            sheet.update('A{}:M{}'.format(2,len(todos_dados)+1),lista_final)
+
+            return lista_final
+        except Exception as err:
+            logging.error('GoogleSheets - limpa_operacoes: {}'.format(err))
+
 
     def limpa_saldo(self):
         try:
