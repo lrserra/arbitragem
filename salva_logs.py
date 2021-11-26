@@ -2,6 +2,9 @@ from datetime import datetime
 import os
 from uteis.googleSheets import GoogleSheets
  
+#GoogleSheets().limpa_operacoes()
+GoogleSheets().limpa_saldo()
+
 directory_path = os.getcwd() #pega diretorio raiz
 foldername = 'log_backup_'+datetime.now().strftime('%Y%m%d')
 
@@ -21,5 +24,4 @@ list_of_texts = [file for file in list_of_files if file.endswith('txt')]
 for file_name in list_of_logs + list_of_texts:
     os.replace(directory_path+'//'+file_name,destination_folder+'//'+file_name)
      
-GoogleSheets().limpa_operacoes()
-GoogleSheets().limpa_saldo()
+

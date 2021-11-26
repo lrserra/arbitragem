@@ -42,15 +42,75 @@ class GoogleSheets:
             today_minus_30_date = today_date - timedelta(days=30)
 
             compressao_diaria =[]
+            compressao_mensal=[]
             linhas_a_adicionar = []
             linhas_a_excluir = []
+
             for linha in todos_dados:
                 linha['DATA'] = datetime.strptime(linha['DATA'], '%m/%d/%Y %H:%M:%S')
                 comprimido = linha['COMPRIMIDO'] =='TRUE'
                 if linha['DATA'] > today_minus_30_date and linha['DATA'].day!=today_date.day and not comprimido:
                     linha['ROW'] = todos_dados.index(linha)+2
                     compressao_diaria.append(linha)
-                  
+                elif linha['DATA'] < today_minus_30_date and not comprimido:
+                    linha['ROW'] = todos_dados.index(linha)+2
+                    compressao_mensal.append(linha)
+            
+            for linha in compressao_mensal:
+                trades_a_comprimir_nesse_mes = [row for row in compressao_mensal if row['DATA'].month==linha['DATA'].month]
+                corretoras = list(set([row['CORRETORA COMPRA'] for row in trades_a_comprimir_nesse_mes if row['CORRETORA COMPRA']!='']+[row['CORRETORA VENDA'] for row in trades_a_comprimir_nesse_mes if row['CORRETORA VENDA']!='']))
+                estrategias = list(set([row['ESTRATEGIA'] for row in trades_a_comprimir_nesse_mes]))
+                moedas = list(set([row['MOEDA'] for row in trades_a_comprimir_nesse_mes]))
+
+                for corretora in corretoras:
+                    for estrategia in estrategias:
+                        for moeda in moedas:
+                            #cria trade comprimido e escreve
+                            compressed_trade = []
+
+                            corretora_compra = corretora
+                            corretora_venda = corretoras[0] if corretoras[0] == corretora else corretoras[1]
+
+                            trades_a_comprimir = [trade for trade in trades_a_comprimir_nesse_mes if trade['CORRETORA COMPRA'] == corretora_compra and trade['MOEDA']==moeda and trade['ESTRATEGIA']==estrategia]
+
+                            if len(trades_a_comprimir)>1:
+                                for trade in trades_a_comprimir:
+                                    trade['PNL'] = float(trade['PNL'].replace('$','').replace(',','')) if str(trade['PNL'])==trade['PNL'] else trade['PNL']
+                                    trade['FIN COMPRA'] = float(trade['FIN COMPRA'].replace('$','').replace(',','')) if str(trade['FIN COMPRA'])==trade['FIN COMPRA'] else trade['FIN COMPRA']
+                                    trade['FIN VENDA'] = float(trade['FIN VENDA'].replace('$','').replace(',','')) if str(trade['FIN VENDA'])==trade['FIN VENDA'] else trade['FIN VENDA']
+
+                                precos_compra = [row['PRECO COMPRA'] for row in trades_a_comprimir]
+                                preco_compra = sum(precos_compra)/len(precos_compra)
+                                precos_venda = [row['PRECO VENDA'] for row in trades_a_comprimir]
+                                preco_venda = sum(precos_venda)/len(precos_venda)
+                                quantidade_compra = sum([row['QTD COMPRA'] for row in trades_a_comprimir])
+                                quantidade_venda = sum([row['QTD VENDA'] for row in trades_a_comprimir])
+                                pnl = sum([row['PNL'] for row in trades_a_comprimir])
+                                data = linha['DATA']
+                                financeiro_compra = sum([row['FIN COMPRA'] for row in trades_a_comprimir])
+                                financeiro_venda = sum([row['FIN VENDA'] for row in trades_a_comprimir])
+                                
+                                compressed_trade.append(moeda)
+                                compressed_trade.append(corretora_compra)
+                                compressed_trade.append(preco_compra)
+                                compressed_trade.append(quantidade_compra)
+                                compressed_trade.append(corretora_venda)
+                                compressed_trade.append(preco_venda)
+                                compressed_trade.append(quantidade_venda)
+                                compressed_trade.append(pnl)
+                                compressed_trade.append(estrategia)
+                                compressed_trade.append(Util.excel_date(data))
+                                compressed_trade.append(financeiro_compra)
+                                compressed_trade.append(financeiro_venda)
+                                compressed_trade.append(True)
+
+                                linhas_a_adicionar.append(compressed_trade)
+                                linhas_a_excluir = linhas_a_excluir+[linha['ROW'] for linha in trades_a_comprimir]
+
+                for trade in trades_a_comprimir_nesse_mes:
+                    #remove da lista de compressao mensal, todos ja foram comprimidos quando necessario
+                    compressao_mensal.remove(trade)
+
             for linha in compressao_diaria:
                 trades_a_comprimir_nesse_dia = [row for row in compressao_diaria if row['DATA'].day==linha['DATA'].day]
                 corretoras = list(set([row['CORRETORA COMPRA'] for row in trades_a_comprimir_nesse_dia if row['CORRETORA COMPRA']!='']+[row['CORRETORA VENDA'] for row in trades_a_comprimir_nesse_dia if row['CORRETORA VENDA']!='']))
@@ -69,16 +129,21 @@ class GoogleSheets:
                             trades_a_comprimir = [trade for trade in trades_a_comprimir_nesse_dia if trade['CORRETORA COMPRA'] == corretora_compra and trade['MOEDA']==moeda and trade['ESTRATEGIA']==estrategia]
 
                             if len(trades_a_comprimir)>1:
+                                for trade in trades_a_comprimir:
+                                    trade['PNL'] = float(trade['PNL'].replace('$','').replace(',','')) if str(trade['PNL'])==trade['PNL'] else trade['PNL']
+                                    trade['FIN COMPRA'] = float(trade['FIN COMPRA'].replace('$','').replace(',','')) if str(trade['FIN COMPRA'])==trade['FIN COMPRA'] else trade['FIN COMPRA']
+                                    trade['FIN VENDA'] = float(trade['FIN VENDA'].replace('$','').replace(',','')) if str(trade['FIN VENDA'])==trade['FIN VENDA'] else trade['FIN VENDA']
+
                                 precos_compra = [row['PRECO COMPRA'] for row in trades_a_comprimir]
                                 preco_compra = sum(precos_compra)/len(precos_compra)
                                 precos_venda = [row['PRECO VENDA'] for row in trades_a_comprimir]
                                 preco_venda = sum(precos_venda)/len(precos_venda)
                                 quantidade_compra = sum([row['QTD COMPRA'] for row in trades_a_comprimir])
                                 quantidade_venda = sum([row['QTD VENDA'] for row in trades_a_comprimir])
-                                pnl = sum([float(row['PNL'].replace('$','').replace(',','')) for row in trades_a_comprimir])
+                                pnl = sum([row['PNL'] for row in trades_a_comprimir])
                                 data = linha['DATA']
-                                financeiro_compra = sum([float(row['FIN COMPRA'].replace('$','').replace(',','')) for row in trades_a_comprimir])
-                                financeiro_venda = sum([float(row['FIN VENDA'].replace('$','').replace(',','')) for row in trades_a_comprimir])
+                                financeiro_compra = sum([row['FIN COMPRA'] for row in trades_a_comprimir])
+                                financeiro_venda = sum([row['FIN VENDA'] for row in trades_a_comprimir])
                                 
                                 compressed_trade.append(moeda)
                                 compressed_trade.append(corretora_compra)
@@ -105,6 +170,10 @@ class GoogleSheets:
             lista_final =[]
             for linha in todos_dados:
                 if index not in linhas_a_excluir:
+                    linha['PNL'] = float(linha['PNL'].replace('$','').replace(',','')) if str(linha['PNL'])==linha['PNL'] else linha['PNL']
+                    linha['FIN COMPRA'] = float(linha['FIN COMPRA'].replace('$','').replace(',','')) if str(linha['FIN COMPRA'])==linha['FIN COMPRA'] else linha['FIN COMPRA']
+                    linha['FIN VENDA'] = float(linha['FIN VENDA'].replace('$','').replace(',','')) if str(linha['FIN VENDA'])==linha['FIN VENDA'] else linha['FIN VENDA']
+
                     lista_final.append([linha['MOEDA'],linha['CORRETORA COMPRA'],linha['PRECO COMPRA'],linha['QTD COMPRA'],linha['CORRETORA VENDA'],linha['PRECO VENDA'],linha['QTD VENDA'],linha['PNL'],linha['ESTRATEGIA'],Util.excel_date(linha['DATA']),linha['FIN COMPRA'],linha['FIN VENDA'],linha['COMPRIMIDO']])
                 if index == sorted(linhas_a_excluir)[0]:
                     for linha_a_adicionar in linhas_a_adicionar:
