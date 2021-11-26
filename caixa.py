@@ -66,7 +66,6 @@ class Caixa:
         preco_venda['usdc']=CorretoraMaisLiquida.book.preco_venda
 
         logging.warning('caixa vai enviar saldo para o google')
-        GoogleSheets().limpa_saldo()
         GoogleSheets().escrever_saldo([saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['ada'],saldo['usdt'],saldo['doge'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],saldo['ada']*preco_venda['ada'],saldo['usdt']*preco_venda['usdt'],saldo['doge']*preco_venda['doge'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'],CorretoraMaisLiquida.saldo['ada'],CorretoraMaisLiquida.saldo['usdt'],CorretoraMaisLiquida.saldo['doge'], Util.excel_date(datetime.now()),preco_venda['usdc']])
 
 
