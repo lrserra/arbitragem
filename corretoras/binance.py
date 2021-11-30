@@ -14,6 +14,7 @@ class Binance:
         self.ativo_contraparte = ativo_contraparte
         self.urlBinance = 'https://api.binance.com/'
         self.nome_corretora = 'Binance'
+        self.recvWindow = 60*1000
         
         config = Util.obterCredenciais()
         self.client = Spot(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
@@ -43,11 +44,11 @@ class Binance:
         return res
 
     def __obterSaldo(self):
-        res = self.client.account()
+        res = self.client.account(recvWindow=self.recvWindow)
         return res
 
     def __obterOrdemPorId(self, idOrdem):
-        res = self.client.get_order('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()), orderId=idOrdem)
+        res = self.client.get_order('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()), orderId=idOrdem,recvWindow=self.recvWindow)
         return res
 
     def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
