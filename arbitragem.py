@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
@@ -100,8 +101,12 @@ class Arbitragem:
                                     quantidade_executada_compra = ordem_compra.quantidade_executada
                                     quantidade_executada_venda = ordem_venda.quantidade_executada
                                     
-                                    GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',Util.excel_date(datetime.now()),realmente_paguei,realmente_ganhei])
-                                
+                                    trade_time = Util.excel_date(datetime.now())
+                                    trade_id = uuid.uuid4()
+                                    GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',trade_time,realmente_paguei,realmente_ganhei])
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,'FALSE'])
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,'FALSE'])
+
                                     if ordem_compra.status.lower() != ordem_compra.descricao_status_executado.lower():
                                         logging.error('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
                                     else:
