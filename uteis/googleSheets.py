@@ -259,9 +259,18 @@ class GoogleSheets:
     def escrever_operacao(self, operacao):
         try:
             google_config = Util.retorna_config_google_api()
-            self.escrever(google_config['sheet_name'], google_config['operacoes'], operacao)
+            if 'operacoes' in google_config.keys():
+                self.escrever(google_config['sheet_name'], google_config['operacoes'], operacao)
         except Exception as err:
             logging.error('GoogleSheets - escrever_operacao: {}'.format(err))
+
+    def escrever_spot(self, operacao):
+        try:
+            google_config = Util.retorna_config_google_api()
+            if 'spot' in google_config.keys():
+                self.escrever(google_config['sheet_name'], google_config['spot'], operacao)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_spot: {}'.format(err))
 
     def escrever_saldo(self, saldo):
         try:
