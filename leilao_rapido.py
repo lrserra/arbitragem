@@ -450,7 +450,7 @@ class Leilao:
             quantidade_executada_venda = ordem_zeragem.quantidade_executada
             
             trade_time = Util.excel_date(datetime.now())
-            trade_id = uuid.uuid4()
+            trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', trade_time,financeiro_compra,financeiro_venda])
             google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraLeilao.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,pnl/2,'FALSE'])
             google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraZeragem.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,pnl/2,'FALSE'])

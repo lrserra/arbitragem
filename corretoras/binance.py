@@ -79,7 +79,7 @@ class Binance:
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         #res = self.client.new_order(symbol, side, type, payload)
-        res = self.client.new_order(**payload)
+        res = self.client.new_order(**payload,recvWindow=self.recvWindow)
         return res
 
     def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
@@ -108,7 +108,7 @@ class Binance:
 
         # sem serializar o payload (json.dumps), irá retornar erro de moeda não encontrada
         #res = self.client.new_order(symbol, side, type, payload)
-        res = self.client.new_order(**payload)
+        res = self.client.new_order(**payload,recvWindow=self.recvWindow)
         return res
 
     def __cancelarOrdem(self, idOrdem):
