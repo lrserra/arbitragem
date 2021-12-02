@@ -102,7 +102,7 @@ class Arbitragem:
                                     quantidade_executada_venda = ordem_venda.quantidade_executada
                                     
                                     trade_time = Util.excel_date(datetime.now())
-                                    trade_id = uuid.uuid4()
+                                    trade_id = str(uuid.uuid4())
                                     GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',trade_time,realmente_paguei,realmente_ganhei])
                                     GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,'FALSE'])
                                     GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,'FALSE'])
