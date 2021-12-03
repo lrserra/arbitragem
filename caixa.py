@@ -170,11 +170,12 @@ class Caixa:
             vendi_a = ordem_venda.preco_executado
             quantidade_executada_venda = ordem_venda.quantidade_executada
             financeiro_venda = vendi_a * quantidade_executada_venda
+            financeiro_corretagem = corretora.corretagem_mercado*financeiro_venda
 
             trade_time = Util.excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([moeda,'',0,0,corretora.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', trade_time,0,financeiro_venda])
-            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,0,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,0,corretora.book.preco_venda,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
             corretora.atualizar_saldo()
         
         elif direcao == 'compra':
@@ -189,11 +190,12 @@ class Caixa:
             comprei_a = ordem_compra.preco_executado
             quantidade_executada_compra = ordem_compra.quantidade_executada
             financeiro_compra = comprei_a * quantidade_executada_compra
+            financeiro_corretagem = corretora.corretagem_mercado*financeiro_compra
 
             trade_time = Util.excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([moeda,corretora.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', trade_time,financeiro_compra,0])
-            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,0,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,0,corretora.book.preco_compra,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
             corretora.atualizar_saldo()
 
         return True
