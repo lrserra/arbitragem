@@ -41,7 +41,7 @@ class Arbitragem:
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
                 qtdNegociada = min(quantidade_de_compra, quantidade_de_venda,quanto_posso_comprar,quanto_posso_vender)
-            
+             
                 # Verifica em termos financeiros levando em conta as corretagens de compra e venda, se a operação vale a pena
                 vou_pagar = qtdNegociada*preco_de_compra*(1+corretoraCompra.corretagem_mercado)
                 vou_ganhar = qtdNegociada*preco_de_venda*(1-corretoraVenda.corretagem_mercado)
@@ -104,8 +104,13 @@ class Arbitragem:
                                     trade_time = Util.excel_date(datetime.now())
                                     trade_id = str(uuid.uuid4())
                                     GoogleSheets().escrever_operacao([ativo,corretoraCompra.nome,comprei_a,quantidade_executada_compra,corretoraVenda.nome,vendi_a,quantidade_executada_venda,pnl_real,'ARBITRAGEM',trade_time,realmente_paguei,realmente_ganhei])
-                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,'FALSE'])
-                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,'FALSE'])
+                                    
+                                    compra_eh_171 = 0 if quantidade_de_compra<quanto_posso_comprar else 1
+                                    venda_eh_171 = 0 if quantidade_de_venda<quanto_posso_vender else 1
+                                    custo_corretagem_compra = corretoraCompra.corretagem_mercado*qtdNegociada*ordem_compra.preco_executado
+                                    custo_corretagem_venda = corretoraVenda.corretagem_mercado*qtdNegociada*ordem_venda.preco_executado
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,preco_de_compra,pnl,corretoraCompra.corretagem_mercado,custo_corretagem_compra,compra_eh_171,'FALSE'])
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl,corretoraVenda.corretagem_mercado,custo_corretagem_venda,venda_eh_171,'FALSE'])
 
                                     if ordem_compra.status.lower() != ordem_compra.descricao_status_executado.lower():
                                         logging.error('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
