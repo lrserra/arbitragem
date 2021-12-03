@@ -109,8 +109,8 @@ class Arbitragem:
                                     venda_eh_171 = 0 if quantidade_de_venda<quanto_posso_vender else 1
                                     custo_corretagem_compra = corretoraCompra.corretagem_mercado*qtdNegociada*ordem_compra.preco_executado
                                     custo_corretagem_venda = corretoraVenda.corretagem_mercado*qtdNegociada*ordem_venda.preco_executado
-                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,preco_de_compra,pnl,corretoraCompra.corretagem_mercado,custo_corretagem_compra,compra_eh_171,'FALSE'])
-                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl,corretoraVenda.corretagem_mercado,custo_corretagem_venda,venda_eh_171,'FALSE'])
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,preco_de_compra,pnl/2,corretoraCompra.corretagem_mercado,custo_corretagem_compra,compra_eh_171,'FALSE'])
+                                    GoogleSheets().escrever_spot([trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl/2,corretoraVenda.corretagem_mercado,custo_corretagem_venda,venda_eh_171,'FALSE'])
 
                                     if ordem_compra.status.lower() != ordem_compra.descricao_status_executado.lower():
                                         logging.error('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))

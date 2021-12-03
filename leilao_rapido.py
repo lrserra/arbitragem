@@ -324,7 +324,15 @@ class Leilao:
             financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado) * quantidade
             financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)* quantidade
 
+            queria_comprar_a = round(ordem_zeragem.preco_enviado,2)
+            financeiro_compra_estimado = queria_comprar_a* (1+corretoraZeragem.corretagem_mercado) * quantidade
+            custo_corretagem_compra = corretoraZeragem.corretagem_mercado*financeiro_compra
+            custo_corretagem_venda = corretoraLeilao.corretagem_limitada*financeiro_venda
+
             pnl = round((financeiro_venda -financeiro_compra),2)
+            pnl_estimado = round((financeiro_venda -financeiro_compra_estimado),2)
+
+            eh_171 = Util.eh_171(ordem_antiga.quantidade_executada)
 
             logging.warning('Leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
             
@@ -334,8 +342,8 @@ class Leilao:
             trade_time = Util.excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([ativo,corretoraZeragem.nome,comprei_a,quantidade_executada_compra,corretoraLeilao.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO',trade_time,financeiro_compra,financeiro_venda])
-            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraZeragem.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,pnl/2,'FALSE'])
-            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraLeilao.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,pnl/2,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraZeragem.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,pnl/2,queria_comprar_a,pnl_estimado/2,corretoraZeragem.corretagem_mercado,custo_corretagem_compra,eh_171,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraLeilao.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,pnl/2,vendi_a,pnl_estimado/2,corretoraLeilao.corretagem_limitada,custo_corretagem_venda,eh_171,'FALSE'])
 
             corretoraZeragem.atualizar_saldo()
             corretoraLeilao.atualizar_saldo()
@@ -442,7 +450,15 @@ class Leilao:
             financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)* quantidade
             financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)* quantidade
 
+            queria_vender_a = round(ordem_zeragem.preco_enviado,2)
+            financeiro_venda_estimado = queria_vender_a* (1+corretoraZeragem.corretagem_mercado) * quantidade
+            custo_corretagem_compra = corretoraLeilao.corretagem_limitada*financeiro_compra
+            custo_corretagem_venda = corretoraZeragem.corretagem_mercado*financeiro_venda
+
             pnl = round((financeiro_venda-financeiro_compra),2)
+            pnl_estimado = round((financeiro_venda_estimado -financeiro_compra),2)
+
+            eh_171 = Util.eh_171(ordem_antiga.quantidade_executada)
 
             logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
             
@@ -452,8 +468,8 @@ class Leilao:
             trade_time = Util.excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([ativo,corretoraLeilao.nome,comprei_a,quantidade_executada_compra,corretoraZeragem.nome,vendi_a,quantidade_executada_venda,pnl,'LEILAO', trade_time,financeiro_compra,financeiro_venda])
-            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraLeilao.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,pnl/2,'FALSE'])
-            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraZeragem.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,pnl/2,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraLeilao.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,pnl/2,comprei_a,pnl_estimado/2,corretoraLeilao.corretagem_limitada,custo_corretagem_compra,eh_171,'FALSE'])
+            google_sheets.escrever_spot([trade_time,trade_id,'LEILAO',ativo,corretoraZeragem.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,pnl/2,queria_vender_a,pnl_estimado/2,corretoraZeragem.corretagem_mercado,custo_corretagem_venda,eh_171,'FALSE'])
 
             corretoraZeragem.atualizar_saldo()
             corretoraLeilao.atualizar_saldo()
