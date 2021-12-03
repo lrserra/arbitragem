@@ -332,7 +332,7 @@ class Leilao:
             pnl = round((financeiro_venda -financeiro_compra),2)
             pnl_estimado = round((financeiro_venda -financeiro_compra_estimado),2)
 
-            eh_171 = Util.eh_171(ordem_antiga.quantidade_executada)
+            eh_171 =1 if Util.eh_171(ordem_antiga.quantidade_executada) else 0
 
             logging.warning('Leilao rapido de compra de {}! + {}brl de pnl (compra de {}{} @{} na {} e venda a @{} na {})'.format(ativo,pnl,quantidade,ativo,comprei_a,corretoraZeragem.nome,vendi_a,corretoraLeilao.nome))
             
@@ -458,7 +458,7 @@ class Leilao:
             pnl = round((financeiro_venda-financeiro_compra),2)
             pnl_estimado = round((financeiro_venda_estimado -financeiro_compra),2)
 
-            eh_171 = Util.eh_171(ordem_antiga.quantidade_executada)
+            eh_171 = 1 if Util.eh_171(ordem_antiga.quantidade_executada) else 0
 
             logging.warning('operou leilao rapido de venda de {}! + {}brl de pnl (venda de {}{} @{} na {} e compra a @{} na {})'.format(ativo,pnl,quantidade,ativo,vendi_a,corretoraZeragem.nome,comprei_a,corretoraLeilao.nome))
             
