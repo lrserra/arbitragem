@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 from uteis.googleSheets import GoogleSheets
  
-#GoogleSheets().limpa_operacoes()
+GoogleSheets().limpa_operacoes()
 GoogleSheets().limpa_saldo()
 
 directory_path = os.getcwd() #pega diretorio raiz
