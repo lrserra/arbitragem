@@ -1,5 +1,5 @@
 import json
-import logging
+import logging, datetime
 from uteis.googleSheets import GoogleSheets
 from uteis.util import Util
 
@@ -59,4 +59,7 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     Configuracao.atualizar_worksheet_settings()
+    GoogleSheets().limpa_operacoes()
+    GoogleSheets().limpa_saldo()
+
 

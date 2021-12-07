@@ -50,7 +50,7 @@ class GoogleSheets:
 
             for linha in todos_dados:
                 linha['ROW'] = todos_dados.index(linha)+2
-                if linha['DATA'] == '' or linha['FINANCEIRO']==0:
+                if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
                     linhas_a_excluir.append(linha['ROW'])
             for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
                 logging.warning('deletando a linha vazia {}'.format(linha_a_deletar))
@@ -59,10 +59,11 @@ class GoogleSheets:
 
             linhas_a_excluir = []
             todos_dados = sheet.get_all_records()
+            today_date = datetime.now()
             for linha in todos_dados:
                 linha['DATA'] = datetime.strptime(linha['DATA'], '%m/%d/%Y %H:%M:%S')
                 linha['ROW'] = todos_dados.index(linha)+2
-                if linha['DATA'] > today_minus_30_date:
+                if linha['DATA'] > today_minus_30_date and linha['DATA'].day != today_date.day:
                     compressao_diaria.append(linha)
             
             for linha in compressao_diaria:
@@ -120,7 +121,7 @@ class GoogleSheets:
                 for trade in trades_a_comprimir_nesse_dia:
                     #remove da lista de compressao diaria, todos ja foram comprimidos quando necessario
                     compressao_diaria.remove(trade)
-
+            logging.warning('(linhas a deletar / linhas a adicionar), ({}/{})'.format(len(linhas_a_excluir),len(linhas_a_adicionar)))
             i = 1
             for linha_a_excluir in reversed(sorted(linhas_a_excluir)):
                 logging.warning('deletando a linha {} da planilha, ({}/{})'.format(linha_a_excluir,i,len(linhas_a_excluir)))
