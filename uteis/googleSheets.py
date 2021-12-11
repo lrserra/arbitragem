@@ -6,8 +6,9 @@ from pprint import pprint
 from uteis.util import Util
 from datetime import datetime, timedelta
 from gspread_formatting import *
-
+import locale
 class GoogleSheets:
+
 
     def __init__(self):
         pass
@@ -38,6 +39,10 @@ class GoogleSheets:
             if 'spot' not in google_config.keys():
                 return False
             
+            locale.setlocale(locale.LC_ALL, '')
+            locale._override_localeconv = {'mon_thousands_sep': '.'}
+            logging.warning("formato do milhar é {}".format(locale.format('%.2f', 12345.678, grouping=True, monetary=True)))
+
             sheet = client.open(google_config['sheet_name']).worksheet(google_config['spot'])
             todos_dados = sheet.get_all_records()
             
@@ -121,35 +126,42 @@ class GoogleSheets:
                 for trade in trades_a_comprimir_nesse_dia:
                     #remove da lista de compressao diaria, todos ja foram comprimidos quando necessario
                     compressao_diaria.remove(trade)
-            logging.warning('(linhas a deletar / linhas a adicionar), ({}/{})'.format(len(linhas_a_excluir),len(linhas_a_adicionar)))
-            i = 1
-            for linha_a_excluir in reversed(sorted(linhas_a_excluir)):
-                logging.warning('deletando a linha {} da planilha, ({}/{})'.format(linha_a_excluir,i,len(linhas_a_excluir)))
-                time.sleep(1)
-                sheet.delete_row(linha_a_excluir)
-                i+=1
-            i = 1
-            time.sleep(121)#para o api do google continuar de graça
-            for linha_a_adicionar in linhas_a_adicionar:
-                logging.warning('adicionando uma linha comprimida id {}, ({}/{})'.format(linha_a_adicionar[1],i,len(linhas_a_adicionar)))
-                time.sleep(2)
-                sheet.insert_row(linha_a_adicionar, sorted(linhas_a_excluir)[0]+1, value_input_option='USER_ENTERED')
-                i+=1
-
-            linhas_a_excluir = []
-            todos_dados = sheet.get_all_records()#da uma ultima limada nas linhas vazias, pra deixar bonitinho
-            for linha in todos_dados:
-                linha['ROW'] = todos_dados.index(linha)+2
-                if linha['DATA'] == '' or linha['FINANCEIRO']==0:
-                    linhas_a_excluir.append(linha['ROW'])
-            for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
-                logging.warning('deletando a linha vazia {}'.format(linha_a_deletar))
-                time.sleep(1)
-                sheet.delete_row(linha_a_deletar)
-
+        
         except Exception as err:
             logging.error('GoogleSheets - limpa_operacoes: {}'.format(err))
 
+        
+        logging.warning('(linhas a deletar / linhas a adicionar), ({}/{})'.format(len(linhas_a_excluir),len(linhas_a_adicionar)))
+        i = 1
+        for linha_a_excluir in reversed(sorted(linhas_a_excluir)):
+            logging.warning('deletando a linha {} da planilha, ({}/{})'.format(linha_a_excluir,i,len(linhas_a_excluir)))
+            time.sleep(1)
+            try:
+                sheet.delete_row(linha_a_excluir)
+            except Exception as err:
+                logging.error('GoogleSheets - limpa_operacoes - delete_row: {}'.format(err))
+            i+=1
+        i = 1
+        time.sleep(121)#para o api do google continuar de graça
+        for linha_a_adicionar in linhas_a_adicionar:
+            logging.warning('adicionando uma linha comprimida id {}, ({}/{})'.format(linha_a_adicionar[1],i,len(linhas_a_adicionar)))
+            time.sleep(2)
+            try:
+                sheet.insert_row(linha_a_adicionar, sorted(linhas_a_excluir)[0]+1, value_input_option='USER_ENTERED')
+            except Exception as err:
+                logging.error('GoogleSheets - limpa_operacoes - insert_row: {}'.format(err))
+            i+=1
+
+        linhas_a_excluir = []
+        todos_dados = sheet.get_all_records()#da uma ultima limada nas linhas vazias, pra deixar bonitinho
+        for linha in todos_dados:
+            linha['ROW'] = todos_dados.index(linha)+2
+            if linha['DATA'] == '' or linha['FINANCEIRO']==0:
+                linhas_a_excluir.append(linha['ROW'])
+        for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
+            logging.warning('deletando a linha vazia {}'.format(linha_a_deletar))
+            time.sleep(1)
+            sheet.delete_row(linha_a_deletar)
 
     def retornar_volume(self):
         try:
@@ -192,6 +204,17 @@ class GoogleSheets:
                 time.sleep(1)
                 sheet.delete_row(linha_a_deletar[0])
        
+            linhas_a_excluir = []
+            todos_dados = sheet.get_all_records()#da uma ultima limada nas linhas vazias, pra deixar bonitinho
+            for linha in todos_dados:
+                linha['ROW'] = todos_dados.index(linha)+2
+                if linha['DATA'] == '':
+                    linhas_a_excluir.append(linha['ROW'])
+            for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
+                logging.warning('deletando a linha vazia {}'.format(linha_a_deletar))
+                time.sleep(1)
+                sheet.delete_row(linha_a_deletar)
+
         except Exception as err:
             logging.error('GoogleSheets - limpa_saldo: {}'.format(err))
 

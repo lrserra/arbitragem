@@ -49,7 +49,7 @@ class Configuracao:
 
 
 if __name__ == "__main__":
-    import logging
+    import logging, time
     from configuracao import Configuracao
 
     logging.basicConfig(filename='Configuracao.log', level=logging.INFO,
@@ -58,8 +58,11 @@ if __name__ == "__main__":
     console.setLevel(logging.WARNING)
     logging.getLogger().addHandler(console)
 
-    Configuracao.atualizar_worksheet_settings()
-    GoogleSheets().limpa_operacoes()
     GoogleSheets().limpa_saldo()
+    GoogleSheets().limpa_operacoes()
+    
+    while True:
+        Configuracao.atualizar_worksheet_settings()
+        time.sleep(5*60)
 
 
