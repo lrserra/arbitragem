@@ -58,6 +58,7 @@ if __name__ == "__main__":
     console.setLevel(logging.WARNING)
     logging.getLogger().addHandler(console)
 
+    Configuracao.atualizar_worksheet_settings()
     GoogleSheets().limpa_saldo()
     GoogleSheets().limpa_operacoes()
     
