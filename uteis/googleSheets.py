@@ -142,10 +142,10 @@ class GoogleSheets:
                 logging.error('GoogleSheets - limpa_operacoes - delete_row: {}'.format(err))
             i+=1
         i = 1
-        time.sleep(121)#para o api do google continuar de graça
+        time.sleep(151)#para o api do google continuar de graça
         for linha_a_adicionar in linhas_a_adicionar:
             logging.warning('adicionando uma linha comprimida id {}, ({}/{})'.format(linha_a_adicionar[1],i,len(linhas_a_adicionar)))
-            time.sleep(2)
+            time.sleep(3)
             try:
                 sheet.insert_row(linha_a_adicionar, sorted(linhas_a_excluir)[0]+1, value_input_option='USER_ENTERED')
             except Exception as err:
