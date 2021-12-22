@@ -1,7 +1,7 @@
 
 import json
 import math
-import requests
+import requests, logging
 from datetime import datetime
 
 class Util:
@@ -40,6 +40,25 @@ class Util:
             qtd_final = qtd 
 
         return qtd_final
+
+    def to_float(number):
+        
+        try:
+            return float(number)
+
+        except Exception as err:
+            
+            import locale
+            point = locale.localeconv()['decimal_point']
+            sep = locale.localeconv()['thousands_sep']
+            if point == ',':
+                return locale.atof(number.replace(' ', sep).replace('.', sep))
+            elif point == '.':
+                return locale.atof(number.replace(' ', sep).replace(',', sep))
+            else:
+                return number
+            
+
     def excel_date(date1):
         temp = datetime(1899, 12, 30)    # Note, not 31st Dec but 30th!
         delta = date1 - temp

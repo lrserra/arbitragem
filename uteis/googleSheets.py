@@ -39,10 +39,6 @@ class GoogleSheets:
             if 'spot' not in google_config.keys():
                 return False
             
-            locale.setlocale(locale.LC_ALL, '')
-            locale._override_localeconv = {'mon_thousands_sep': '.'}
-            logging.warning("formato do milhar é {}".format(locale.format('%.2f', 12345.678, grouping=True, monetary=True)))
-
             sheet = client.open(google_config['sheet_name']).worksheet(google_config['spot'])
             todos_dados = sheet.get_all_records()
             
@@ -55,6 +51,8 @@ class GoogleSheets:
 
             for linha in todos_dados:
                 linha['ROW'] = todos_dados.index(linha)+2
+                linha['PNL'] = Util.to_float(linha['PNL'])
+                linha['FINANCEIRO'] = Util.to_float(linha['FINANCEIRO'])
                 if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
                     linhas_a_excluir.append(linha['ROW'])
             for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
@@ -68,6 +66,15 @@ class GoogleSheets:
             for linha in todos_dados:
                 linha['DATA'] = datetime.strptime(linha['DATA'], '%m/%d/%Y %H:%M:%S')
                 linha['ROW'] = todos_dados.index(linha)+2
+                linha['PNL'] = Util.to_float(linha['PNL'])
+                linha['FINANCEIRO'] = Util.to_float(linha['FINANCEIRO'])
+                linha['QUANTIDADE'] = Util.to_float(linha['QUANTIDADE'])
+                linha['PRECO'] = Util.to_float(linha['PRECO'])
+                linha['PRECO ESTIMADO'] = Util.to_float(linha['PRECO ESTIMADO'])
+                linha['PNL ESTIMADO'] = Util.to_float(linha['PNL ESTIMADO'])
+                linha['TAXA CORRETAGEM'] = Util.to_float(linha['TAXA CORRETAGEM'])
+                linha['FINANCEIRO CORRETAGEM'] = Util.to_float(linha['FINANCEIRO CORRETAGEM'])
+                linha['FALTOU MOEDA'] = Util.to_float(linha['FALTOU MOEDA'])
                 if linha['DATA'] > today_minus_30_date and linha['DATA'].day != today_date.day:
                     compressao_diaria.append(linha)
             
@@ -156,7 +163,9 @@ class GoogleSheets:
         todos_dados = sheet.get_all_records()#da uma ultima limada nas linhas vazias, pra deixar bonitinho
         for linha in todos_dados:
             linha['ROW'] = todos_dados.index(linha)+2
-            if linha['DATA'] == '' or linha['FINANCEIRO']==0:
+            linha['PNL'] = Util.to_float(linha['PNL'])
+            linha['FINANCEIRO'] = Util.to_float(linha['FINANCEIRO'])
+            if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
                 linhas_a_excluir.append(linha['ROW'])
         for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
             logging.warning('deletando a linha vazia {}'.format(linha_a_deletar))
