@@ -44,7 +44,7 @@ class Util:
     def to_float(number):
         
         try:
-            return float(number)
+            return float(number) if number != '' else ''
 
         except Exception as err:
             
