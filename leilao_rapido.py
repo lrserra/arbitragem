@@ -63,6 +63,7 @@ if __name__ == "__main__":
     corretoraLeilao.atualizar_saldo()
 
     Caixa.envia_saldo_google(corretoraZeragem,corretoraLeilao)
+    Caixa.envia_position_google(corretoraZeragem,corretoraLeilao)
 
     #essa parte faz a cada 6 minutos
     ordens_abertas = {}
