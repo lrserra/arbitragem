@@ -63,7 +63,14 @@ class Caixa:
             preco_por_corretora_venda[moeda] = {}
 
         saldo['brl'] = round(CorretoraMaisLiquida.saldo['brl'] + CorretoraMenosLiquida.saldo['brl'],4)
-        
+        financeiro['brl'] = round(CorretoraMaisLiquida.saldo['brl'] + CorretoraMenosLiquida.saldo['brl'],2)
+        saldo_por_corretora['brl'][CorretoraMaisLiquida.nome]=round(CorretoraMaisLiquida.saldo['brl'],4)
+        saldo_por_corretora['brl'][CorretoraMenosLiquida.nome]=round(CorretoraMenosLiquida.saldo['brl'],4)
+        financeiro_por_corretora['brl'][CorretoraMaisLiquida.nome]=round(CorretoraMaisLiquida.saldo['brl'],2)
+        financeiro_por_corretora['brl'][CorretoraMenosLiquida.nome]=round(CorretoraMenosLiquida.saldo['brl'],2)
+        preco_por_corretora_venda['brl'][CorretoraMenosLiquida.nome] = 1
+        preco_por_corretora_compra['brl'][CorretoraMenosLiquida.nome] = 1
+
         for moeda in white_list:
             CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
             CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
