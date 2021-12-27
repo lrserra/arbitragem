@@ -54,8 +54,8 @@ class Arbitragem:
                 pnl_minimo = -1
                 pnl_minimo = 0.1 if fracao_do_caixa<0.9 else pnl_minimo
 
-                rentabilidade_minima = -1/10000
-                rentabilidade_minima = 0 if fracao_do_caixa<0.9 else rentabilidade_minima
+                rentabilidade_minima = -10/10000
+                rentabilidade_minima = 0 if fracao_do_caixa<0.95 else rentabilidade_minima
                 rentabilidade_minima = 1/10000 if fracao_do_caixa<0.8 else rentabilidade_minima
                 rentabilidade_minima = 2/10000 if fracao_do_caixa<0.5 else rentabilidade_minima
                 rentabilidade_minima = 10/10000 if fracao_do_caixa<0.2 else rentabilidade_minima # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
