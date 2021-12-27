@@ -68,6 +68,8 @@ class Caixa:
         saldo_por_corretora['brl'][CorretoraMenosLiquida.nome]=round(CorretoraMenosLiquida.saldo['brl'],4)
         financeiro_por_corretora['brl'][CorretoraMaisLiquida.nome]=round(CorretoraMaisLiquida.saldo['brl'],2)
         financeiro_por_corretora['brl'][CorretoraMenosLiquida.nome]=round(CorretoraMenosLiquida.saldo['brl'],2)
+        preco_por_corretora_venda['brl'][CorretoraMaisLiquida.nome] = 1
+        preco_por_corretora_compra['brl'][CorretoraMaisLiquida.nome] = 1
         preco_por_corretora_venda['brl'][CorretoraMenosLiquida.nome] = 1
         preco_por_corretora_compra['brl'][CorretoraMenosLiquida.nome] = 1
 
