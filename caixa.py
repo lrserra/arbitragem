@@ -37,10 +37,59 @@ class Caixa:
             
         return cancelei_todas
 
-    
+    def envia_position_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo = False):
+        '''
+        envia nova linha com position consolidada para google        
+        '''
+        saldo={}
+        saldo_por_corretora = {}
+        financeiro = {}
+        financeiro_por_corretora = {}
+        preco_por_corretora_venda={}
+        preco_por_corretora_compra={}
+ 
+        rasp_id = 1
+        produto = 'spot'
+        white_list = Util.obter_white_list()
+        
+        if atualizar_saldo:
+            CorretoraMaisLiquida.atualizar_saldo()
+            CorretoraMenosLiquida.atualizar_saldo()
+        
+        for moeda in white_list:
+            saldo_por_corretora[moeda] = {}
+            financeiro_por_corretora[moeda] = {}
+            preco_por_corretora_compra[moeda] = {}
+            preco_por_corretora_venda[moeda] = {}
+
+        saldo['brl'] = round(CorretoraMaisLiquida.saldo['brl'] + CorretoraMenosLiquida.saldo['brl'],4)
+        
+        for moeda in white_list:
+            CorretoraMaisLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
+            CorretoraMenosLiquida.book.obter_ordem_book_por_indice(moeda,'brl',0,True)
+            saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
+            financeiro[moeda] = round(saldo[moeda]*CorretoraMaisLiquida.book.preco_venda,2)
+            saldo_por_corretora[moeda][CorretoraMaisLiquida.nome]=round(CorretoraMaisLiquida.saldo[moeda],4)
+            saldo_por_corretora[moeda][CorretoraMenosLiquida.nome]=round(CorretoraMenosLiquida.saldo[moeda],4)
+            financeiro_por_corretora[moeda][CorretoraMaisLiquida.nome] = round(saldo_por_corretora[moeda][CorretoraMaisLiquida.nome]*CorretoraMaisLiquida.book.preco_venda,2)
+            financeiro_por_corretora[moeda][CorretoraMenosLiquida.nome] = round(saldo_por_corretora[moeda][CorretoraMenosLiquida.nome]*CorretoraMenosLiquida.book.preco_venda,2)
+            preco_por_corretora_venda[moeda][CorretoraMaisLiquida.nome]=CorretoraMaisLiquida.book.preco_venda
+            preco_por_corretora_compra[moeda][CorretoraMaisLiquida.nome]=CorretoraMaisLiquida.book.preco_compra
+            preco_por_corretora_venda[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.book.preco_venda
+            preco_por_corretora_compra[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.book.preco_compra
+
+        GoogleSheets().escrever_position([Util.excel_date(datetime.now()),rasp_id,produto
+                                        ,Util.dicionario_simples_para_string(saldo)
+                                        ,Util.dicionario_duplo_para_string(saldo_por_corretora)
+                                        ,Util.dicionario_simples_para_string(financeiro)
+                                        ,Util.dicionario_duplo_para_string(financeiro_por_corretora)
+                                        ,Util.dicionario_duplo_para_string(preco_por_corretora_venda)
+                                        ,Util.dicionario_duplo_para_string(preco_por_corretora_compra)])
+
+        return True
+
     def envia_saldo_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
         '''
-        da uma limpada nos registros de saldo do google +
         envia nova linha de saldo para planilha do google
         '''
         saldo = {}
@@ -232,3 +281,4 @@ if __name__ == "__main__":
     CorretoraMenosLiquida.atualizar_saldo()
 
     Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.envia_position_google(CorretoraMaisLiquida,CorretoraMenosLiquida,True)

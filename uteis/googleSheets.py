@@ -267,9 +267,18 @@ class GoogleSheets:
     def escrever_saldo(self, saldo):
         try:
             google_config = Util.retorna_config_google_api()
-            self.escrever(google_config['sheet_name'], google_config['saldo'], saldo)
+            if 'saldo' in google_config.keys():
+                self.escrever(google_config['sheet_name'], google_config['saldo'], saldo)
         except Exception as err:
             logging.error('GoogleSheets - escrever_saldo: {}'.format(err))
+
+    def escrever_position(self, saldo):
+        try:
+            google_config = Util.retorna_config_google_api()
+            if 'position' in google_config.keys():
+                self.escrever(google_config['sheet_name'], google_config['position'], saldo)
+        except Exception as err:
+            logging.error('GoogleSheets - escrever_position: {}'.format(err))
     
     def sobrescrever(self, planilha, aba,range, linhas=[]):
         client = self.retorna_google_sheets_client()

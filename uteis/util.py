@@ -181,6 +181,26 @@ class Util:
         with open('appsettings.json') as f:
             return json.load(f)["lista_de_moedas"]
     
+    def dicionario_simples_para_string(dicionario={},separador='#'):
+        '''
+        converte um dicionario para uma string
+        '''
+        string_final = ''
+        for chave in dicionario.keys():
+            string_final += separador+ chave + ':' + str(dicionario[chave])
+        return string_final
+    
+    def dicionario_duplo_para_string(dicionario={},separador_principal='#',separador_secundario='//'):
+        '''
+        converte um dicionario para uma string
+        '''
+        string_final = ''
+        for chave_principal in dicionario.keys():
+            string_final += separador_principal + chave_principal
+            for chave_secundaria in dicionario[chave_principal].keys():
+                string_final += separador_secundario+ chave_secundaria + ':' + str(dicionario[chave_principal][chave_secundaria])
+        return string_final
+
     def obter_lista_de_moedas(estrategia_status=''):
         '''
         retorna a lista de moedas que nosso script vai negociar
