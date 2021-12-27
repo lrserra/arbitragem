@@ -281,4 +281,4 @@ if __name__ == "__main__":
     CorretoraMenosLiquida.atualizar_saldo()
 
     Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
-    Caixa.envia_position_google(CorretoraMaisLiquida,CorretoraMenosLiquida,True)
+    Caixa.envia_position_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
