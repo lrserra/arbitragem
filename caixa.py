@@ -56,7 +56,7 @@ class Caixa:
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
         
-        for moeda in white_list:
+        for moeda in white_list+['brl']:
             saldo_por_corretora[moeda] = {}
             financeiro_por_corretora[moeda] = {}
             preco_por_corretora_compra[moeda] = {}
