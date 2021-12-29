@@ -17,8 +17,9 @@ while True:
     lista_posicao = []
     pnl_total = 0
     for posicao in retorno_account['positions']:
-        lista_posicao.append([posicao['future'],posicao['size'],posicao['side'],posicao['realizedPnl']])
-        pnl_total += float(posicao['realizedPnl'])
+        if posicao['size']>0:
+            lista_posicao.append([posicao['future'],posicao['size'],posicao['side'],posicao['realizedPnl']])
+            pnl_total += float(posicao['realizedPnl'])
 
     lista_margem = [[Util.excel_date(datetime.datetime.now())],[retorno_account['collateral']],[retorno_account['freeCollateral']],[retorno_account['totalAccountValue']],[retorno_account['totalPositionSize']]]
     
