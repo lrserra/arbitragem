@@ -30,7 +30,7 @@ class Util:
             qtd_final = math.trunc(qtd)
         elif moeda in ['ada','usdt']:
             qtd_final = math.trunc(qtd*10)/10
-        elif moeda in ['ltc']:
+        elif moeda in ['ltc','bnb']:
             qtd_final = math.trunc(qtd*1000)/1000 
         elif moeda in ['eth']:
             qtd_final = math.trunc(qtd*10000)/10000
@@ -260,10 +260,17 @@ class Util:
 
     def retorna_config_google_api():
         '''
-        retorna a menor quantidade possivel que vc pode operar na mercado bitcoin
+        retorna configuracoes do google api
         '''
         with open('appsettings.json') as f:
             return json.load(f)["google_api"]
+    
+    def retorna_campo_de_json(arquivo, campo):
+        '''
+        retorna qualquer campo de um json
+        '''
+        with open(arquivo) as f:
+            return json.load(f)[campo]
 
     def formatar_data_relatorio(date):
         retorno = datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)

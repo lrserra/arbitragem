@@ -1,9 +1,6 @@
 import logging
-import requests
-import json
 import time
 from binance.spot import Spot
-from urllib.parse import urlencode
 from uteis.util import Util
 from uteis.ordem import Ordem
 
@@ -18,7 +15,7 @@ class Binance:
         
         config = Util.obterCredenciais()
         self.client = Spot(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
-
+        
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self):
@@ -118,26 +115,31 @@ class Binance:
     def __obterOrdensAbertas(self):
         res = self.client.get_open_orders('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
         return res
-
+    
 #---------------- MÉTODOS PÚBLICOS ----------------#    
 
+    def obter_moedas_negociaveis(self):
+        
+        moedas_negociaveis = []
+        exchange_info = self.client.exchange_info()
+        
+        for symbol in exchange_info['symbols']:
+            if symbol['isSpotTradingAllowed'] and symbol['quoteAsset'].lower() =='brl':
+                moedas_negociaveis.append(symbol['baseAsset'].lower())
+        return moedas_negociaveis
+    
     def obter_saldo(self):
         '''
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
-
-        lista_de_moedas = Util.obter_lista_de_moedas()+['brl']
-        for moeda in lista_de_moedas:
-            saldo[moeda] = 0
-        
         response_json = self.__obterSaldo()
 
         for item in response_json['balances']:
-            if float(item['free'])>0:
-                for ccy in saldo:
-                    if ccy.lower() == item['asset'].lower():
-                        saldo[ccy] = float(item['free'])
+            moeda = item['asset'].lower()
+            saldo_disponivel = float(item['free'])
+            if saldo_disponivel >0:
+                saldo[moeda] = saldo_disponivel
         
         return saldo
 

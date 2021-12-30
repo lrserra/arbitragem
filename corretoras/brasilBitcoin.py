@@ -123,26 +123,37 @@ class BrasilBitcoin:
             retries+=1
    
         return json.loads(res.text.encode('utf8'))
-
-
+    
 #---------------- MÉTODOS PÚBLICOS ----------------#    
+    def obter_moedas_negociaveis(self):
+        '''
+        Método público para obter lista de moedas negociaveis nessa corretora
+        '''
+        moedas_negociaveis = []
+        time.sleep(0.5)
+        response_json = self.__obterSaldo()
+
+        for item in response_json.keys():
+            if item != 'user_cpf':
+                moedas_negociaveis.append(item.lower())
+        
+        return moedas_negociaveis
 
     def obter_saldo(self):
         '''
         Método público para obter saldo de todas as moedas conforme as regras das corretoras.
         '''
         saldo = {}
-
-        lista_de_moedas = Util.obter_lista_de_moedas()+[Util.CCYBRL()]
-        for moeda in lista_de_moedas:
-            saldo[moeda] = 0
         
         time.sleep(0.5)
         response_json = self.__obterSaldo()
 
-        for ativo in response_json.keys():
-            if ativo != 'user_cpf':
-                saldo[ativo.lower()] = float(response_json[ativo])
+        for item in response_json.keys():
+            if item != 'user_cpf':
+                moeda = item.lower()
+                saldo_disponivel =   float(response_json[item])
+                if saldo_disponivel >0:
+                    saldo[moeda] = saldo_disponivel
         
         return saldo
 

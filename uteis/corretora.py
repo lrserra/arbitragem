@@ -1,14 +1,13 @@
-
+import time
 from corretoras.binance import Binance
 import logging
-import math
 from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from corretoras.bitRecife import BitRecife
 from uteis.ordem import Ordem
-from uteis.book import Book
+from uteis.livro import Livro
 from uteis.util import Util
 
 class Corretora:
@@ -19,39 +18,62 @@ class Corretora:
         self.nome = nome 
 
         #propriedades especificas de cada corretora
-        self.corretagem_limitada, self.corretagem_mercado = self.__obter_corretagem(nome)
-        self.descricao_status_executado = self.__obter_status_executado(nome)
+        self.corretagem_limitada, self.corretagem_mercado = self.__obter_corretagem()
+        self.descricao_status_executado = self.__obter_status_executado()
+        self.moedas_negociaveis = self.__obter_moedas_negociaveis()
         
         #propriedades dinamicas
         self.saldo={}
-        self.book = Book(nome)
+        self.livro = Livro()
         self.ordem = Ordem()
 
-        #saldo inicia zerado
-        lista_de_moedas = Util.obter_lista_de_moedas()+[Util.CCYBRL()]
+        #inicializa saldo inicial
+        lista_de_moedas =Util.obter_white_list()+[Util.CCYBRL()]
         for moeda in lista_de_moedas:
             self.saldo[moeda] = 0
 
-    #metodos exclusivos por ativo
-
+    #metodos comuns a todas corretoras
     def atualizar_saldo(self):
         try:
-            
             if self.nome == 'MercadoBitcoin':
-                self.saldo = MercadoBitcoin().obter_saldo()
+                retorno_saldo = MercadoBitcoin().obter_saldo()
             elif self.nome == 'BrasilBitcoin':
-                self.saldo = BrasilBitcoin().obter_saldo()
+                retorno_saldo = BrasilBitcoin().obter_saldo()
             elif self.nome == 'Binance':
-                self.saldo = Binance().obter_saldo()
+                retorno_saldo = Binance().obter_saldo()
             elif self.nome == 'BitcoinTrade':
-                self.saldo = BitcoinTrade().obter_saldo()
+                retorno_saldo = BitcoinTrade().obter_saldo()
             elif self.nome == 'Novadax':
-                self.saldo = Novadax().obter_saldo()
+                retorno_saldo = Novadax().obter_saldo()
             elif self.nome == 'BitRecife':
-                self.saldo = BitRecife().obter_saldo()
-                
+                retorno_saldo = BitRecife().obter_saldo()
+            
+            for moeda in retorno_saldo.keys():
+                self.saldo[moeda] = retorno_saldo[moeda]    
+
         except Exception as erro:
             logging.error(Util.descricao_erro_padrao().format('atualizar_saldo', self.nome, erro))
+        
+    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
+        
+        try:
+            if ativo_parte in self.moedas_negociaveis:
+                
+                self.livro.book = self.__carregar_ordem_books(ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas,ignorar_ordens_fantasmas)
+                
+                self.livro.preco_compra = float(self.livro.book['asks'][indice][0])
+                self.livro.quantidade_compra = float(self.livro.book['asks'][indice][1])
+                self.livro.preco_venda = float(self.livro.book['bids'][indice][0])
+                self.livro.quantidade_venda = float(self.livro.book['bids'][indice][1])
+                self.livro.preco_compra_segundo_na_fila = float(self.livro.book['asks'][indice+1][0]) if len(self.livro.book['asks'])>1 else self.preco_compra
+                self.livro.preco_venda_segundo_na_fila = float(self.livro.book['bids'][indice+1][0]) if len(self.livro.book['bids'])>1 else self.preco_venda
+                    
+        except Exception as erro:
+            logging.error('nao foi possivel carregar o book de {} da {}'.format(ativo_parte,self.nome))
+            logging.error('book ask: {}'.format(self.livro.book['asks']))
+            logging.error('book bid: {}'.format(self.livro.book['bids']))
+            raise Exception(erro)
+
 
     def obter_todas_ordens_abertas(self, ativo='btc'):
         try:
@@ -74,7 +96,7 @@ class Corretora:
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
             white_list = Util.obter_white_list()
-            qtd_ordens_abertas = len(ordens_abertas)
+            qtd_ordens_abertas = len([ordem for ordem in ordens_abertas if ordem['coin'].lower in white_list])
             
             if qtd_ordens_abertas>0:
                 logging.warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
@@ -119,6 +141,9 @@ class Corretora:
 
     def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
+        if ativo_parte not in self.moedas_negociaveis:
+            return Ordem()
+
         if ordem.tipo_ordem in ['limited','limit']:
             ordem.tipo_ordem = 'limited'
             ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
@@ -199,6 +224,9 @@ class Corretora:
 
     def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
         
+        if ativo_parte not in self.moedas_negociaveis:
+            return Ordem()
+
         if ordem.tipo_ordem in ['limited','limit']:
             ordem.tipo_ordem = 'limited'
             ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
@@ -305,7 +333,7 @@ class Corretora:
             return retorno
 
     #metodo privado
-    def __obter_corretagem(self,nome):
+    def __obter_corretagem(self):
 
         if self.nome == 'MercadoBitcoin':
             corretagem_limitada = 0.0015
@@ -334,7 +362,7 @@ class Corretora:
         return corretagem_limitada, corretagem_mercado
 
     #metodo privado
-    def __obter_status_executado(self,nome):
+    def __obter_status_executado(self):
 
         if self.nome == 'MercadoBitcoin':
             status_executado = 'filled'
@@ -356,3 +384,113 @@ class Corretora:
         
         return status_executado
 
+    def __obter_moedas_negociaveis(self):
+
+        moedas_negociaveis = []
+        try:
+            if self.nome == 'BrasilBitcoin':
+                return BrasilBitcoin().obter_moedas_negociaveis()
+            elif self.nome == 'Binance':
+                return Binance().obter_moedas_negociaveis()
+        except Exception as erro:
+            logging.error(Util.descricao_erro_padrao().format('obter_moedas_negociaveis', self.nome, erro))
+
+        return moedas_negociaveis
+
+    def __carregar_ordem_books(self,ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
+        try:
+            retorno_book ={'asks':[],'bids':[]}
+            retorno_book_sem_tratar ={'asks':[],'bids':[]}
+            
+            if ignorar_quantidades_pequenas:
+                minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
+                minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
+
+            if self.nome == 'MercadoBitcoin':
+                retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                while 'bids' not in retorno_book.keys():
+                    retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('MercadoBitcoin','bids'))
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+            
+            elif self.nome == 'BrasilBitcoin': 
+                time.sleep(0.5)
+                retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                while 'sell' not in retorno_book_sem_tratar.keys():
+                    retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
+                    retorno_book['asks'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
+                for preco_no_livro in retorno_book_sem_tratar['buy']:
+                    retorno_book['bids'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
+              
+            elif self.nome == 'BitcoinTrade': 
+                retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
+                while 'data' not in retorno_book_sem_tratar.keys():
+                    retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BitcoinTrade','data'))
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#BT precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
+                    retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
+                for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
+                    retorno_book['bids'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
+
+            elif self.nome == 'Novadax':
+                retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
+                while 'data' not in retorno_book_sem_tratar.keys():
+                    retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
+                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('Novadax','data'))
+                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#Novadax precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
+                    retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+                for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
+                    retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+
+            elif self.nome == 'Binance':
+                retorno_book_sem_tratar = Binance(ativo_parte,ativo_contraparte).obterBooks()
+                for preco_no_livro in retorno_book_sem_tratar['asks']:
+                    retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+                for preco_no_livro in retorno_book_sem_tratar['bids']:
+                    retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+
+            if ignorar_ordens_fantasmas:
+                
+                for preco_no_livro in retorno_book['bids'][:5]:
+                    indice = retorno_book['bids'].index(preco_no_livro)
+                    if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser maior que o de compra
+                        preco_no_livro.append('DESCONSIDERAR')
+                        preco_no_livro.append('ORDEM FANTASMA')
+
+                for preco_no_livro in retorno_book['asks'][:5]:
+                    indice = retorno_book['asks'].index(preco_no_livro)
+                    if float(preco_no_livro[0]) < float(retorno_book['bids'][indice][0]): #o preco de compra tem que ser menor que o de venda
+                        preco_no_livro.append('DESCONSIDERAR')
+                        preco_no_livro.append('ORDEM FANTASMA')
+
+            if ignorar_quantidades_pequenas:
+                
+                for preco_no_livro in retorno_book['asks'][:5]:
+                    indice = retorno_book['asks'].index(preco_no_livro)
+                    if float(preco_no_livro[1])*float(preco_no_livro[0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
+                        preco_no_livro.append('DESCONSIDERAR')
+                        preco_no_livro.append('QTD PEQUENA')
+
+                for preco_no_livro in retorno_book['bids'][:5]:
+                    indice = retorno_book['bids'].index(preco_no_livro)
+                    if float(preco_no_livro[1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
+                        preco_no_livro.append('DESCONSIDERAR')
+                        preco_no_livro.append('QTD PEQUENA')
+            
+            for preco_no_livro in retorno_book['asks']:
+                if 'DESCONSIDERAR' not in preco_no_livro:
+                    self.livro.book['asks'].append(preco_no_livro)
+            
+            for preco_no_livro in retorno_book['bids']:
+                if 'DESCONSIDERAR' not in preco_no_livro:
+                    self.livro.book['bids'].append(preco_no_livro)
+
+            return retorno_book
+
+        except Exception as erro:
+            raise Exception(erro)

@@ -2,7 +2,6 @@ import logging
 import uuid
 from datetime import datetime
 from uteis.corretora import Corretora
-from uteis.ordem import Ordem
 from uteis.util import Util
 from uteis.googleSheets import GoogleSheets
 
@@ -22,21 +21,21 @@ class Arbitragem:
             corretoraVenda.atualizar_saldo()
 
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            corretoraVenda.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
-            corretoraCompra.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+            corretoraVenda.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
+            corretoraCompra.obter_ordem_book_por_indice(ativo,'brl',0,True,True)
         
-            preco_de_compra = corretoraCompra.book.preco_compra #primeiro no book de ordens
-            preco_de_venda = corretoraVenda.book.preco_venda #primeiro no book de ordens
+            preco_de_compra = corretoraCompra.livro.preco_compra #primeiro no book de ordens
+            preco_de_venda = corretoraVenda.livro.preco_venda #primeiro no book de ordens
 
             #se tiver arbitragem, a magica começa!
             if preco_de_compra < preco_de_venda: 
 
-                quantidade_de_compra = corretoraCompra.book.quantidade_compra #qtd no book de ordens
-                quantidade_de_venda = corretoraVenda.book.quantidade_venda #qtd no book de ordens
+                quantidade_de_compra = corretoraCompra.livro.quantidade_compra #qtd no book de ordens
+                quantidade_de_venda = corretoraVenda.livro.quantidade_venda #qtd no book de ordens
 
                 colchao_de_liquidez = 0.98
 
-                quanto_posso_comprar = colchao_de_liquidez*corretoraCompra.saldo['brl']/corretoraCompra.book.preco_venda #saldo em reais * colchão
+                quanto_posso_comprar = colchao_de_liquidez*corretoraCompra.saldo['brl']/corretoraCompra.livro.preco_venda #saldo em reais * colchão
                 quanto_posso_vender = colchao_de_liquidez*corretoraVenda.saldo[ativo] #saldo em cripto * colchão
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar

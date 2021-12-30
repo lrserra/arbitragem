@@ -82,8 +82,8 @@ if __name__ == "__main__":
                 logging.info('******************************************************************')                
                 ordem_enviada = Ordem()
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos
-                corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                corretoraLeilao.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                corretoraZeragem.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
 
                 #define quantidade minima de caixa e moeda para enviarmos o trade
                 #essa parte é importante pq apenas as ordens enviadas aqui serão utilizadas no proximo passo
@@ -143,8 +143,8 @@ if __name__ == "__main__":
                 direcao = ordem_aberta.split('_')[1]
                 
                 #a partir daqui é correria! 
-                corretoraLeilao.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
-                corretoraZeragem.book.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                corretoraLeilao.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                corretoraZeragem.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
                 
                 if direcao == 'buy':
 
@@ -202,11 +202,11 @@ class Leilao:
             retorno_venda_corretora_leilao = Ordem()
             
             try:
-                if (Util.eh_171(corretoraLeilao.book.quantidade_compra)):
-                    preco_que_vou_vender = corretoraLeilao.book.preco_compra #se for 171 eu coloco ordem no mesmo preço
+                if (Util.eh_171(corretoraLeilao.livro.quantidade_compra)):
+                    preco_que_vou_vender = corretoraLeilao.livro.preco_compra #se for 171 eu coloco ordem no mesmo preço
                 else:
-                    preco_que_vou_vender = corretoraLeilao.book.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
-                preco_de_zeragem = corretoraZeragem.book.preco_compra # zeragem no primeiro book de ordens
+                    preco_que_vou_vender = corretoraLeilao.livro.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
+                preco_de_zeragem = corretoraZeragem.livro.preco_compra # zeragem no primeiro book de ordens
 
                 # Valida se existe oportunidade de leilão
                 if (preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada) >= (1+corretoraZeragem.corretagem_mercado) * preco_de_zeragem):
@@ -214,7 +214,7 @@ class Leilao:
                     gostaria_de_vender = corretoraLeilao.saldo[ativo] *0.4
                     maximo_que_consigo_zerar = corretoraZeragem.saldo['brl'] / (qtd_de_moedas*preco_de_zeragem)
                     #se vc for executada nessa quantidade inteira, talvez nao tera lucro
-                    maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada)*(1-corretoraZeragem.corretagem_mercado))
+                    maximo_que_zero_com_lucro = corretoraZeragem.livro.obter_quantidade_abaixo_de_preco_compra(preco_que_vou_vender*(1-corretoraLeilao.corretagem_limitada)*(1-corretoraZeragem.corretagem_mercado))
                     qtdNegociada = min(gostaria_de_vender,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
                     
                     logging.info('Leilão compra rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_vender,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
@@ -249,11 +249,11 @@ class Leilao:
         retorno_compra_corretora_leilao = Ordem()
 
         try:
-            if (Util.eh_171(corretoraLeilao.book.quantidade_venda)):
-                preco_que_vou_comprar = corretoraLeilao.book.preco_venda #se for 171 eu chego junto
+            if (Util.eh_171(corretoraLeilao.livro.quantidade_venda)):
+                preco_que_vou_comprar = corretoraLeilao.livro.preco_venda #se for 171 eu chego junto
             else:
-                preco_que_vou_comprar = corretoraLeilao.book.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
-            preco_de_zeragem = corretoraZeragem.book.preco_venda # zeragem no primeiro book de ordens
+                preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
+            preco_de_zeragem = corretoraZeragem.livro.preco_venda # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão
             if preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada) <= preco_de_zeragem*(1-corretoraZeragem.corretagem_mercado):
@@ -261,7 +261,7 @@ class Leilao:
                 gostaria_de_comprar = corretoraLeilao.saldo['brl'] / (qtd_de_moedas * preco_que_vou_comprar)
                 maximo_que_consigo_zerar = corretoraZeragem.saldo[ativo] *0.4
                 #se vc for executada nessa quantidade inteira, talvez nao tera lucro
-                maximo_que_zero_com_lucro = corretoraZeragem.book.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada)*(1+corretoraZeragem.corretagem_mercado))
+                maximo_que_zero_com_lucro = corretoraZeragem.livro.obter_quantidade_acima_de_preco_venda(preco_que_vou_comprar*(1+corretoraLeilao.corretagem_limitada)*(1+corretoraZeragem.corretagem_mercado))
                 qtdNegociada = min(gostaria_de_comprar,maximo_que_consigo_zerar,maximo_que_zero_com_lucro)
                 
                 logging.info('Leilão venda rapida aberta: Moeda - {} /Quantidade-{} /Preco- {} /Preço Zeragem {} / Saldos brl {} e {} Saldo {}: {} e {}'.format(ativo,round(qtdNegociada,2),round(preco_que_vou_comprar,2),round(preco_de_zeragem,2),round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
@@ -300,18 +300,18 @@ class Leilao:
             ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
             
         #2: executada parcialmente, mais que o valor minimo
-        elif executarOrdens and ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > 0:
+        elif executarOrdens and ordem_antiga.quantidade_executada * corretoraZeragem.livro.preco_compra > 0:
         
-            if ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
+            if ordem_antiga.quantidade_executada * corretoraZeragem.livro.preco_compra > Util.retorna_menor_valor_compra(ativo): #mais de xxx reais executado
             
                 logging.info('Leilao compra vai zerar na {} {} da ordem executada {} de {}'.format(corretoraZeragem.nome,round(ordem_antiga.quantidade_executada,4),ordem_antiga.id,ativo))
                 corretoraZeragem.ordem.quantidade_enviada = ordem_antiga.quantidade_executada
-                corretoraZeragem.ordem.preco_enviado = corretoraZeragem.book.preco_compra
+                corretoraZeragem.ordem.preco_enviado = corretoraZeragem.livro.preco_compra
                 corretoraZeragem.ordem.tipo_ordem = 'market'
                 ordem_zeragem = corretoraZeragem.enviar_ordem_compra(corretoraZeragem.ordem,ativo)
 
             else:
-                fui_executado = round(ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra,4)
+                fui_executado = round(ordem_antiga.quantidade_executada * corretoraZeragem.livro.preco_compra,4)
                 valor_minimo = round(Util.retorna_menor_valor_compra(ativo),4)
                 logging.info('Leilao compra de {} nao vai fazer nada porque fui executado em {} reais que é menos que o valor minimo de {} reais'.format(ativo,fui_executado,valor_minimo))
                     
@@ -359,15 +359,15 @@ class Leilao:
         
         try:
             #1: nao sou o primeiro da fila
-            if (ordem_antiga.preco_enviado != corretoraLeilao.book.preco_compra) or (corretoraLeilao.book.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado > 0.02):
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra) or (corretoraLeilao.livro.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado > 0.02):
                 
-                logging.info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.book.preco_compra,corretoraLeilao.nome,corretoraLeilao.book.preco_compra_segundo_na_fila))
+                logging.info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_compra,corretoraLeilao.nome,corretoraLeilao.livro.preco_compra_segundo_na_fila))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
                 pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
 
-                if (abs(corretoraLeilao.book.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado) > 0.02):
-                    corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
+                if (abs(corretoraLeilao.livro.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado) > 0.02):
+                    corretoraLeilao.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
@@ -386,7 +386,7 @@ class Leilao:
                 return ordem_enviada, pnl
 
             #3: esta dando pnl negativo para zerar tudo
-            if (ordem_antiga.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.book.obter_preco_medio_de_compra(ordem_antiga.quantidade_enviada)):
+            if (ordem_antiga.preco_enviado*(1-corretoraLeilao.corretagem_limitada) < (1+corretoraZeragem.corretagem_mercado) * corretoraZeragem.livro.obter_preco_medio_de_compra(ordem_antiga.quantidade_enviada)):
                 
                 logging.info('Leilao compra vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_antiga.id,ativo))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
@@ -398,7 +398,7 @@ class Leilao:
                 return ordem_enviada, pnl
             #4: fui executado
             ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
-            if (ordem_antiga.status == corretoraLeilao.descricao_status_executado or ordem_antiga.quantidade_executada * corretoraZeragem.book.preco_compra > 0):
+            if (ordem_antiga.status == corretoraLeilao.descricao_status_executado or ordem_antiga.quantidade_executada * corretoraZeragem.livro.preco_compra > 0):
                 
                 logging.info('Leilao compra vai cancelar ordem {} de {} pq fui executado'.format(ordem_antiga.id,ativo))
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
@@ -486,15 +486,15 @@ class Leilao:
         
         try:
             #1: nao sou o primeiro da fila
-            if (ordem_antiga.preco_enviado != corretoraLeilao.book.preco_venda) or (ordem_antiga.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila > 0.02):
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda) or (ordem_antiga.preco_enviado -corretoraLeilao.livro.preco_venda_segundo_na_fila > 0.02):
                 
-                logging.info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.book.preco_venda,corretoraLeilao.nome,corretoraLeilao.book.preco_venda_segundo_na_fila))
+                logging.info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_venda,corretoraLeilao.nome,corretoraLeilao.livro.preco_venda_segundo_na_fila))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
                 cancelou = corretoraLeilao.cancelar_ordem(ativo,ordem_antiga.id)
                 pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga,executarOrdens,google_sheets)
 
-                if (abs(ordem_antiga.preco_enviado -corretoraLeilao.book.preco_venda_segundo_na_fila) > 0.02):
-                    corretoraLeilao.book.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
+                if (abs(ordem_antiga.preco_enviado -corretoraLeilao.livro.preco_venda_segundo_na_fila) > 0.02):
+                    corretoraLeilao.obter_ordem_book_por_indice(ativo,'brl',0,True,True) #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,True)
                 return ordem_enviada, pnl
@@ -513,7 +513,7 @@ class Leilao:
                 return ordem_enviada, pnl
 
             #3: esta dando pnl negativo para zerar tudo    
-            if (ordem_antiga.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.book.obter_preco_medio_de_venda(ordem_antiga.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
+            if (ordem_antiga.preco_enviado*(1+corretoraLeilao.corretagem_limitada) >  corretoraZeragem.livro.obter_preco_medio_de_venda(ordem_antiga.quantidade_enviada)*(1-corretoraZeragem.corretagem_mercado)):
                 
                 logging.info('Leilao venda vai cancelar ordem {} de {} pq o pnl esta dando negativo'.format(ordem_antiga.id,ativo))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ativo,ordem_antiga)
