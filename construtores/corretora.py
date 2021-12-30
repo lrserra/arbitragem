@@ -6,8 +6,8 @@ from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
 from corretoras.novadaxCorretora import Novadax
 from corretoras.bitRecife import BitRecife
-from uteis.ordem import Ordem
-from uteis.livro import Livro
+from construtores.ordem import Ordem
+from construtores.livro import Livro
 from uteis.util import Util
 
 class Corretora:

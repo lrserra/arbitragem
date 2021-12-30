@@ -2,7 +2,7 @@ import logging
 import time
 from binance.spot import Spot
 from uteis.util import Util
-from uteis.ordem import Ordem
+from construtores.ordem import Ordem
 
 class Binance:
 

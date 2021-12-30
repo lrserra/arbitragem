@@ -1,9 +1,15 @@
+import sys,os, time
+root_path = os.getcwd()
+sys.path.append(root_path)
+
 import logging
 from datetime import datetime
-from uteis.corretora import Corretora
+from construtores.corretora import Corretora
 from uteis.util import Util
-from uteis.googleSheets import GoogleSheets
 import uuid
+from uteis.googleSheets import GoogleSheets
+from uteis.converters import Converters
+from uteis.logger import Logger
 
 class Caixa:
 
@@ -20,8 +26,8 @@ class Caixa:
         try:
             CorretoraMenosLiquida.cancelar_todas_ordens()
             cancelei_todas = True
-        except Exception as err:
-            logging.error('erro no cancelamento de todas ordens: ' + err)
+        except Exception as erro:
+            Logger.loga_erro('atualiza_saldo_inicial','Caixa','erro no cancelamento de todas ordens: ' + erro)
         
         CorretoraMaisLiquida.atualizar_saldo()
         CorretoraMenosLiquida.atualizar_saldo()
@@ -33,7 +39,7 @@ class Caixa:
             porcentagem_mais_liquida = round(100*CorretoraMaisLiquida.saldo[moeda]/saldo_inicial[moeda],0)
             porcentagem_menos_liquida = round(100*CorretoraMenosLiquida.saldo[moeda]/saldo_inicial[moeda],0)
             
-            logging.warning('saldo inicial em {}: {} ({}% na {} e {}% na {})'.format(moeda,saldo_inicial[moeda],porcentagem_mais_liquida,CorretoraMaisLiquida.nome,porcentagem_menos_liquida,CorretoraMenosLiquida.nome))
+            Logger.loga_info('saldo inicial em {}: {} ({}% na {} e {}% na {})'.format(moeda,saldo_inicial[moeda],porcentagem_mais_liquida,CorretoraMaisLiquida.nome,porcentagem_menos_liquida,CorretoraMenosLiquida.nome))
             
         return cancelei_todas
 
@@ -262,32 +268,36 @@ class Caixa:
 if __name__ == "__main__":
 
         
-    from caixa import Caixa
+    #from caixa import Caixa
     from datetime import datetime
+    from uteis.settings import Settings
+    from uteis.google import Google
+    from uteis.logger import Logger
 
-    logging.basicConfig(filename='Caixa.log', level=logging.INFO,
-                        format='[%(asctime)s][%(levelname)s][%(message)s]')
-    console = logging.StreamHandler()
-    console.setLevel(logging.WARNING)
-    logging.getLogger().addHandler(console)
+    Logger.cria_arquivo_log('Caixa')
+    Logger.loga_info('iniciando script caixa...')
 
-    #essa parte executa apenas uma vez
-    white_list = Util.obter_white_list()
-    lista_para_zerar = [moeda for moeda in Util.obter_lista_de_moedas('zeragem_status') if moeda in white_list]
+    settings_client = Settings()
+    instance = settings_client.retorna_campo_de_json('rasp','instance')
+
+    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
+    lista_de_moedas_no_caixa = settings_client.retorna_campo_de_json_como_lista('strategy','caixa','lista_de_moedas','#')
+
+    lista_para_zerar = [moeda for moeda in lista_de_moedas_no_caixa if moeda in white_list]
     
-    corretora_mais_liquida = Util.obter_corretora_de_maior_liquidez()
-    corretora_menos_liquida = Util.obter_corretora_de_menor_liquidez()
-
-    # Instancia das corretoras por ativo
+    corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
+    corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
+    
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
     cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
     if cancelei_todas:
-        Caixa.zera_o_pnl_de_todas_moedas(Caixa(),lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    Caixa.envia_saldo_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
     Caixa.envia_position_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+
+ 

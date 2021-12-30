@@ -1,7 +1,12 @@
 
-import os, json
+import os, json, sys
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+
+root_path = os.getcwd()
+sys.path.append(root_path)
+
+from uteis.converters import Converters
 
 class Settings:
     def __init__(self):
@@ -24,6 +29,14 @@ class Settings:
                 return json.load(f)[campo]
             else:
                 return json.load(f)[campo][campo2]
+    
+    def retorna_campo_de_json_como_lista(self,nome,campo,campo2='',delim='#'):
+        '''
+        retorna qualquer campo de um json da pasta settings
+        '''
+        texto = self.retorna_campo_de_json(nome, campo, campo2)
+        return Converters.string_para_lista(texto,delim)
+
 
     def retorna_google_client(self):
         scope = ["https://spreadsheets.google.com/feeds", 

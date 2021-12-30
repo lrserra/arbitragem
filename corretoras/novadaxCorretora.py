@@ -3,7 +3,7 @@ import novadax
 import json
 import time
 from uteis.util import Util
-from uteis.ordem import Ordem
+from construtores.ordem import Ordem
 import math
 
 class Novadax:

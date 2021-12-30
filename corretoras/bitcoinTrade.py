@@ -5,7 +5,7 @@ import logging
 from urllib.parse import urlencode
 from uteis.util import Util
 from datetime import date, timedelta
-from uteis.ordem import Ordem
+from construtores.ordem import Ordem
 
 class BitcoinTrade:
 

@@ -25,7 +25,7 @@ class Google:
         except Exception as erro:
             Logger.loga_erro('ler','Google',erro)
 
-    def atualiza_strategy_settings(self,planilha,instance_rasp):
+    def atualiza_strategy_settings(self,planilha):
         '''
         atualiza o json strategy
         '''
@@ -34,13 +34,11 @@ class Google:
             strategy_settings = self.ler(planilha,'settings','settings_strategy')
             header = strategy_settings[0]
             for linha in strategy_settings[1:]:
-                instance_strategy = int(linha[0])
-                strategy = linha[1]
-                if instance_strategy == instance_rasp:
-                    strategy_json[strategy]={}
-                    for campo in header[2:]:
-                        strategy_json[strategy][campo]=linha[header.index(campo)]
-                
+                strategy = linha[0]
+                strategy_json[strategy]={}
+                for campo in header[1:]:
+                    strategy_json[strategy][campo]=linha[header.index(campo)]
+            
             self.settings.salva_json(strategy_json,'strategy')
 
         except Exception as erro:
