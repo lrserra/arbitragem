@@ -15,12 +15,15 @@ class Settings:
         json.dump(dicionario, arquivo) # Salva o Json no arquivo
         arquivo.close()
 
-    def retorna_campo_de_json(self,nome, campo):
+    def retorna_campo_de_json(self,nome, campo, campo2=''):
         '''
         retorna qualquer campo de um json da pasta settings
         '''
         with open(self.current_path+"/settings/"+nome+".json") as f:
-            return json.load(f)[campo]
+            if campo2 == '':
+                return json.load(f)[campo]
+            else:
+                return json.load(f)[campo][campo2]
 
     def retorna_google_client(self):
         scope = ["https://spreadsheets.google.com/feeds", 

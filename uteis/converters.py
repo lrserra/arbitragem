@@ -24,6 +24,17 @@ class Converters:
         delta = date1 - temp
         return float(delta.days) + (float(delta.seconds) / 86400)
 
+    def string_para_dicionario(texto,delim):
+        '''
+        pega string com delimitador e retorna dicionario equivalente
+        '''
+        lista = texto.split(delim)
+        dici = dict()
+
+        for item in lista:
+            res = item.split(':')
+            dici[res[0]] = res[1]
+        return dici
     
     def dicionario_simples_para_string(dicionario={},separador='#'):
         '''
