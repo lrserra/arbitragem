@@ -85,6 +85,9 @@ class Google:
             Logger.loga_erro('atualiza_broker_settings','Google',erro)
     
     def comprime_position(self,planilha):
+        '''
+        comprime linhas da planilha na aba position
+        '''
         try:
             sheet = self.google.open(planilha).worksheet('position')
             data = sheet.col_values(1)
@@ -124,6 +127,9 @@ class Google:
             Logger.loga_erro('comprime_position','Google',erro)
 
     def comprime_spot(self,planilha):
+        '''
+        comprime linhas da planilha na aba spot
+        '''
         try:
             sheet = self.google.open(planilha).worksheet('spot')
             todos_dados = sheet.get_all_records()

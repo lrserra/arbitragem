@@ -3,7 +3,9 @@ from datetime import datetime
 class Converters:
 
     def string_para_float(number):
-        
+        '''
+        converte uma string para um numero
+        '''
         try:
             return float(number) if number != '' else ''
 
@@ -20,6 +22,9 @@ class Converters:
                 return number
     
     def datetime_para_excel_date(date1):
+        '''
+        converte um datetime para uma data de excel
+        '''
         temp = datetime(1899, 12, 30)    # Note, not 31st Dec but 30th!
         delta = date1 - temp
         return float(delta.days) + (float(delta.seconds) / 86400)
