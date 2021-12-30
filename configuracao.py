@@ -11,10 +11,10 @@ Erros.cria_arquivo_log('Configuracao')
 Erros.loga_info('iniciando script de configuracao...')
 
 settings_client = Settings()
+google_client = Google()
+
 planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 instance = settings_client.retorna_campo_de_json('rasp','instance')
-
-google_client = Google()
 
 Erros.loga_info('atualizando settings de estrategias')
 google_client.atualiza_strategy_settings(planilha,instance)
@@ -31,9 +31,12 @@ google_client.comprime_position(planilha)
 Erros.loga_info('comprimindo tabela spot')
 google_client.comprime_spot(planilha)
 
+i=1
+freq = 5
 while True:
-    Erros.loga_info('atualizando settings de estrategias recorrente')
+    Erros.loga_info('atualizando settings de estrategias recorrente a cada {} minutos, iteracao {}'.format(freq,i))
     google_client.atualiza_strategy_settings(planilha,instance)
-    time.sleep(5*60)
+    i+=1
+    time.sleep(freq*60)
 
 
