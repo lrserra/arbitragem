@@ -2,7 +2,7 @@
 from datetime import datetime
 import logging
 
-class Erros:
+class Logger:
 
     def cria_arquivo_log(arquivo):
         '''

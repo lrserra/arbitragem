@@ -4,8 +4,8 @@ from datetime import datetime,timedelta
 root_path = os.getcwd()
 sys.path.append(root_path)
 
-from settings.settings import Settings
-from uteis.erros import Erros
+from uteis.settings import Settings
+from uteis.logger import Logger
 from uteis.converters import Converters
 
 class Google:
@@ -23,7 +23,7 @@ class Google:
             return data
 
         except Exception as erro:
-            Erros.loga_erro('ler','Google',erro)
+            Logger.loga_erro('ler','Google',erro)
 
     def atualiza_strategy_settings(self,planilha,instance_rasp):
         '''
@@ -44,7 +44,7 @@ class Google:
             self.settings.salva_json(strategy_json,'strategy')
 
         except Exception as erro:
-            Erros.loga_erro('atualiza_app_settings','Google',erro)
+            Logger.loga_erro('atualiza_app_settings','Google',erro)
 
     def atualiza_app_settings(self,planilha):
         '''
@@ -63,7 +63,7 @@ class Google:
             self.settings.salva_json(app_json,'app')
 
         except Exception as erro:
-            Erros.loga_erro('atualiza_app_settings','Google',erro)
+            Logger.loga_erro('atualiza_app_settings','Google',erro)
         
     def atualiza_broker_settings(self,planilha):
         '''
@@ -82,7 +82,7 @@ class Google:
             self.settings.salva_json(broker_json,'broker')
 
         except Exception as erro:
-            Erros.loga_erro('atualiza_broker_settings','Google',erro)
+            Logger.loga_erro('atualiza_broker_settings','Google',erro)
     
     def comprime_position(self,planilha):
         try:
@@ -105,7 +105,7 @@ class Google:
                                 linhas_a_deletar.append([current_index+1,current_date]) #vamos deixar só ultimo de cada dia
 
             for linha_a_deletar in reversed(linhas_a_deletar):
-                Erros.loga_info('deletando a linha {} com data {}'.format(linha_a_deletar[0],linha_a_deletar[1]))
+                Logger.loga_info('deletando a linha {} com data {}'.format(linha_a_deletar[0],linha_a_deletar[1]))
                 time.sleep(1)
                 sheet.delete_row(linha_a_deletar[0])
        
@@ -116,12 +116,12 @@ class Google:
                 if linha['DATA'] == '':
                     linhas_a_excluir.append(linha['ROW'])
             for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
-                Erros.loga_info('deletando a linha vazia {}'.format(linha_a_deletar))
+                Logger.loga_info('deletando a linha vazia {}'.format(linha_a_deletar))
                 time.sleep(1)
                 sheet.delete_row(linha_a_deletar)
 
         except Exception as erro:
-            Erros.loga_erro('comprime_position','Google',erro)
+            Logger.loga_erro('comprime_position','Google',erro)
 
     def comprime_spot(self,planilha):
         try:
@@ -142,7 +142,7 @@ class Google:
                 if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
                     linhas_a_excluir.append(linha['ROW'])
             for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
-                Erros.loga_warning('deletando a linha vazia {}'.format(linha_a_deletar))
+                Logger.loga_warning('deletando a linha vazia {}'.format(linha_a_deletar))
                 time.sleep(1)
                 sheet.delete_row(linha_a_deletar)
 
@@ -221,28 +221,28 @@ class Google:
                     compressao_diaria.remove(trade)
         
         except Exception as erro:
-            Erros.loga_erro('comprime_spot','Google',erro)
+            Logger.loga_erro('comprime_spot','Google',erro)
 
         
-        Erros.loga_warning('(linhas a deletar / linhas a adicionar), ({}/{})'.format(len(linhas_a_excluir),len(linhas_a_adicionar)))
+        Logger.loga_warning('(linhas a deletar / linhas a adicionar), ({}/{})'.format(len(linhas_a_excluir),len(linhas_a_adicionar)))
         i = 1
         for linha_a_excluir in reversed(sorted(linhas_a_excluir)):
-            Erros.loga_info('deletando a linha {} da planilha, ({}/{})'.format(linha_a_excluir,i,len(linhas_a_excluir)))
+            Logger.loga_info('deletando a linha {} da planilha, ({}/{})'.format(linha_a_excluir,i,len(linhas_a_excluir)))
             time.sleep(1)
             try:
                 sheet.delete_row(linha_a_excluir)
             except Exception as erro:
-                Erros.loga_erro('delete_row - comprime_spot','Google',erro)
+                Logger.loga_erro('delete_row - comprime_spot','Google',erro)
             i+=1
         i = 1
         time.sleep(151) if len(linhas_a_excluir)>0 else time.sleep(1)#para o api do google continuar de graça
         for linha_a_adicionar in linhas_a_adicionar:
-            Erros.loga_info('adicionando uma linha comprimida id {}, ({}/{})'.format(linha_a_adicionar[1],i,len(linhas_a_adicionar)))
+            Logger.loga_info('adicionando uma linha comprimida id {}, ({}/{})'.format(linha_a_adicionar[1],i,len(linhas_a_adicionar)))
             time.sleep(3)
             try:
                 sheet.insert_row(linha_a_adicionar, sorted(linhas_a_excluir)[0]+1, value_input_option='USER_ENTERED')
             except Exception as erro:
-                Erros.loga_erro('insert_row - comprime_spot','Google',erro)
+                Logger.loga_erro('insert_row - comprime_spot','Google',erro)
             i+=1
 
         linhas_a_excluir = []
@@ -254,7 +254,7 @@ class Google:
             if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
                 linhas_a_excluir.append(linha['ROW'])
         for linha_a_deletar in reversed(linhas_a_excluir):
-            Erros.loga_info('deletando a linha vazia {}'.format(linha_a_deletar))
+            Logger.loga_info('deletando a linha vazia {}'.format(linha_a_deletar))
             time.sleep(1)
             sheet.delete_row(linha_a_deletar)
 
