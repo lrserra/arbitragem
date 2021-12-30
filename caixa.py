@@ -43,7 +43,7 @@ class Caixa:
             
         return cancelei_todas
 
-    def envia_position_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo = False):
+    def envia_position_google(white_list,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo = False):
         '''
         envia nova linha com position consolidada para google        
         '''
@@ -56,8 +56,7 @@ class Caixa:
  
         rasp_id = 1
         produto = 'spot'
-        white_list = Util.obter_white_list()
-        
+                
         if atualizar_saldo:
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
@@ -93,63 +92,30 @@ class Caixa:
             preco_por_corretora_venda[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.livro.preco_venda
             preco_por_corretora_compra[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.livro.preco_compra
 
-        GoogleSheets().escrever_position([Util.excel_date(datetime.now()),rasp_id,produto
-                                        ,Util.dicionario_simples_para_string(saldo)
-                                        ,Util.dicionario_duplo_para_string(saldo_por_corretora)
-                                        ,Util.dicionario_simples_para_string(financeiro)
-                                        ,Util.dicionario_duplo_para_string(financeiro_por_corretora)
-                                        ,Util.dicionario_duplo_para_string(preco_por_corretora_venda)
-                                        ,Util.dicionario_duplo_para_string(preco_por_corretora_compra)])
+        GoogleSheets().escrever_position([Converters.datetime_para_excel_date(datetime.now())
+                                        ,rasp_id
+                                        ,produto
+                                        ,Converters.dicionario_simples_para_string(saldo)
+                                        ,Converters.dicionario_duplo_para_string(saldo_por_corretora)
+                                        ,Converters.dicionario_simples_para_string(financeiro)
+                                        ,Converters.dicionario_duplo_para_string(financeiro_por_corretora)
+                                        ,Converters.dicionario_duplo_para_string(preco_por_corretora_venda)
+                                        ,Converters.dicionario_duplo_para_string(preco_por_corretora_compra)])
 
         return True
-
-    def envia_saldo_google(CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora):
-        '''
-        envia nova linha de saldo para planilha do google
-        '''
-        saldo = {}
-        preco_venda = {}
-
-        lista_de_moedas_hardcoded = Util.obter_lista_de_moedas()+[Util.CCYBRL()]
-        
-        for moeda in lista_de_moedas_hardcoded:
-            if (moeda in CorretoraMaisLiquida.saldo.keys()) and (moeda in CorretoraMenosLiquida.saldo.keys()):
-                
-                saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
-                
-                if moeda != 'brl':
-                    CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True)
-                    preco_venda[moeda] = CorretoraMaisLiquida.livro.preco_venda
-                else:
-                    preco_venda[moeda] = 1
-            else:
-                CorretoraMaisLiquida.saldo[moeda] = 0
-                saldo[moeda] = 0
-                preco_venda[moeda] = 0
-        
-        CorretoraMaisLiquida.obter_ordem_book_por_indice('usdc','brl',0,False,False)
-        preco_venda['usdc']=CorretoraMaisLiquida.livro.preco_venda
-
-        logging.warning('caixa vai enviar saldo para o google')
-        GoogleSheets().escrever_saldo([saldo['brl'],saldo['btc'],saldo['eth'],saldo['xrp'],saldo['ltc'],saldo['bch'],saldo['ada'],saldo['usdt'],saldo['doge'],saldo['btc']*preco_venda['btc'],saldo['eth']*preco_venda['eth'],saldo['xrp']*preco_venda['xrp'],saldo['ltc']*preco_venda['ltc'],saldo['bch']*preco_venda['bch'],saldo['ada']*preco_venda['ada'],saldo['usdt']*preco_venda['usdt'],saldo['doge']*preco_venda['doge'],CorretoraMaisLiquida.saldo['brl'],CorretoraMaisLiquida.saldo['btc'],CorretoraMaisLiquida.saldo['eth'],CorretoraMaisLiquida.saldo['xrp'],CorretoraMaisLiquida.saldo['ltc'],CorretoraMaisLiquida.saldo['bch'],CorretoraMaisLiquida.saldo['ada'],CorretoraMaisLiquida.saldo['usdt'],CorretoraMaisLiquida.saldo['doge'], Util.excel_date(datetime.now()),preco_venda['usdc']])
-
-
-    def zera_o_pnl_de_todas_moedas(self,lista_de_moedas,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo=True):
+   
+    def zera_o_pnl_de_todas_moedas(self,lista_de_moedas,saldo_inicial,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo=True):
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então é bom comprar essa quantidade novamente
         '''
-        saldo_inicial = Util.obter_saldo_inicial_configuracao()
-        saldo_final = {}
-
-        google_sheets = GoogleSheets()
-
         if atualizar_saldo:
             CorretoraMaisLiquida.atualizar_saldo()
             CorretoraMenosLiquida.atualizar_saldo()
 
-        moedas_para_zerar = lista_de_moedas
+        saldo_final = {}
+
         #verifica saldo final, para comparar com inicial
-        for moeda in moedas_para_zerar:
+        for moeda in lista_de_moedas:
 
             saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
 
@@ -157,17 +123,16 @@ class Caixa:
             quantidade_a_zerar = round(abs(pnl_em_moeda),4)
 
             if CorretoraMaisLiquida.saldo[moeda]==0 and moeda in CorretoraMaisLiquida.moedas_negociaveis:
-                logging.warning('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMaisLiquida.nome))
+                Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMaisLiquida.nome))
                 quantidade_a_zerar = 0
 
             elif CorretoraMenosLiquida.saldo[moeda]==0 and moeda in CorretoraMenosLiquida.moedas_negociaveis:
-                logging.warning('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMenosLiquida.nome))
+                Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMenosLiquida.nome))
                 quantidade_a_zerar = 0
 
             #carrego os books de ordem mais recentes
             CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-            colchao_de_liquidez = 0.98
-
+            
             if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
 
                 #carrego os books de ordem mais recentes
@@ -175,7 +140,7 @@ class Caixa:
 
                 if CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos vender na corretora que paga mais e que tenha saldo
                     #A mais liquida é a mais vantajosa para vender    
-                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMaisLiquida.saldo[moeda])
+                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda])
                     quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
                     if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):    
                         self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida,google_sheets)
@@ -184,7 +149,7 @@ class Caixa:
                 
                 elif CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
                     #A menos liquida é a mais vantajosa para vender    
-                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMenosLiquida.saldo[moeda])
+                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
                     quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
                     if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):
                         self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida,google_sheets)
@@ -198,7 +163,7 @@ class Caixa:
 
                 if CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos comprar na corretora que esta mais barato e que tenha saldo
                     #A mais liquida é a mais vantajosa para comprar
-                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
+                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
                     quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
                     if quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
                         self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida,google_sheets)
@@ -207,7 +172,7 @@ class Caixa:
 
                 elif CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
                     #A menos liquida é a mais vantajosa para comprar
-                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,colchao_de_liquidez*CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
+                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
                     quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
                     if quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
                         self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida,google_sheets)
@@ -236,7 +201,7 @@ class Caixa:
             financeiro_venda = vendi_a * quantidade_executada_venda
             financeiro_corretagem = corretora.corretagem_mercado*financeiro_venda
 
-            trade_time = Util.excel_date(datetime.now())
+            trade_time = Converters.datetime_para_excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
             google_sheets.escrever_operacao([moeda,'',0,0,corretora.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', trade_time,0,financeiro_venda])
             google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,0,corretora.livro.preco_venda,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
@@ -256,9 +221,8 @@ class Caixa:
             financeiro_compra = comprei_a * quantidade_executada_compra
             financeiro_corretagem = corretora.corretagem_mercado*financeiro_compra
 
-            trade_time = Util.excel_date(datetime.now())
+            trade_time = Converters.datetime_para_excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
-            google_sheets.escrever_operacao([moeda,corretora.nome,comprei_a,quantidade_executada_compra,'',0,0,0,'CAIXA', trade_time,financeiro_compra,0])
             google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,0,corretora.livro.preco_compra,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
             corretora.atualizar_saldo()
 
@@ -268,10 +232,9 @@ class Caixa:
 if __name__ == "__main__":
 
         
-    #from caixa import Caixa
+    from caixa import Caixa
     from datetime import datetime
     from uteis.settings import Settings
-    from uteis.google import Google
     from uteis.logger import Logger
 
     Logger.cria_arquivo_log('Caixa')
@@ -281,9 +244,9 @@ if __name__ == "__main__":
     instance = settings_client.retorna_campo_de_json('rasp','instance')
 
     white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
-    lista_de_moedas_no_caixa = settings_client.retorna_campo_de_json_como_lista('strategy','caixa','lista_de_moedas','#')
+    lista_de_moedas_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
 
-    lista_para_zerar = [moeda for moeda in lista_de_moedas_no_caixa if moeda in white_list]
+    lista_para_zerar = [moeda for moeda in lista_de_moedas_no_caixa.keys() if moeda in white_list]
     
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
@@ -293,11 +256,11 @@ if __name__ == "__main__":
 
     cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
     if cancelei_todas:
-        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,lista_de_moedas_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    Caixa.envia_position_google(CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.envia_position_google(white_list,CorretoraMaisLiquida,CorretoraMenosLiquida)
 
  

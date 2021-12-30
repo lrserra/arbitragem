@@ -44,7 +44,7 @@ class Converters:
 
         for item in lista:
             res = item.split(':')
-            dici[res[0]] = res[1]
+            dici[res[0]] = float(res[1])
         return dici
     
     def dicionario_simples_para_string(dicionario={},separador='#'):

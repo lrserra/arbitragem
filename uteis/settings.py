@@ -36,7 +36,13 @@ class Settings:
         '''
         texto = self.retorna_campo_de_json(nome, campo, campo2)
         return Converters.string_para_lista(texto,delim)
-
+    
+    def retorna_campo_de_json_como_dicionario(self,nome,campo,campo2='',delim='#'):
+        '''
+        retorna qualquer campo de um json da pasta settings
+        '''
+        texto = self.retorna_campo_de_json(nome, campo, campo2)
+        return Converters.string_para_dicionario(texto,delim)
 
     def retorna_google_client(self):
         scope = ["https://spreadsheets.google.com/feeds", 
