@@ -27,17 +27,19 @@ class Corretora:
         #propriedades dinamicas
         self.saldo={}
         self.livro = Livro()
-        self.ordem = Ordem()
-
+        
         #inicializa saldo inicial para white list desse rasp
         instance = settings_client.retorna_campo_de_json('rasp','instance')
-        white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
+        self.white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
 
-        for moeda in white_list+['brl']:
+        for moeda in self.white_list+['brl']:
             self.saldo[moeda] = 0
 
     #metodos comuns a todas corretoras
     def atualizar_saldo(self):
+        '''
+        carrega saldo disponivel nas corretoras
+        '''
         try:
             if self.nome == 'MercadoBitcoin':
                 retorno_saldo = MercadoBitcoin().obter_saldo()
@@ -55,7 +57,9 @@ class Corretora:
             Logger.loga_erro('atualizar_saldo','Corretora', erro, self.nome)
         
     def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
-        
+        '''
+        carrega preços e quantidades no livro para essa moeda
+        '''
         try:
             if ativo_parte in self.moedas_negociaveis:
                 
@@ -72,6 +76,9 @@ class Corretora:
             Logger.loga_erro('obter_ordem_book_por_indice','Corretora', erro, self.nome)
 
     def obter_todas_ordens_abertas(self, ativo='btc'):
+        '''
+        obtem todas as ordens limitadas em aberto na corretora
+        '''
         try:
             if self.nome == 'MercadoBitcoin':
                 return MercadoBitcoin(ativo).obter_ordens_abertas()
@@ -87,15 +94,18 @@ class Corretora:
             Logger.loga_erro('obter_todas_ordens_abertas','Corretora', erro, self.nome)
         
     def cancelar_todas_ordens(self):
+        '''
+        cancela todas ordens em aberto na corretora que estejam na white list
+        '''
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
             white_list = Util.obter_white_list()
             qtd_ordens_abertas = len([ordem for ordem in ordens_abertas if ordem['coin'].lower in white_list])
             
             if qtd_ordens_abertas>0:
-                logging.warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
+                Logger.loga_warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
             else:
-                logging.warning('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
+                Logger.loga_info('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
 
             if self.nome == 'MercadoBitcoin':
                 MercadoBitcoin().cancelar_todas_ordens(ordens_abertas,white_list)
@@ -110,7 +120,9 @@ class Corretora:
             Logger.loga_erro('cancelar_todas_ordens','Corretora', erro, self.nome)
     
     def obter_ordem_por_id(self,ativo,obterOrdem:Ordem):
-        
+        '''
+        atualiza status atual da ordem
+        '''
         try:
             if self.nome == 'MercadoBitcoin':
                 pass
@@ -145,11 +157,11 @@ class Corretora:
 
                 if ordem.status != 'filled' and ordem.status != 'open':
                     if 'error_message' in response.keys():
-                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['error_message']))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['error_message']))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_compra - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_compra - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     #raise Exception(mensagem)
             
             elif self.nome == 'BrasilBitcoin':
@@ -161,11 +173,11 @@ class Corretora:
                 
                 if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
             
             elif self.nome == 'Binance':
                 if ordem.tipo_ordem == 'market':
@@ -176,25 +188,25 @@ class Corretora:
                 
                 if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
-                        logging.error('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
+                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
 
             elif self.nome == 'BitcoinTrade':
                 ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
 
                 if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
                         ordemFiltro = Ordem()
                         ordemFiltro.id = response['data']['code']
                         ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
-                        logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
 
         except Exception as erro:
@@ -219,22 +231,22 @@ class Corretora:
                 
                 if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
                     if 'error_message' in response.keys():
-                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
             elif self.nome == 'BrasilBitcoin':
                 ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
                 
                 if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
             
             elif self.nome == 'Binance':
                 if ordem.tipo_ordem == 'market':
@@ -243,11 +255,11 @@ class Corretora:
                 
                 if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
-                        logging.error('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
 
             elif self.nome == 'BitcoinTrade':
@@ -255,14 +267,14 @@ class Corretora:
 
                 if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
                     if 'message' in response.keys():
-                        logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
+                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
                     else:
                         ordemFiltro = Ordem()
                         ordemFiltro.id = response['data']['code']
                         ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
-                        logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
-                        logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
+                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
+                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     
 
         except Exception as erro:
@@ -271,6 +283,9 @@ class Corretora:
         return ordem
 
     def cancelar_ordem(self,ativo_parte='btc',idOrdem=0):
+        '''
+        cancela ordem em aberto a partir do id
+        '''
         try:
             if self.nome == 'MercadoBitcoin':
                 return MercadoBitcoin(ativo_parte).cancelar_ordem(idOrdem)
@@ -286,7 +301,9 @@ class Corretora:
 
   
     def __obter_moedas_negociaveis(self):
-
+        '''
+        obtem lista de moedas na corretora negociaveis contra brl
+        '''
         moedas_negociaveis = []
         try:
             if self.nome == 'BrasilBitcoin':
@@ -299,6 +316,9 @@ class Corretora:
         return moedas_negociaveis
 
     def __carregar_ordem_books(self,ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
+        '''
+        carrega a lista atualizada de ordens no livro da corretora
+        '''
         try:
             retorno_book ={'asks':[],'bids':[]}
             retorno_book_sem_tratar ={'asks':[],'bids':[]}
@@ -311,7 +331,7 @@ class Corretora:
                 retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'bids' not in retorno_book.keys():
                     retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
-                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('MercadoBitcoin','bids'))
+                    Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('MercadoBitcoin','bids'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
@@ -319,7 +339,7 @@ class Corretora:
                 retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
-                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
+                    Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
@@ -330,7 +350,7 @@ class Corretora:
                 retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
-                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BitcoinTrade','data'))
+                    Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BitcoinTrade','data'))
                     time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#BT precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
