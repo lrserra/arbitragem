@@ -3,7 +3,7 @@ import sys, os, time, datetime
 sys.path.append(os.getcwd())
 
 from uteis.util import Util
-from uteis.googleSheets import GoogleSheets
+from test.googleSheets import GoogleSheets
 from corretoras.ftx import FtxClient
 
 config = Util.obterCredenciais()

@@ -30,6 +30,16 @@ class Settings:
             else:
                 return json.load(f)[campo][campo2]
     
+    def retorna_campo_de_json_com_fallback(self,nome,campo1, campo2, campo2_alternativo):
+        '''
+        retona campo2 se existe, do contrario traz campo2 alternativo
+        '''
+        with open(self.current_path+"/settings/"+nome+".json") as f:
+            try:
+                return float(json.load(f)[campo1][campo2])
+            except:
+                return float(json.load(f)[campo1][campo2_alternativo])
+    
     def retorna_campo_de_json_como_lista(self,nome,campo,campo2='',delim='#'):
         '''
         retorna qualquer campo de um json da pasta settings

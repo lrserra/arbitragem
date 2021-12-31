@@ -1,13 +1,12 @@
-import sys,os, time
+import sys,os,uuid
+
+from uteis.google import Google
 root_path = os.getcwd()
 sys.path.append(root_path)
 
-import logging
 from datetime import datetime
 from construtores.corretora import Corretora
 from uteis.util import Util
-import uuid
-from uteis.googleSheets import GoogleSheets
 from uteis.converters import Converters
 from uteis.logger import Logger
 
@@ -47,6 +46,8 @@ class Caixa:
         '''
         envia nova linha com position consolidada para google        
         '''
+        google_client = Google()
+        settings_client = Settings()
         saldo={}
         saldo_por_corretora = {}
         financeiro = {}
@@ -92,7 +93,8 @@ class Caixa:
             preco_por_corretora_venda[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.livro.preco_venda
             preco_por_corretora_compra[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.livro.preco_compra
 
-        GoogleSheets().escrever_position([Converters.datetime_para_excel_date(datetime.now())
+        planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
+        google_client.escrever(planilha,'spot',[Converters.datetime_para_excel_date(datetime.now())
                                         ,rasp_id
                                         ,produto
                                         ,Converters.dicionario_simples_para_string(saldo)
@@ -117,79 +119,87 @@ class Caixa:
         #verifica saldo final, para comparar com inicial
         for moeda in lista_de_moedas:
 
-            saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
+            try:
+                saldo_final[moeda] = CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda]
 
-            pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
-            quantidade_a_zerar = round(abs(pnl_em_moeda),4)
+                pnl_em_moeda = round(float(saldo_final[moeda]) - float(saldo_inicial[moeda]),4)
+                quantidade_a_zerar = round(abs(pnl_em_moeda),4)
 
-            if CorretoraMaisLiquida.saldo[moeda]==0 and moeda in CorretoraMaisLiquida.moedas_negociaveis:
-                Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMaisLiquida.nome))
-                quantidade_a_zerar = 0
+                if CorretoraMaisLiquida.saldo[moeda]==0 and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                    Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMaisLiquida.nome))
+                    quantidade_a_zerar = 0
 
-            elif CorretoraMenosLiquida.saldo[moeda]==0 and moeda in CorretoraMenosLiquida.moedas_negociaveis:
-                Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMenosLiquida.nome))
-                quantidade_a_zerar = 0
-
-            #carrego os books de ordem mais recentes
-            CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-            
-            if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
+                elif CorretoraMenosLiquida.saldo[moeda]==0 and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                    Logger.loga_info('saldo de {} na {} esta zerado e por seguranca nao vamos zerar caixa'.format(moeda,CorretoraMenosLiquida.nome))
+                    quantidade_a_zerar = 0
 
                 #carrego os books de ordem mais recentes
-                CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-
-                if CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos vender na corretora que paga mais e que tenha saldo
-                    #A mais liquida é a mais vantajosa para vender    
-                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda])
-                    quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
-                    if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):    
-                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida,google_sheets)
-                    if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
-                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMenosLiquida,google_sheets)
+                CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
                 
-                elif CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
-                    #A menos liquida é a mais vantajosa para vender    
-                    quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
-                    quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
-                    if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):
-                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida,google_sheets)
-                    if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
-                        self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMaisLiquida,google_sheets)
+                if pnl_em_moeda > 0 and quantidade_a_zerar > Util.retorna_menor_quantidade_venda(moeda):
 
-            elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.livro.preco_compra > Util.retorna_menor_valor_compra(moeda):
+                    #carrego os books de ordem mais recentes
+                    CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+
+                    if CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos vender na corretora que paga mais e que tenha saldo
+                        #A mais liquida é a mais vantajosa para vender    
+                        quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda])
+                        quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
+                        if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):    
+                            self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida)
+                        if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
+                            self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMenosLiquida)
+                    
+                    elif CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
+                        #A menos liquida é a mais vantajosa para vender    
+                        quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
+                        quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara
+                        if quantidade_a_vender_na_mais_cara>Util.retorna_menor_quantidade_venda(moeda):
+                            self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida)
+                        if quantidade_que_restou>Util.retorna_menor_quantidade_venda(moeda):
+                            self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMaisLiquida)
+
+                elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.livro.preco_compra > Util.retorna_menor_valor_compra(moeda):
+                
+                    #carrego os books de ordem mais recentes
+                    CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
+
+                    if CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos comprar na corretora que esta mais barato e que tenha saldo
+                        #A mais liquida é a mais vantajosa para comprar
+                        quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
+                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
+                        if quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                            self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida)
+                        if quantidade_que_restou*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                            self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMenosLiquida)
+
+                    elif CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
+                        #A menos liquida é a mais vantajosa para comprar
+                        quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
+                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
+                        if quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                            self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida)
+                        if quantidade_que_restou*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
+                            self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida)
+
+                else:
+                    Logger.loga_info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
             
-                #carrego os books de ordem mais recentes
-                CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,Util.CCYBRL(),0,True,True)
-
-                if CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos comprar na corretora que esta mais barato e que tenha saldo
-                    #A mais liquida é a mais vantajosa para comprar
-                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
-                    quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
-                    if quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
-                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida,google_sheets)
-                    if quantidade_que_restou*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
-                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMenosLiquida,google_sheets)
-
-                elif CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
-                    #A menos liquida é a mais vantajosa para comprar
-                    quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar))
-                    quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata
-                    if quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
-                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida,google_sheets)
-                    if quantidade_que_restou*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>Util.retorna_menor_valor_compra(moeda):
-                        self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida,google_sheets)
-
-            else:
-                logging.warning('caixa não precisa zerar pnl de {} por ora'.format(moeda))
-                
+            except Exception as erro:
+                Logger.loga_erro('zera_o_pnl_de_todas_moedas','Caixa','erro na moeda {}: {}'.format(moeda,erro))       
 
         return True
 
-    def zera_o_pnl_de_uma_moeda(self,direcao,quantidade_a_zerar,moeda,corretora:Corretora,google_sheets:GoogleSheets):
+    def zera_o_pnl_de_uma_moeda(self,direcao,quantidade_a_zerar,moeda,corretora:Corretora):
 
+        settings_client = Settings()
+        planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
+        
+        google_client = Google()
+        
         if direcao == 'venda':
             
-            logging.warning('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,corretora.nome))
+            Logger.loga_warning('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,corretora.nome))
             
             corretora.ordem.quantidade_enviada = quantidade_a_zerar
             corretora.ordem.tipo_ordem = 'market'
@@ -203,13 +213,13 @@ class Caixa:
 
             trade_time = Converters.datetime_para_excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
-            google_sheets.escrever_operacao([moeda,'',0,0,corretora.nome,vendi_a,quantidade_executada_venda,0,'CAIXA', trade_time,0,financeiro_venda])
-            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,0,corretora.livro.preco_venda,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
+            
+            google_client.escrever(planilha,'spot',[trade_time,trade_id,'CAIXA',moeda,corretora.nome,'VENDA',vendi_a,quantidade_executada_venda,financeiro_venda,0,corretora.livro.preco_venda,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
             corretora.atualizar_saldo()
         
         elif direcao == 'compra':
 
-            logging.warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,corretora.nome))
+            Logger.loga_warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,corretora.nome))
         
             corretora.ordem.quantidade_enviada = quantidade_a_zerar
             corretora.ordem.tipo_ordem = 'market'
@@ -223,7 +233,8 @@ class Caixa:
 
             trade_time = Converters.datetime_para_excel_date(datetime.now())
             trade_id = str(uuid.uuid4())
-            google_sheets.escrever_spot([trade_time,trade_id,'CAIXA',moeda,corretora.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,0,corretora.livro.preco_compra,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
+
+            google_client.escrever(planilha,'spot',[trade_time,trade_id,'CAIXA',moeda,corretora.nome,'COMPRA',comprei_a,quantidade_executada_compra,financeiro_compra,0,corretora.livro.preco_compra,0,corretora.corretagem_mercado,financeiro_corretagem,0,'FALSE'])
             corretora.atualizar_saldo()
 
         return True

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     #bibliotecas nossas
     from uteis.util import Util
     from uteis.corretora import Corretora
-    from uteis.googleSheets import GoogleSheets
+    from test.googleSheets import GoogleSheets
     from caixa import Caixa
     from leilao_rapido import Leilao
 

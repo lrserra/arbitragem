@@ -1,14 +1,13 @@
 import time
 from corretoras.binance import Binance
-import logging
 from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
 from corretoras.bitcoinTrade import BitcoinTrade
-from corretoras.novadaxCorretora import Novadax
-from corretoras.bitRecife import BitRecife
 from construtores.ordem import Ordem
 from construtores.livro import Livro
+from uteis.settings import Settings
 from uteis.util import Util
+from uteis.logger import Logger
 
 class Corretora:
     
@@ -18,8 +17,11 @@ class Corretora:
         self.nome = nome 
 
         #propriedades especificas de cada corretora
-        self.corretagem_limitada, self.corretagem_mercado = self.__obter_corretagem()
-        self.descricao_status_executado = self.__obter_status_executado()
+        settings_client = Settings()
+        self.corretagem_limitada = settings_client.retorna_campo_de_json_com_fallback('broker',self.nome,'user_corretagem_limitada','default_corretagem_limitada')
+        self.corretagem_mercado = settings_client.retorna_campo_de_json_com_fallback('broker',self.nome,'user_corretagem_mercado','default_corretagem_mercado')
+        self.valor_minimo_compra = settings_client.retorna_campo_de_json_como_dicionario('broker',self.nome,'valor_minimo_compra')
+        self.quantidade_minima_venda = settings_client.retorna_campo_de_json_como_dicionario('broker',self.nome,'quantidade_minima_venda')
         self.moedas_negociaveis = self.__obter_moedas_negociaveis()
         
         #propriedades dinamicas
@@ -27,9 +29,11 @@ class Corretora:
         self.livro = Livro()
         self.ordem = Ordem()
 
-        #inicializa saldo inicial
-        lista_de_moedas =Util.obter_white_list()+[Util.CCYBRL()]
-        for moeda in lista_de_moedas:
+        #inicializa saldo inicial para white list desse rasp
+        instance = settings_client.retorna_campo_de_json('rasp','instance')
+        white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
+
+        for moeda in white_list+['brl']:
             self.saldo[moeda] = 0
 
     #metodos comuns a todas corretoras
@@ -43,16 +47,12 @@ class Corretora:
                 retorno_saldo = Binance().obter_saldo()
             elif self.nome == 'BitcoinTrade':
                 retorno_saldo = BitcoinTrade().obter_saldo()
-            elif self.nome == 'Novadax':
-                retorno_saldo = Novadax().obter_saldo()
-            elif self.nome == 'BitRecife':
-                retorno_saldo = BitRecife().obter_saldo()
             
             for moeda in retorno_saldo.keys():
                 self.saldo[moeda] = retorno_saldo[moeda]    
 
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('atualizar_saldo', self.nome, erro))
+            Logger.loga_erro('atualizar_saldo','Corretora', erro, self.nome)
         
     def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
         
@@ -69,11 +69,7 @@ class Corretora:
                 self.livro.preco_venda_segundo_na_fila = float(self.livro.book['bids'][indice+1][0]) if len(self.livro.book['bids'])>1 else self.preco_venda
                     
         except Exception as erro:
-            logging.error('nao foi possivel carregar o book de {} da {}'.format(ativo_parte,self.nome))
-            logging.error('book ask: {}'.format(self.livro.book['asks']))
-            logging.error('book bid: {}'.format(self.livro.book['bids']))
-            raise Exception(erro)
-
+            Logger.loga_erro('obter_ordem_book_por_indice','Corretora', erro, self.nome)
 
     def obter_todas_ordens_abertas(self, ativo='btc'):
         try:
@@ -86,11 +82,9 @@ class Corretora:
             elif self.nome == 'BitcoinTrade':
                 todas_moedas = Util.obter_lista_de_moedas()
                 return BitcoinTrade(ativo).obter_ordens_abertas(todas_moedas)
-            elif self.nome == 'Novadax':            
-                return Novadax(ativo).obter_ordens_abertas()
         
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('obter_todas_ordens_abertas', self.nome, erro))
+            Logger.loga_erro('obter_todas_ordens_abertas','Corretora', erro, self.nome)
         
     def cancelar_todas_ordens(self):
         try:
@@ -111,14 +105,10 @@ class Corretora:
                 Binance().cancelar_todas_ordens(ordens_abertas,white_list)
             elif self.nome == 'BitcoinTrade':
                 BitcoinTrade().cancelar_todas_ordens(ordens_abertas,white_list)
-            elif self.nome == 'Novadax':            
-                Novadax().cancelar_todas_ordens(ordens_abertas,white_list)
-            elif self.nome == 'BitRecife':            
-                BitRecife().cancelar_todas_ordens(ordens_abertas,white_list)
-        except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('cancelar_todas_ordens', self.nome, erro))
-    #metodos eclusivos por ordem
 
+        except Exception as erro:
+            Logger.loga_erro('cancelar_todas_ordens','Corretora', erro, self.nome)
+    
     def obter_ordem_por_id(self,ativo,obterOrdem:Ordem):
         
         try:
@@ -130,12 +120,9 @@ class Corretora:
                 obterOrdem = Binance().obter_ordem_por_id(obterOrdem)
             elif self.nome == 'BitcoinTrade':
                 obterOrdem = BitcoinTrade(ativo).obter_ordem_por_id(obterOrdem)
-            elif self.nome == 'Novadax':
-                obterOrdem = Novadax().obter_ordem_por_id(obterOrdem.id)
-            elif self.nome == 'BitRecife':
-                obterOrdem = BitRecife().obter_ordem_por_id(obterOrdem.id,ativo)
+
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('obter_ordem_por_id', self.nome, erro))
+            Logger.loga_erro('obter_ordem_por_id','Corretora', erro, self.nome)
 
         return obterOrdem
 
@@ -209,16 +196,9 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                 
-            elif self.nome == 'Novadax':
-                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
-                if response['message'] != "Success":
-                    logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                    logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
 
-            elif self.nome == 'BitRecife':
-                ordem,response = BitRecife().enviar_ordem_compra(ordem)
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('enviar_ordem_compra', self.nome, erro))
+            Logger.loga_erro('enviar_ordem_compra','Corretora', erro, self.nome)
         
         return ordem
 
@@ -284,16 +264,9 @@ class Corretora:
                         logging.error('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
                         logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
                     
-            elif self.nome == 'Novadax':
-                ordem,response = Novadax(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
-                if response['message'] != "Success":
-                    logging.error('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                    logging.error('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-            
-            elif self.nome == 'BitRecife':
-                ordem,response = BitRecife().enviar_ordem_venda(ordem)
+
         except Exception as erro:
-                logging.error(Util.descricao_erro_padrao().format('enviar_ordem_venda', self.nome, erro))
+                Logger.loga_erro('enviar_ordem_venda','Corretora', erro, self.nome)
         
         return ordem
 
@@ -307,83 +280,11 @@ class Corretora:
                 return Binance(ativo_parte).cancelar_ordem(idOrdem)
             elif self.nome == 'BitcoinTrade':
                 return BitcoinTrade(ativo_parte).cancelar_ordem(idOrdem)
-            elif self.nome == 'Novadax':
-                return Novadax(ativo_parte).cancelar_ordem(idOrdem)
-            elif self.nome == 'BitRecife':
-                return BitRecife().cancelar_ordem(idOrdem)
                         
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('cancelar_ordem', self.nome, erro))
+            Logger.loga_erro('cancelar_ordem','Corretora', erro, self.nome)
 
-    def transferir_crypto(self,ativo,quantidade, destino):      
-        '''
-        metodo que transfere cripto entre duas corretoras
-        argumentos:
-        1 - ordem.quantidade_transferencia : quantidade de cripto a transferir
-        2 - destino: nome da corretora que vai receber os recursos
-        '''        
-        if self.nome == 'MercadoBitcoin':
-            retorno = MercadoBitcoin(ativo).TransferirCrypto(quantidade,destino)
-            return retorno
-        elif self.nome == 'BrasilBitcoin':
-            retorno = BrasilBitcoin(ativo).TransferirCrypto(quantidade,destino)
-            return retorno
-        elif self.nome == 'BitcoinTrade':
-            retorno = BitcoinTrade(ativo).TransferirCrypto(quantidade,destino)
-            return retorno
-
-    #metodo privado
-    def __obter_corretagem(self):
-
-        if self.nome == 'MercadoBitcoin':
-            corretagem_limitada = 0.0015
-            corretagem_mercado = 0.006
-            
-        elif self.nome == 'BrasilBitcoin':
-            corretagem_limitada = 0.0008
-            corretagem_mercado = 0.002
-            
-        elif self.nome == 'BitcoinTrade':
-            corretagem_limitada = 0.0025
-            corretagem_mercado = 0.005
-            
-        elif self.nome == 'Novadax':
-            corretagem_limitada = 0.001
-            corretagem_mercado = 0.003
-            
-        elif self.nome == 'BitRecife':
-            corretagem_limitada = 0.002
-            corretagem_mercado = 0.004
-
-        elif self.nome == 'Binance':
-            corretagem_limitada = 0.001
-            corretagem_mercado = 0.001
-            
-        return corretagem_limitada, corretagem_mercado
-
-    #metodo privado
-    def __obter_status_executado(self):
-
-        if self.nome == 'MercadoBitcoin':
-            status_executado = 'filled'
-            
-        elif self.nome == 'BrasilBitcoin':
-            status_executado = 'filled'
-            
-        elif self.nome == 'BitcoinTrade':
-            status_executado = 'filled'
-            
-        elif self.nome == 'Novadax':
-            status_executado = 'FILLED'
-
-        elif self.nome == 'BitRecife':
-            status_executado = 'ok'
-
-        elif self.nome == 'Binance':
-            status_executado = 'FILLED'    
-        
-        return status_executado
-
+  
     def __obter_moedas_negociaveis(self):
 
         moedas_negociaveis = []
@@ -393,7 +294,7 @@ class Corretora:
             elif self.nome == 'Binance':
                 return Binance().obter_moedas_negociaveis()
         except Exception as erro:
-            logging.error(Util.descricao_erro_padrao().format('obter_moedas_negociaveis', self.nome, erro))
+            Logger.loga_erro('__obter_moedas_negociaveis','Corretora', erro, self.nome)
 
         return moedas_negociaveis
 
@@ -435,17 +336,6 @@ class Corretora:
                     retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
                 for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
                     retorno_book['bids'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
-
-            elif self.nome == 'Novadax':
-                retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
-                while 'data' not in retorno_book_sem_tratar.keys():
-                    retorno_book_sem_tratar = Novadax(ativo_parte,ativo_contraparte).obterBooks()
-                    logging.warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('Novadax','data'))
-                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
-                for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#Novadax precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
-                    retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
-                for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
-                    retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
 
             elif self.nome == 'Binance':
                 retorno_book_sem_tratar = Binance(ativo_parte,ativo_contraparte).obterBooks()
@@ -493,4 +383,5 @@ class Corretora:
             return retorno_book
 
         except Exception as erro:
-            raise Exception(erro)
+            Logger.loga_erro('__carregar_ordem_books','Corretora', erro, self.nome)
+            

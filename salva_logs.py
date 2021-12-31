@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from uteis.googleSheets import GoogleSheets
+from test.googleSheets import GoogleSheets
  
 directory_path = os.getcwd() #pega diretorio raiz
 foldername = 'log_backup_'+datetime.now().strftime('%Y%m%d')

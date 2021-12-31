@@ -25,6 +25,29 @@ class Google:
         except Exception as erro:
             Logger.loga_erro('ler','Google',erro)
 
+    def escrever(self, planilha, aba, linha):
+        '''
+        adiciona linha com essas novas informacoes
+        '''
+        try:
+            sheet = self.google.open(planilha).worksheet(aba)
+            data = sheet.get_all_records()
+            row_count = len(data)
+            sheet.insert_row(linha, row_count + 2, value_input_option='USER_ENTERED')
+        except Exception as erro:
+            Logger.loga_erro('escrever','Google',erro)
+
+    def update(self, planilha, aba,range, linhas=[]):
+        '''
+        atualiza range em planilha com esses valores
+        '''
+        try:
+            sheet = self.google.open(planilha).worksheet(aba)
+            sheet.update(range, linhas)
+        except Exception as erro:
+            Logger.loga_erro('update','Google',erro)
+       
+    
     def atualiza_strategy_settings(self,planilha):
         '''
         atualiza o json strategy

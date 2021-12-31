@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from uteis.corretora import Corretora
 from uteis.util import Util
-from uteis.googleSheets import GoogleSheets
+from test.googleSheets import GoogleSheets
 from uteis.ordem import Ordem
 
 class Leilao:
