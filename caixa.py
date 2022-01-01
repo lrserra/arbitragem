@@ -10,6 +10,40 @@ from uteis.util import Util
 from uteis.converters import Converters
 from uteis.logger import Logger
 
+if __name__ == "__main__":
+
+        
+    from caixa import Caixa
+    from datetime import datetime
+    from uteis.settings import Settings
+    from uteis.logger import Logger
+
+    Logger.cria_arquivo_log('Caixa')
+    Logger.loga_info('iniciando script caixa...')
+
+    settings_client = Settings()
+    instance = settings_client.retorna_campo_de_json('rasp','instance')
+
+    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
+    moedas_com_saldo_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
+
+    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys() if moeda in white_list]
+    
+    corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
+    corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
+    
+    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+
+    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    if cancelei_todas:
+        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,moedas_com_saldo_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+    
+    CorretoraMaisLiquida.atualizar_saldo()
+    CorretoraMenosLiquida.atualizar_saldo()
+
+    Caixa.envia_position_google(white_list,CorretoraMaisLiquida,CorretoraMenosLiquida)
+
 class Caixa:
 
     def __init__(self):
@@ -246,38 +280,3 @@ class Caixa:
         return True
 
 
-if __name__ == "__main__":
-
-        
-    from caixa import Caixa
-    from datetime import datetime
-    from uteis.settings import Settings
-    from uteis.logger import Logger
-
-    Logger.cria_arquivo_log('Caixa')
-    Logger.loga_info('iniciando script caixa...')
-
-    settings_client = Settings()
-    instance = settings_client.retorna_campo_de_json('rasp','instance')
-
-    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
-    lista_de_moedas_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
-
-    lista_para_zerar = [moeda for moeda in lista_de_moedas_no_caixa.keys() if moeda in white_list]
-    
-    corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
-    corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
-    
-    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
-
-    cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
-    if cancelei_todas:
-        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,lista_de_moedas_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
-    
-    CorretoraMaisLiquida.atualizar_saldo()
-    CorretoraMenosLiquida.atualizar_saldo()
-
-    Caixa.envia_position_google(white_list,CorretoraMaisLiquida,CorretoraMenosLiquida)
-
- 
