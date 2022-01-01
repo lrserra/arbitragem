@@ -6,6 +6,59 @@ from uteis.logger import Logger
 from uteis.google import Google
 from uteis.converters import Converters
 from uteis.settings import Settings
+
+if __name__ == "__main__":
+
+    from datetime import datetime
+    from arbitragem import Arbitragem
+    from uteis.settings import Settings
+    from uteis.logger import Logger
+
+    Logger.cria_arquivo_log('Arbitragem')
+    Logger.loga_info('iniciando script arbitragem...')
+
+    #essa parte executa apenas uma vez
+    settings_client = Settings()
+    instance = settings_client.retorna_campo_de_json('rasp','instance')
+
+    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
+    lista_de_moedas_na_arbitragem = settings_client.retorna_campo_de_json_como_dicionario('strategy','arbitragem','lista_de_moedas','#')
+    white_list = [moeda for moeda in lista_de_moedas_na_arbitragem.keys() if moeda in white_list]
+    black_list = []
+
+    corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
+    corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
+    
+    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
+    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
+
+    while True:
+
+        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
+
+        for moeda in lista_de_moedas:
+            try:
+                # Roda a arbitragem nas 2 corretoras
+                teve_arb = True
+                while teve_arb:
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)
+                        teve_arb = False #para sair imediatamente do loop
+                        Logger.loga_warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
+
+                teve_arb = True
+                while teve_arb:
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                        black_list.append(moeda)   
+                        teve_arb = False #para sair imediatamente do loop
+                        Logger.loga_warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
+                                
+            except Exception as erro:        
+                Logger.loga_erro('init','Arbitragem',erro)
+            
+
 class Arbitragem:
 
     def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, executarOrdens = False):
@@ -141,56 +194,3 @@ class Arbitragem:
             Logger.loga_erro('Simples','Arbitragem',erro)
 
 
-if __name__ == "__main__":
-
-    from datetime import datetime
-    from arbitragem import Arbitragem
-    from uteis.settings import Settings
-    from uteis.logger import Logger
-
-    Logger.cria_arquivo_log('Arbitragem')
-    Logger.loga_info('iniciando script arbitragem...')
-
-    #essa parte executa apenas uma vez
-    settings_client = Settings()
-    instance = settings_client.retorna_campo_de_json('rasp','instance')
-
-    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
-    lista_de_moedas_na_arbitragem = settings_client.retorna_campo_de_json_como_dicionario('strategy','arbitragem','lista_de_moedas','#')
-    white_list = [moeda for moeda in lista_de_moedas_na_arbitragem.keys() if moeda in white_list]
-    black_list = []
-
-    corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
-    corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
-    
-    CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
-    CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
-
-    while True:
-
-        lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
-
-        for moeda in lista_de_moedas:
-            try:
-                # Roda a arbitragem nas 2 corretoras
-                teve_arb = True
-                while teve_arb:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
-                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
-                        black_list.append(moeda)
-                        teve_arb = False #para sair imediatamente do loop
-                        Logger.loga_warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
-
-                teve_arb = True
-                while teve_arb:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
-                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
-                        black_list.append(moeda)   
-                        teve_arb = False #para sair imediatamente do loop
-                        Logger.loga_warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
-                                
-            except Exception as erro:        
-                Logger.loga_erro('init','Arbitragem',erro)
-            
-        
-        
