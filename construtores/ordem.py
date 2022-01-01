@@ -1,6 +1,7 @@
 class Ordem:
     def __init__(self):
-       self.ativo = ''
+       self.ativo_parte = ''
+       self.ativo_contraparte = ''
        self.id = 0
        self.code = ''
        self.status = ''
@@ -11,5 +12,5 @@ class Ordem:
        self.preco_executado = 0.0
        self.quantidade_enviada = 0.0
        self.quantidade_executada = 0.0
-       self.descricao_status_executado ='filled'
+       self.foi_executada_completamente =False
        

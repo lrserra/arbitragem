@@ -80,8 +80,8 @@ class Caixa:
         preco_por_corretora_compra['brl'][CorretoraMenosLiquida.nome] = 1
 
         for moeda in white_list:
-            CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True)
-            CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True)
+            CorretoraMaisLiquida.atualizar_book(moeda,'brl')
+            CorretoraMenosLiquida.atualizar_book(moeda,'brl')
             saldo[moeda] = round(CorretoraMaisLiquida.saldo[moeda] + CorretoraMenosLiquida.saldo[moeda],4)
             financeiro[moeda] = round(saldo[moeda]*CorretoraMaisLiquida.livro.preco_venda,2)
             saldo_por_corretora[moeda][CorretoraMaisLiquida.nome]=round(CorretoraMaisLiquida.saldo[moeda],4)
@@ -134,13 +134,13 @@ class Caixa:
                     quantidade_a_zerar = 0
 
                 #carrego os books de ordem mais recentes
-                CorretoraMaisLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                CorretoraMaisLiquida.atualizar_book(moeda,'brl')
                 
                 #precisa vender e dá pra vender em alguma corretora
                 if pnl_em_moeda > 0 and quantidade_a_zerar > min(CorretoraMaisLiquida.quantidade_minima_venda[moeda],CorretoraMenosLiquida.quantidade_minima_venda[moeda]):
 
                     #carrego os books de ordem mais recentes
-                    CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                    CorretoraMenosLiquida.atualizar_book(moeda,'brl')
 
                     if CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos vender na corretora que paga mais e que tenha saldo
                         #A mais liquida é a mais vantajosa para vender    
@@ -164,7 +164,7 @@ class Caixa:
                 elif pnl_em_moeda < 0 and quantidade_a_zerar*CorretoraMaisLiquida.livro.preco_compra > min(CorretoraMaisLiquida.valor_minimo_compra[moeda],CorretoraMenosLiquida.valor_minimo_compra[moeda]):
                 
                     #carrego os books de ordem mais recentes
-                    CorretoraMenosLiquida.obter_ordem_book_por_indice(moeda,'brl',0,True,True)
+                    CorretoraMenosLiquida.atualizar_book(moeda,'brl')
 
                     if CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMenosLiquida.moedas_negociaveis: #vamos comprar na corretora que esta mais barato e que tenha saldo
                         #A mais liquida é a mais vantajosa para comprar

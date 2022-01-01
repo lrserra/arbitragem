@@ -14,25 +14,25 @@ google_client = Google()
 
 planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
-Logger.loga_info('atualizando settings de estrategias')
+Logger.loga_warning('atualizando settings de estrategias')
 google_client.atualiza_strategy_settings(planilha)
 
-Logger.loga_info('atualizando settings do app')
+Logger.loga_warning('atualizando settings do app')
 google_client.atualiza_app_settings(planilha)
 
-Logger.loga_info('atualizando settings de brokers')
+Logger.loga_warning('atualizando settings de brokers')
 google_client.atualiza_broker_settings(planilha)
 
-Logger.loga_info('comprimindo tabela position')
+Logger.loga_warning('comprimindo tabela position')
 google_client.comprime_position(planilha)
 
-Logger.loga_info('comprimindo tabela spot')
+Logger.loga_warning('comprimindo tabela spot')
 google_client.comprime_spot(planilha)
 
 i=1
 freq = 5
 while True:
-    Logger.loga_info('atualizando settings de estrategias recorrente a cada {} minutos, iteracao {}'.format(freq,i))
+    Logger.loga_warning('atualizando settings de estrategias recorrente a cada {} minutos, iteracao {}'.format(freq,i))
     google_client.atualiza_strategy_settings(planilha)
     i+=1
     time.sleep(freq*60)

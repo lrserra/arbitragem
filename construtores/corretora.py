@@ -6,7 +6,7 @@ from corretoras.bitcoinTrade import BitcoinTrade
 from construtores.ordem import Ordem
 from construtores.livro import Livro
 from uteis.settings import Settings
-from uteis.util import Util
+from uteis.matematica import Matematica
 from uteis.logger import Logger
 
 class Corretora:
@@ -56,39 +56,38 @@ class Corretora:
         except Exception as erro:
             Logger.loga_erro('atualizar_saldo','Corretora', erro, self.nome)
         
-    def obter_ordem_book_por_indice(self,ativo_parte,ativo_contraparte='brl',indice = 0,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
+    def atualizar_book(self,ativo_parte,ativo_contraparte='brl'):
         '''
         carrega preços e quantidades no livro para essa moeda
         '''
         try:
             if ativo_parte in self.moedas_negociaveis:
                 
-                self.livro.book = self.__carregar_ordem_books(ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas,ignorar_ordens_fantasmas)
+                self.livro.book = self.__carregar_ordem_books(ativo_parte,ativo_contraparte)
                 
-                self.livro.preco_compra = float(self.livro.book['asks'][indice][0])
-                self.livro.quantidade_compra = float(self.livro.book['asks'][indice][1])
-                self.livro.preco_venda = float(self.livro.book['bids'][indice][0])
-                self.livro.quantidade_venda = float(self.livro.book['bids'][indice][1])
-                self.livro.preco_compra_segundo_na_fila = float(self.livro.book['asks'][indice+1][0]) if len(self.livro.book['asks'])>1 else self.preco_compra
-                self.livro.preco_venda_segundo_na_fila = float(self.livro.book['bids'][indice+1][0]) if len(self.livro.book['bids'])>1 else self.preco_venda
+                self.livro.preco_compra = float(self.livro.book['asks'][0][0])
+                self.livro.quantidade_compra = float(self.livro.book['asks'][0][1])
+                self.livro.preco_venda = float(self.livro.book['bids'][0][0])
+                self.livro.quantidade_venda = float(self.livro.book['bids'][0][1])
+                self.livro.preco_compra_segundo_na_fila = float(self.livro.book['asks'][1][0]) if len(self.livro.book['asks'])>1 else self.preco_compra
+                self.livro.preco_venda_segundo_na_fila = float(self.livro.book['bids'][1][0]) if len(self.livro.book['bids'])>1 else self.preco_venda
                     
         except Exception as erro:
-            Logger.loga_erro('obter_ordem_book_por_indice','Corretora', erro, self.nome)
+            Logger.loga_erro('atualizar_book','Corretora', erro, self.nome)
 
-    def obter_todas_ordens_abertas(self, ativo='btc'):
+    def obter_todas_ordens_abertas(self):
         '''
         obtem todas as ordens limitadas em aberto na corretora
         '''
         try:
             if self.nome == 'MercadoBitcoin':
-                return MercadoBitcoin(ativo).obter_ordens_abertas()
+                return MercadoBitcoin().obter_ordens_abertas(self.white_list)
             elif self.nome == 'BrasilBitcoin':
-                return BrasilBitcoin(ativo).obter_ordens_abertas()
+                return BrasilBitcoin().obter_ordens_abertas(self.white_list)
             elif self.nome == 'Binance':
-                return Binance(ativo).obter_ordens_abertas()
+                return Binance().obter_ordens_abertas(self.white_list)
             elif self.nome == 'BitcoinTrade':
-                todas_moedas = Util.obter_lista_de_moedas()
-                return BitcoinTrade(ativo).obter_ordens_abertas(todas_moedas)
+                return BitcoinTrade().obter_ordens_abertas(self.white_list)
         
         except Exception as erro:
             Logger.loga_erro('obter_todas_ordens_abertas','Corretora', erro, self.nome)
@@ -99,202 +98,125 @@ class Corretora:
         '''
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
-            white_list = Util.obter_white_list()
-            qtd_ordens_abertas = len([ordem for ordem in ordens_abertas if ordem['coin'].lower in white_list])
             
-            if qtd_ordens_abertas>0:
-                Logger.loga_warning('{} ordens em aberto serao canceladas na {}'.format(qtd_ordens_abertas,self.nome))
+            if len(ordens_abertas)>0:
+                Logger.loga_warning('{} ordens em aberto serao canceladas na {}'.format(len(ordens_abertas),self.nome))
             else:
-                Logger.loga_info('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
+                Logger.loga_warning('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
 
             if self.nome == 'MercadoBitcoin':
-                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas,white_list)
+                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas,self.white_list)
             elif self.nome == 'BrasilBitcoin':
-                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas,white_list)
+                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas,self.white_list)
             elif self.nome == 'Binance':
-                Binance().cancelar_todas_ordens(ordens_abertas,white_list)
+                Binance().cancelar_todas_ordens(ordens_abertas,self.white_list)
             elif self.nome == 'BitcoinTrade':
-                BitcoinTrade().cancelar_todas_ordens(ordens_abertas,white_list)
+                BitcoinTrade().cancelar_todas_ordens(ordens_abertas,self.white_list)
 
         except Exception as erro:
             Logger.loga_erro('cancelar_todas_ordens','Corretora', erro, self.nome)
     
-    def obter_ordem_por_id(self,ativo,obterOrdem:Ordem):
+    def obter_ordem_por_id(self,ordem:Ordem):
         '''
         atualiza status atual da ordem
         '''
         try:
             if self.nome == 'MercadoBitcoin':
-                pass
+                ordem = MercadoBitcoin().obter_ordem_por_id(ordem)
             elif self.nome == 'BrasilBitcoin':
-                obterOrdem = BrasilBitcoin().obter_ordem_por_id(obterOrdem)
+                ordem = BrasilBitcoin().obter_ordem_por_id(ordem)
             elif self.nome == 'Binance':
-                obterOrdem = Binance().obter_ordem_por_id(obterOrdem)
+                ordem = Binance().obter_ordem_por_id(ordem)
             elif self.nome == 'BitcoinTrade':
-                obterOrdem = BitcoinTrade(ativo).obter_ordem_por_id(obterOrdem)
+                ordem = BitcoinTrade().obter_ordem_por_id(ordem)
 
         except Exception as erro:
             Logger.loga_erro('obter_ordem_por_id','Corretora', erro, self.nome)
 
-        return obterOrdem
+        return ordem
 
-    def enviar_ordem_compra(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
+    def enviar_ordem_compra(self,ordem:Ordem):
+        '''
+        envia ordem de compra para a corretora (cuidado!)
+        '''
+        #o rasp só pode enviar ordens de moedas no white list
+        if ordem.ativo_parte not in self.moedas_negociaveis:
+            return ordem
         
-        if ativo_parte not in self.moedas_negociaveis:
-            return Ordem()
-
-        if ordem.tipo_ordem in ['limited','limit']:
-            ordem.tipo_ordem = 'limited'
-            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
+        #todas nossas ordens sao truncadas em alguma casa
+        ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
 
         try:
             if self.nome == 'MercadoBitcoin':
-                if ordem.tipo_ordem == 'market':
-                    ordem.quantidade_enviada = ordem.quantidade_enviada*0.999
-                    ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
-            
-                ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                return MercadoBitcoin().enviar_ordem_compra(ordem)
 
-                if ordem.status != 'filled' and ordem.status != 'open':
-                    if 'error_message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['error_message']))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_compra - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-                    #raise Exception(mensagem)
-            
             elif self.nome == 'BrasilBitcoin':
                 if ordem.tipo_ordem == 'market':
                     ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
-                    ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
-
-                ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                elif ordem.tipo_ordem == 'limited':
+                    ordem.quantidade_enviada = Matematica().adiciona_numero_magico(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
+                return BrasilBitcoin().enviar_ordem_compra(ordem)
                 
-                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-            
             elif self.nome == 'Binance':
                 if ordem.tipo_ordem == 'market':
                     ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
-                    ordem.quantidade_enviada = Util.trunca_moeda(ativo_parte,ordem.quantidade_enviada)
-
-                ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
+                return Binance().enviar_ordem_compra(ordem)
                 
-                if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_compra - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_compra - status: {}'.format(self.nome,ordem.status))
-                        Logger.loga_erro('{}: enviar_ordem_compra - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-
             elif self.nome == 'BitcoinTrade':
-                ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_compra(ordem)
-
-                if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        ordemFiltro = Ordem()
-                        ordemFiltro.id = response['data']['code']
-                        ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
-                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-                
+                return BitcoinTrade().enviar_ordem_compra(ordem)
 
         except Exception as erro:
             Logger.loga_erro('enviar_ordem_compra','Corretora', erro, self.nome)
         
         return ordem
 
-    def enviar_ordem_venda(self,ordem:Ordem,ativo_parte,ativo_contraparte='brl'):
-        
-        if ativo_parte not in self.moedas_negociaveis:
-            return Ordem()
+    def enviar_ordem_venda(self,ordem:Ordem):
+        '''
+        envia ordem de venda para a corretora (cuidado!)
+        '''
+        #o rasp só pode enviar ordens de moedas no white list
+        if ordem.ativo_parte not in self.moedas_negociaveis:
+            return ordem
 
-        if ordem.tipo_ordem in ['limited','limit']:
-            ordem.tipo_ordem = 'limited'
-            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,171)
-        elif ordem.tipo_ordem == 'market':
-            ordem.quantidade_enviada = Util.trunca_171(ativo_parte,ordem.quantidade_enviada,0)
+        #todas nossas ordens sao truncadas em alguma casa
+        ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
           
         try:
             if self.nome == 'MercadoBitcoin':
-                ordem,response = MercadoBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
-                
-                if ordem.status != self.__obter_status_executado(self.nome) and ordem.status != 'open':
-                    if 'error_message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['error_message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome,response['response_data']['order']['status'],ordem.status,response['status_code']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-                
+               return MercadoBitcoin().enviar_ordem_venda(ordem)
+                       
             elif self.nome == 'BrasilBitcoin':
-                ordem,response = BrasilBitcoin(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
-                
-                if ordem.status not in (self.descricao_status_executado, 'new','partially_filled'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-            
+                if ordem.tipo_ordem == 'limited':
+                    ordem.quantidade_enviada = Matematica().adiciona_numero_magico(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
+                return BrasilBitcoin().enviar_ordem_venda(ordem)
+                 
             elif self.nome == 'Binance':
-                if ordem.tipo_ordem == 'market':
-                    ordem.quantidade_enviada = Util.trunca_moeda(ativo_parte,ordem.quantidade_enviada)
-                ordem,response = Binance(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
-                
-                if ordem.status.lower() not in (self.descricao_status_executado.lower(), 'new','partially_filled'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        Logger.loga_erro('{}: enviar_ordem_venda - status: {}'.format(self.nome,ordem.status))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-                
-
+                return Binance().enviar_ordem_venda(ordem)
+           
             elif self.nome == 'BitcoinTrade':
-                ordem,response = BitcoinTrade(ativo_parte,ativo_contraparte).enviar_ordem_venda(ordem)
-
-                if ordem.status not in (self.descricao_status_executado,'open','waiting','executed_partially'):
-                    if 'message' in response.keys():
-                        Logger.loga_erro('{}: enviar_ordem_venda - msg de erro: {}'.format(self.nome, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))            
-                    else:
-                        ordemFiltro = Ordem()
-                        ordemFiltro.id = response['data']['code']
-                        ordemErro = self.obter_ordem_por_id(ativo_parte, ordemFiltro)
-                        Logger.loga_erro('{}: enviar_ordem_venda - status: {} / {} code: {}'.format(self.nome, ordemErro.status, ordem.status, response['message']))
-                        Logger.loga_erro('{}: enviar_ordem_venda - ordem que enviei:  qtd {} / tipo {} / preco {}'.format(self.nome, ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado))
-                    
+                return BitcoinTrade().enviar_ordem_venda(ordem)
 
         except Exception as erro:
                 Logger.loga_erro('enviar_ordem_venda','Corretora', erro, self.nome)
         
         return ordem
 
-    def cancelar_ordem(self,ativo_parte='btc',idOrdem=0):
+    def cancelar_ordem(self,ordem:Ordem):
         '''
         cancela ordem em aberto a partir do id
         '''
+        #só cancelamos se a moeda esta no white list
+        if ordem.ativo_parte not in self.moedas_negociaveis:
+            return False
         try:
             if self.nome == 'MercadoBitcoin':
-                return MercadoBitcoin(ativo_parte).cancelar_ordem(idOrdem)
+                return MercadoBitcoin().cancelar_ordem(ordem.id)
             elif self.nome == 'BrasilBitcoin':
-                return BrasilBitcoin(ativo_parte).cancelar_ordem(idOrdem)
+                return BrasilBitcoin().cancelar_ordem(ordem.id)
             elif self.nome == 'Binance':
-                return Binance(ativo_parte).cancelar_ordem(idOrdem)
+                return Binance().cancelar_ordem(ordem.id)
             elif self.nome == 'BitcoinTrade':
-                return BitcoinTrade(ativo_parte).cancelar_ordem(idOrdem)
+                return BitcoinTrade().cancelar_ordem(ordem.id)
                         
         except Exception as erro:
             Logger.loga_erro('cancelar_ordem','Corretora', erro, self.nome)
@@ -315,7 +237,7 @@ class Corretora:
 
         return moedas_negociaveis
 
-    def __carregar_ordem_books(self,ativo_parte,ativo_contraparte,ignorar_quantidades_pequenas = False, ignorar_ordens_fantasmas = False):
+    def __carregar_ordem_books(self,ativo_parte,ativo_contraparte):
         '''
         carrega a lista atualizada de ordens no livro da corretora
         '''
@@ -323,16 +245,12 @@ class Corretora:
             retorno_book ={'asks':[],'bids':[]}
             retorno_book_sem_tratar ={'asks':[],'bids':[]}
             
-            if ignorar_quantidades_pequenas:
-                minimo_que_posso_comprar = Util.retorna_menor_valor_compra(ativo_parte)
-                minimo_que_posso_vender = Util.retorna_menor_quantidade_venda(ativo_parte)
-
             if self.nome == 'MercadoBitcoin':
                 retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                 while 'bids' not in retorno_book.keys():
                     retorno_book = MercadoBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                     Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('MercadoBitcoin','bids'))
-                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                    time.sleep(5) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
                 time.sleep(0.5)
@@ -340,7 +258,7 @@ class Corretora:
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
                     Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
-                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                    time.sleep(5) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['preco'],preco_no_livro['quantidade']])
                 for preco_no_livro in retorno_book_sem_tratar['buy']:
@@ -351,7 +269,7 @@ class Corretora:
                 while 'data' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BitcoinTrade(ativo_parte,ativo_contraparte).obterBooks()
                     Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BitcoinTrade','data'))
-                    time.sleep(Util.frequencia()) #se der pau esperamos um pouco mais
+                    time.sleep(5) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['data']['asks']:#BT precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
                     retorno_book['asks'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
                 for preco_no_livro in retorno_book_sem_tratar['data']['bids']:
@@ -363,34 +281,30 @@ class Corretora:
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
                 for preco_no_livro in retorno_book_sem_tratar['bids']:
                     retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
+            
+            for preco_no_livro in retorno_book['bids'][:5]:
+                indice = retorno_book['bids'].index(preco_no_livro)
+                if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser maior que o de compra
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('ORDEM FANTASMA')
 
-            if ignorar_ordens_fantasmas:
-                
-                for preco_no_livro in retorno_book['bids'][:5]:
-                    indice = retorno_book['bids'].index(preco_no_livro)
-                    if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser maior que o de compra
-                        preco_no_livro.append('DESCONSIDERAR')
-                        preco_no_livro.append('ORDEM FANTASMA')
+            for preco_no_livro in retorno_book['asks'][:5]:
+                indice = retorno_book['asks'].index(preco_no_livro)
+                if float(preco_no_livro[0]) < float(retorno_book['bids'][indice][0]): #o preco de compra tem que ser menor que o de venda
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('ORDEM FANTASMA')
 
-                for preco_no_livro in retorno_book['asks'][:5]:
-                    indice = retorno_book['asks'].index(preco_no_livro)
-                    if float(preco_no_livro[0]) < float(retorno_book['bids'][indice][0]): #o preco de compra tem que ser menor que o de venda
-                        preco_no_livro.append('DESCONSIDERAR')
-                        preco_no_livro.append('ORDEM FANTASMA')
+            for preco_no_livro in retorno_book['asks'][:5]:
+                indice = retorno_book['asks'].index(preco_no_livro)
+                if float(preco_no_livro[1])*float(preco_no_livro[0]) < self.valor_minimo_compra[ativo_parte]: #vamos ignorar se menor que valor minimo que posso comprar
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('QTD PEQUENA')
 
-            if ignorar_quantidades_pequenas:
-                
-                for preco_no_livro in retorno_book['asks'][:5]:
-                    indice = retorno_book['asks'].index(preco_no_livro)
-                    if float(preco_no_livro[1])*float(preco_no_livro[0]) < minimo_que_posso_comprar: #vamos ignorar se menor que valor minimo que posso comprar
-                        preco_no_livro.append('DESCONSIDERAR')
-                        preco_no_livro.append('QTD PEQUENA')
-
-                for preco_no_livro in retorno_book['bids'][:5]:
-                    indice = retorno_book['bids'].index(preco_no_livro)
-                    if float(preco_no_livro[1]) < minimo_que_posso_vender: #vamos ignorar se menor que valor minimo que posso vender
-                        preco_no_livro.append('DESCONSIDERAR')
-                        preco_no_livro.append('QTD PEQUENA')
+            for preco_no_livro in retorno_book['bids'][:5]:
+                indice = retorno_book['bids'].index(preco_no_livro)
+                if float(preco_no_livro[1]) < self.quantidade_minima_venda[ativo_parte]: #vamos ignorar se menor que valor minimo que posso vender
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('QTD PEQUENA')
             
             for preco_no_livro in retorno_book['asks']:
                 if 'DESCONSIDERAR' not in preco_no_livro:
