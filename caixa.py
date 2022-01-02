@@ -1,12 +1,14 @@
 import sys,os,uuid
 
+
 from uteis.google import Google
 root_path = os.getcwd()
 sys.path.append(root_path)
 
 from datetime import datetime
+from construtores.ordem import Ordem
 from construtores.corretora import Corretora
-from uteis.util import Util
+from uteis.settings import Settings
 from uteis.converters import Converters
 from uteis.logger import Logger
 
@@ -236,16 +238,14 @@ class Caixa:
         planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
         
         google_client = Google()
+        ordem = Ordem()
         
         if direcao == 'venda':
             
             Logger.loga_warning('caixa vai vender {} {} na {} para zerar o pnl'.format(round(quantidade_a_zerar,4),moeda,corretora.nome))
             
-            corretora.ordem.quantidade_enviada = quantidade_a_zerar
-            corretora.ordem.tipo_ordem = 'market'
-            corretora.ordem.preco_enviado = corretora.livro.preco_venda
-            
-            ordem_venda = corretora.enviar_ordem_venda(corretora.ordem,moeda)
+            ordem = Ordem(moeda,quantidade_a_zerar,corretora.livro.preco_venda,'market')
+            ordem_venda = corretora.enviar_ordem_venda(ordem)
             vendi_a = ordem_venda.preco_executado
             quantidade_executada_venda = ordem_venda.quantidade_executada
             financeiro_venda = vendi_a * quantidade_executada_venda
@@ -261,11 +261,8 @@ class Caixa:
 
             Logger.loga_warning('caixa vai comprar {} {} na {} para zerar o pnl'.format(quantidade_a_zerar,moeda,corretora.nome))
         
-            corretora.ordem.quantidade_enviada = quantidade_a_zerar
-            corretora.ordem.tipo_ordem = 'market'
-            corretora.ordem.preco_enviado = corretora.livro.preco_compra
-            
-            ordem_compra = corretora.enviar_ordem_compra(corretora.ordem,moeda)
+            ordem = Ordem(moeda,quantidade_a_zerar,corretora.livro.preco_compra,'market')
+            ordem_compra = corretora.enviar_ordem_compra(ordem)
             comprei_a = ordem_compra.preco_executado
             quantidade_executada_compra = ordem_compra.quantidade_executada
             financeiro_compra = comprei_a * quantidade_executada_compra

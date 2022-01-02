@@ -3,13 +3,15 @@ import requests
 import json
 import time
 from urllib.parse import urlencode
-from uteis.util import Util
+from uteis.logger import Logger
+from uteis.settings import Settings
 from construtores.ordem import Ordem
 
 class BrasilBitcoin:
 
     def __init__(self):
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
+        self.credenciais = Settings().retorna_campo_de_json('broker','BrasilBitcoin','Authentication')
 
 #---------------- MÉTODOS PRIVADOS ----------------#
     
@@ -27,8 +29,8 @@ class BrasilBitcoin:
         max_retries = 20
         retries = 1
         while res.status_code != 200 and retries<max_retries:
-            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
-            time.sleep(Util.frequencia())
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',5,res.status_code,res.text))
+            time.sleep(5)
             res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
             retries+=1
 
@@ -42,10 +44,10 @@ class BrasilBitcoin:
     def __obterOrdemPorId(self, idOrdem):
         return self.__executarRequestBrasilBTC('GET', '', 'api/check_order/{}'.format(idOrdem))
 
-    def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
+    def __enviarOrdemCompra(self,moeda,quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'coin_pair': '{}{}'.format('BRL',moeda.upper()),
             'order_type': tipoOrdem,
             'type': 'buy',
             'amount': quantity,
@@ -56,10 +58,10 @@ class BrasilBitcoin:
         retorno = self.__executarRequestBrasilBTC('POST', json.dumps(payload), 'api/create_order')
         return retorno
 
-    def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
+    def __enviarOrdemVenda(self,moeda,quantity,tipoOrdem,precoVenda):
         # objeto que será postado para o endpoint
         payload = {
-            'coin_pair': '{}{}'.format(self.ativo_contraparte.upper(),self.ativo_parte.upper()),
+            'coin_pair': '{}{}'.format('BRL',moeda.upper()),
             'order_type': tipoOrdem,
             'type': 'sell',
             'amount': quantity,
@@ -71,7 +73,7 @@ class BrasilBitcoin:
         return retorno
 
     def TransferirCrypto(self, quantity, destino):      
-        config = Util.obterCredenciais()
+        config = ''
         
         # objeto que será postado para o endpoint
         payload = {
@@ -96,10 +98,9 @@ class BrasilBitcoin:
         return retorno
 
     def __executarRequestBrasilBTC(self, requestMethod, payload, endpoint):
-        config = Util.obterCredenciais()
         
         headers ={
-            'Authentication': config["BrasilBitcoin"]["Authentication"],
+            'Authentication': self.credenciais,
             'Content-type': 'application/json'
         }
         # requisição básica com módulo requests
@@ -115,8 +116,8 @@ class BrasilBitcoin:
         max_retries = 20
         retries = 1
         while res.status_code not in (200,418) and retries<max_retries:
-            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',Util.frequencia(),res.status_code,res.text))
-            time.sleep(Util.frequencia())
+            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
+            time.sleep(5)
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
             retries+=1
    
@@ -191,9 +192,12 @@ class BrasilBitcoin:
                 self.cancelar_ordem(ordem['id'])
 
     def obter_ordem_por_id(self, ordem:Ordem):
-        
+        '''
+        atualiza status de ordem na BrasilBitcoin
+        '''
         response = self.__obterOrdemPorId(ordem.id)
         ordem.status = response['data']['status']
+        ordem.foi_executada_completamente = ordem.status == 'filled'
         ordem.quantidade_executada = float(response['data']['executed'])
         ordem.quantidade_enviada = float(response['data']['total'])
         ordem.preco_executado = float(response['data']['price'])
@@ -201,13 +205,16 @@ class BrasilBitcoin:
         ordem.direcao = response['data']['type']
         return ordem
 
-    def enviar_ordem_compra(self, ordemCompra):
-        ordem = ordemCompra
-        response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem, ordemCompra.preco_enviado)
+    def enviar_ordem_compra(self, ordem:Ordem):
+        '''
+        envia ordem de compra para a Brasil Bitcoin
+        '''
+        response = self.__enviarOrdemCompra(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 
         if response['success'] == True:
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
+            ordem.foi_executada_completamente = ordem.status == 'filled'
             ordem.quantidade_executada = 0
             ordem.preco_executado = 0
             i = 0
@@ -226,16 +233,18 @@ class BrasilBitcoin:
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
-            mensagem = '{}: enviar_ordem_compra - {}'.format('BrasilBitcoin', response['message'])
-            print(mensagem)
-        return ordem,response
+            Logger.loga_erro('enviar_ordem_compra','BrasilBitcoin',response['message'],'BrasilBitcoin')
+        return ordem
 
-    def enviar_ordem_venda(self, ordemVenda):
-        ordem = ordemVenda
-        response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem, ordemVenda.preco_enviado)
+    def enviar_ordem_venda(self, ordem:Ordem):
+        '''
+        envia ordem de venda para a Brasil Bitcoin
+        '''
+        response = self.__enviarOrdemVenda(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
         if response['success'] == True:
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
+            ordem.foi_executada_completamente = ordem.status == 'filled'
             ordem.quantidade_executada = 0
             ordem.preco_executado = 0
             i = 0
@@ -254,7 +263,6 @@ class BrasilBitcoin:
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
-            mensagem = '{}: enviar_ordem_venda - {}'.format('BrasilBitcoin', response['message'])
-            print(mensagem)
-        return ordem,response
+            Logger.loga_erro('enviar_ordem_venda','BrasilBitcoin',response['message'],'BrasilBitcoin')
+        return ordem
 

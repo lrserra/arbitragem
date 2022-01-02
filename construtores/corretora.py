@@ -1,4 +1,4 @@
-import time
+import time, sys
 from corretoras.binance import Binance
 from corretoras.mercadoBitcoin import MercadoBitcoin
 from corretoras.brasilBitcoin import BrasilBitcoin
@@ -32,9 +32,13 @@ class Corretora:
         instance = settings_client.retorna_campo_de_json('rasp','instance')
         self.white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
 
-        for moeda in self.white_list+['brl']:
+        #inicializa variaveis de acordo com white list
+        for moeda in self.white_list:
             self.saldo[moeda] = 0
-
+            self.valor_minimo_compra[moeda]=sys.maxsize if moeda not in self.valor_minimo_compra.keys() else self.valor_minimo_compra[moeda]
+            self.quantidade_minima_venda[moeda]=sys.maxsize if moeda not in self.quantidade_minima_venda.keys() else self.quantidade_minima_venda[moeda]
+        self.saldo['brl']=0
+    
     #metodos comuns a todas corretoras
     def atualizar_saldo(self):
         '''
