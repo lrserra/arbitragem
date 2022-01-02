@@ -225,7 +225,7 @@ class Caixa:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida)
 
                 else:
-                    Logger.loga_info('caixa não precisa zerar pnl de {} por ora'.format(moeda))
+                    Logger.loga_warning('caixa não precisa zerar pnl de {} por ora'.format(moeda))
             
             except Exception as erro:
                 Logger.loga_erro('zera_o_pnl_de_todas_moedas','Caixa','erro na moeda {}: {}'.format(moeda,erro))       
