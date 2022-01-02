@@ -254,9 +254,9 @@ class Corretora:
             
             elif self.nome == 'BrasilBitcoin': 
                 time.sleep(0.5)
-                retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                retorno_book_sem_tratar = BrasilBitcoin().obterBooks(ativo_parte,ativo_contraparte)
                 while 'sell' not in retorno_book_sem_tratar.keys():
-                    retorno_book_sem_tratar = BrasilBitcoin(ativo_parte,ativo_contraparte).obterBooks()
+                    retorno_book_sem_tratar = BrasilBitcoin().obterBooks(ativo_parte,ativo_contraparte)
                     Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
                     time.sleep(5) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose

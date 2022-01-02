@@ -8,22 +8,20 @@ from construtores.ordem import Ordem
 
 class BrasilBitcoin:
 
-    def __init__(self, ativo_parte = Util.CCYBTC(),ativo_contraparte = Util.CCYBRL()):
-        self.ativo_parte = ativo_parte
-        self.ativo_contraparte = ativo_contraparte
+    def __init__(self):
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
 
 #---------------- MÉTODOS PRIVADOS ----------------#
     
-    def obterBooks(self):
+    def obterBooks(self,ativo_parte,ativo_contraparte='brl'):
         try:
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
         except Exception as err:
             logging.error('a chamada da BrasilBitcoin falhou com o erro')
             logging.error(err)
             logging.error('vai aguardar 30 segundos e tentar novamente')
             time.sleep(30)
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
 
 
         max_retries = 20
@@ -31,7 +29,7 @@ class BrasilBitcoin:
         while res.status_code != 200 and retries<max_retries:
             logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',Util.frequencia(),res.status_code,res.text))
             time.sleep(Util.frequencia())
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(self.ativo_parte), timeout =30)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
             retries+=1
 
 
@@ -157,14 +155,18 @@ class BrasilBitcoin:
         
         return saldo
 
-    def obter_ordens_abertas(self):
+    def obter_ordens_abertas(self,white_list):
         '''
         Obtém todas as ordens abertas
         '''
         retorno = self.__obterOrdensAbertas()
         if len(retorno)==0 or retorno is None:
-            retorno=[]
-        return retorno
+            return retorno
+        lista_final = []
+        for item in retorno:
+            if item['coin'].lower() in white_list:
+                lista_final.append(item)
+        return lista_final
 
     def cancelar_ordem(self, idOrdem):
         '''
