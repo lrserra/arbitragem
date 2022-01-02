@@ -12,28 +12,27 @@ class BrasilBitcoin:
     def __init__(self):
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
         self.credenciais = Settings().retorna_campo_de_json('broker','BrasilBitcoin','Authentication')
+        self.timeout = 30
+        self.time_to_sleep = 5
+        self.max_retries = 20
 
 #---------------- MÉTODOS PRIVADOS ----------------#
     
     def obterBooks(self,ativo_parte,ativo_contraparte='brl'):
+        '''
+        carrega os books da corretora BrasilBitcoin
+        '''
         try:
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
+            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
+            retries = 1
+            while res.status_code != 200 and retries<self.max_retries:
+                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',self.time_to_sleep,res.status_code,res.text))
+                time.sleep(self.time_to_sleep)
+                res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
+                retries+=1
+
         except Exception as err:
-            logging.error('a chamada da BrasilBitcoin falhou com o erro')
-            logging.error(err)
-            logging.error('vai aguardar 30 segundos e tentar novamente')
-            time.sleep(30)
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
-
-
-        max_retries = 20
-        retries = 1
-        while res.status_code != 200 and retries<max_retries:
-            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',5,res.status_code,res.text))
-            time.sleep(5)
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =30)
-            retries+=1
-
+            Logger.loga_erro('obterBooks','BrasilBitcoin',err,'BrasilBitcoin')
 
         return res.json()
 
@@ -105,22 +104,17 @@ class BrasilBitcoin:
         }
         # requisição básica com módulo requests
         try:
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
+            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
+            retries = 1
+            while res.status_code not in (200,418) and retries<self.max_retries:
+                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
+                time.sleep(self.time_to_sleep)
+                res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
+                retries+=1
+            
         except Exception as err:
-            logging.error('a chamada da BrasilBitcoin falhou com o erro')
-            logging.error(err)
-            logging.error('vai aguardar 30 segundos e tentar novamente')
-            time.sleep(30)
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
-        
-        max_retries = 20
-        retries = 1
-        while res.status_code not in (200,418) and retries<max_retries:
-            logging.info('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
-            time.sleep(5)
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =30)
-            retries+=1
-   
+            Logger.loga_erro('__executarRequestBrasilBTC','BrasilBitcoin',err,'BrasilBitcoin')
+
         return json.loads(res.text.encode('utf8'))
     
 #---------------- MÉTODOS PÚBLICOS ----------------#    

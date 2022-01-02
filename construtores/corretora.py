@@ -280,7 +280,7 @@ class Corretora:
                     retorno_book['bids'].append([preco_no_livro['unit_price'],preco_no_livro['amount']])
 
             elif self.nome == 'Binance':
-                retorno_book_sem_tratar = Binance(ativo_parte,ativo_contraparte).obterBooks()
+                retorno_book_sem_tratar = Binance().obterBooks(ativo_parte,ativo_contraparte)
                 for preco_no_livro in retorno_book_sem_tratar['asks']:
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
                 for preco_no_livro in retorno_book_sem_tratar['bids']:

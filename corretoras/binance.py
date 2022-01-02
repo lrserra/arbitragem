@@ -1,43 +1,39 @@
 import logging
 import time
 from binance.spot import Spot
-from uteis.util import Util
+from uteis.logger import Logger
+from uteis.settings import Settings
 from construtores.ordem import Ordem
 
 class Binance:
 
-    def __init__(self, ativo_parte = Util.CCYBTC(),ativo_contraparte = Util.CCYBRL()):
-        self.ativo_parte = ativo_parte if ativo_parte !='usdc' else 'usdt'
-        self.ativo_contraparte = ativo_contraparte
+    def __init__(self):
         self.urlBinance = 'https://api.binance.com/'
-        self.nome_corretora = 'Binance'
+        self.authentication = Settings().retorna_campo_de_json('broker','Binance','Authentication')
+        self.secret = Settings().retorna_campo_de_json('broker','Binance','Secret')
+        self.client = Spot(self.authentication,self.secret)
         self.recvWindow = 60*1000
-        
-        config = Util.obterCredenciais()
-        self.client = Spot(config[self.nome_corretora]["Authentication"], config[self.nome_corretora]["Secret"])
+        self.time_to_sleep = 5
+        self.max_retries = 20
         
 #---------------- MÉTODOS PRIVADOS ----------------#
     
-    def obterBooks(self):
-        if self.ativo_parte in ['bch','usdc']:
-            res = {'asks':[[1000,1000],[1000,1000]],'bids':[[1000,1000],[1000,1000]]}
-        else:
-            try:
-                res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
-                if len(res['asks'])<2:
-                    logging.error('a chamada de book da Binance nao retornou nada')
-                    logging.error('vai aguardar 30 segundos e tentar novamente')
-                    time.sleep(30)
-                    res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
-            
-            except Exception as err:
-                logging.error('a chamada de book da Binance falhou com o erro:')
-                logging.error(err)
-                logging.error('vai aguardar 30 segundos e tentar novamente')
-                time.sleep(30)
-                res = self.client.depth('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()))
-          
-
+    def obterBooks(self,ativo_parte,ativo_contraparte='brl'):
+        '''
+        carrega os books da corretora Binance
+        '''
+        try:
+            res = self.client.depth('{}{}'.format(ativo_parte.upper(), ativo_contraparte.upper()))
+            retries = 1
+            while len(res['asks'])<2 and retries<self.max_retries:
+                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque o book nao retornou nada'.format('Binance',retries,'obterBooks',self.time_to_sleep))
+                time.sleep(self.time_to_sleep)
+                res = self.client.depth('{}{}'.format(ativo_parte.upper(), ativo_contraparte.upper()))
+                retries+=1
+        
+        except Exception as err:
+            Logger.loga_erro('obterBooks','Binance',err,'Binance')
+        
         return res
 
     def __obterSaldo(self):
@@ -48,10 +44,10 @@ class Binance:
         res = self.client.get_order('{}{}'.format(self.ativo_parte.upper(), self.ativo_contraparte.upper()), orderId=idOrdem,recvWindow=self.recvWindow)
         return res
 
-    def __enviarOrdemCompra(self, quantity, tipoOrdem, precoCompra):
+    def __enviarOrdemCompra(self, moeda,quantity, tipoOrdem, precoCompra):
         # objeto que será postado para o endpoint
 
-        symbol = '{}{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper())
+        symbol = '{}{}'.format(moeda.upper(),'brl'.upper())
         type = tipoOrdem.upper()
         side = 'BUY'
 
@@ -79,10 +75,10 @@ class Binance:
         res = self.client.new_order(**payload,recvWindow=self.recvWindow)
         return res
 
-    def __enviarOrdemVenda(self, quantity, tipoOrdem, precoVenda):
+    def __enviarOrdemVenda(self, moeda, quantity, tipoOrdem, precoVenda):
         # objeto que será postado para o endpoint
 
-        symbol = '{}{}'.format(self.ativo_parte.upper(),self.ativo_contraparte.upper())
+        symbol = '{}{}'.format(moeda.upper(),'brl'.upper())
         type = tipoOrdem.upper()
         side = 'SELL'
 
@@ -182,13 +178,16 @@ class Binance:
         ordem.direcao = response['side']
         return ordem
 
-    def enviar_ordem_compra(self, ordemCompra):
-        ordem = ordemCompra
-        response = self.__enviarOrdemCompra(ordemCompra.quantidade_enviada, ordemCompra.tipo_ordem.upper(), ordemCompra.preco_enviado)
+    def enviar_ordem_compra(self, ordem:Ordem):
+        '''
+        envia ordem de compra para a Binance
+        '''
+        response = self.__enviarOrdemCompra(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem.upper(), ordem.preco_enviado)
                 
         if response['orderId'] > 0:
             ordem.id = response['orderId']
             ordem.status = response['status']
+            ordem.foi_executada_completamente = ordem.status == 'filled'
             ordem.quantidade_executada = 0
             ordem.preco_executado = 0
             i = 0
@@ -206,13 +205,14 @@ class Binance:
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
-            mensagem = '{}: enviar_ordem_compra - {}'.format('Binance', response['message'])
-            print(mensagem)
-        return ordem,response
+            Logger.loga_erro('enviar_ordem_compra','Binance',response['message'],'Binance')
+        return ordem
 
-    def enviar_ordem_venda(self, ordemVenda):
-        ordem = ordemVenda
-        response = self.__enviarOrdemVenda(ordemVenda.quantidade_enviada, ordemVenda.tipo_ordem.upper(), ordemVenda.preco_enviado)
+    def enviar_ordem_venda(self, ordem:Ordem):
+        '''
+        envia ordem de venda para a Binance
+        '''
+        response = self.__enviarOrdemVenda(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem.upper(), ordem.preco_enviado)
 
         if response['orderId'] > 0:
             ordem.id = response['orderId']
@@ -234,7 +234,6 @@ class Binance:
             else:    
                 ordem.preco_executado = ordem.preco_executado/ordem.quantidade_executada #preço medio ponderado
         else:
-            mensagem = '{}: enviar_ordem_venda - {}'.format('Binance', response['message'])
-            print(mensagem)
-        return ordem,response
+            Logger.loga_erro('enviar_ordem_venda','Binance',response['message'],'Binance')
+        return ordem
 
