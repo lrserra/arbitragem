@@ -22,8 +22,8 @@ if __name__ == "__main__":
     instance = settings_client.retorna_campo_de_json('rasp','instance')
 
     white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
-    lista_de_moedas_na_arbitragem = settings_client.retorna_campo_de_json_como_dicionario('strategy','arbitragem','lista_de_moedas','#')
-    white_list = [moeda for moeda in lista_de_moedas_na_arbitragem.keys() if moeda in white_list]
+    lista_de_moedas_na_arbitragem = settings_client.retorna_campo_de_json_como_lista('strategy','arbitragem','lista_de_moedas','#')
+    white_list = [moeda for moeda in lista_de_moedas_na_arbitragem if moeda in white_list]
     black_list = []
 
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
@@ -111,25 +111,25 @@ class Arbitragem:
                 rentabilidade_minima = 2/10000 if fracao_do_caixa<0.5 else rentabilidade_minima
                 rentabilidade_minima = 10/10000 if fracao_do_caixa<0.2 else rentabilidade_minima # se eu tenho pouca grana na corretoracompra, então só faz o trade se der um bambá bom
                 rentabilidade_minima = 200/10000 if fracao_do_caixa<0.1 else rentabilidade_minima # se tenho muito pouco caixa nao é pra usar na arb nem fodendo
-                
+
                 if qtdNegociada !=0:
                     # Teste se o financeiro com a corretagem é menor que o pnl da operação
                     if (pnl/vou_pagar)>rentabilidade_minima and pnl>pnl_minimo:#só fazemos se a rentabilidade for maior que isso
                         # Condição para que verificar se o saldo em reais e crypto são suficientes para a operação
-                        if (vou_pagar > corretoraCompra.retorna_menor_valor_compra[ativo]) and (qtdNegociada > corretoraVenda.quantidade_minima_venda[ativo]):
+                        if (vou_pagar > corretoraCompra.valor_minimo_compra[ativo]) and (qtdNegociada > corretoraVenda.quantidade_minima_venda[ativo]):
                             #se tenho saldo, prossigo
                             if (corretoraCompra.saldo['brl'] >= vou_pagar) and (corretoraVenda.saldo[ativo] >= qtdNegociada): 
                                 
                                 fiz_arb = True
                                 if executarOrdens:
                                     # Atualiza ordem de compra
-                                    ordem_compra = Ordem(quantidade_enviada=qtdNegociada,preco_enviado=preco_de_compra,tipo_ordem='market')
-                                    ordem_venda = Ordem(quantidade_enviada=qtdNegociada,preco_enviado=preco_de_venda,tipo_ordem='market')
+                                    ordem_compra = Ordem(ativo,qtdNegociada,preco_de_compra,'market')
+                                    ordem_venda = Ordem(ativo,qtdNegociada,preco_de_venda,'market')
 
                                     quero_comprar_a = round(preco_de_compra,4)
                                     quero_vender_a = round(preco_de_venda,4)
-
                                     Logger.loga_warning('Arbitragem: vai vender {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
+                                    
                                     ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra)
                                     ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda)                                    
 

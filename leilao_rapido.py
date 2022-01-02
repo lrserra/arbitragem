@@ -28,10 +28,10 @@ if __name__ == "__main__":
     instance = settings_client.retorna_campo_de_json('rasp','instance')
 
     white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
-    lista_de_moedas_no_leilao = settings_client.retorna_campo_de_json_como_dicionario('strategy','leilao','lista_de_moedas','#')
-    lista_de_moedas = [moeda for moeda in lista_de_moedas_no_leilao.keys() if moeda in white_list]
+    lista_de_moedas_no_leilao = settings_client.retorna_campo_de_json_como_lista('strategy','leilao','lista_de_moedas','#')
+    lista_de_moedas = [moeda for moeda in lista_de_moedas_no_leilao if moeda in white_list]
     moedas_com_saldo_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
-    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa if moeda in white_list]
+    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys() if moeda in white_list]
     black_list = []
     
     qtd_de_moedas = len(lista_de_moedas)
