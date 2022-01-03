@@ -91,7 +91,7 @@ class Caixa:
         preco_por_corretora_venda={}
         preco_por_corretora_compra={}
  
-        rasp_id = 1
+        rasp_id = settings_client.retorna_campo_de_json('rasp','instance')
         produto = 'spot'
                 
         if atualizar_saldo:

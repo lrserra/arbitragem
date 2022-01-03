@@ -41,7 +41,7 @@ if __name__ == "__main__":
                 # Roda a arbitragem nas 2 corretoras
                 teve_arb = True
                 while teve_arb:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda, True)
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)
                         teve_arb = False #para sair imediatamente do loop
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
                 teve_arb = True
                 while teve_arb:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda, True)
+                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         teve_arb = False #para sair imediatamente do loop
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
 class Arbitragem:
 
-    def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo, executarOrdens = False):
+    def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo):
         
         
         try:
@@ -121,58 +121,57 @@ class Arbitragem:
                             if (corretoraCompra.saldo['brl'] >= vou_pagar) and (corretoraVenda.saldo[ativo] >= qtdNegociada): 
                                 
                                 fiz_arb = True
-                                if executarOrdens:
-                                    # Atualiza ordem de compra
-                                    ordem_compra = Ordem(ativo,qtdNegociada,preco_de_compra,'market')
-                                    ordem_venda = Ordem(ativo,qtdNegociada,preco_de_venda,'market')
+                                # Atualiza ordem de compra
+                                ordem_compra = Ordem(ativo,qtdNegociada,preco_de_compra,'market')
+                                ordem_venda = Ordem(ativo,qtdNegociada,preco_de_venda,'market')
 
-                                    quero_comprar_a = round(preco_de_compra,4)
-                                    quero_vender_a = round(preco_de_venda,4)
-                                    Logger.loga_warning('Arbitragem: vai vender {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
+                                quero_comprar_a = round(preco_de_compra,4)
+                                quero_vender_a = round(preco_de_venda,4)
+                                Logger.loga_warning('Arbitragem: vai vender {}{} @{} na {} que tem {} de saldo e comprar depois @{} na {}'.format(round(qtdNegociada,4),ativo,quero_vender_a,corretoraVenda.nome,corretoraVenda.saldo[ativo],quero_comprar_a,corretoraCompra.nome))
+                                
+                                ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra)
+                                ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda)                                    
+
+                                realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
+                                realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
+
+                                if ordem_compra.preco_executado== 0 or ordem_venda.preco_executado ==0:
+                                    pnl_real = 0
+                                else:
+                                    pnl_real = realmente_ganhei - realmente_paguei
+
+                                comprei_a = round(ordem_compra.preco_executado,4)
+                                vendi_a = round(ordem_venda.preco_executado,4)
+
+                                quantidade_executada_compra = ordem_compra.quantidade_executada
+                                quantidade_executada_venda = ordem_venda.quantidade_executada
+                                
+                                settings_client = Settings()
+                                planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
+                                google_client = Google()
+                                trade_time = Converters.datetime_para_excel_date(datetime.now())
+                                trade_id = str(uuid.uuid4())
+                    
+                                faltou_moeda_na_compra = 0 if quantidade_de_compra<quanto_posso_comprar else 1
+                                faltou_moeda_na_venda = 0 if quantidade_de_venda<quanto_posso_vender else 1
+                                custo_corretagem_compra = corretoraCompra.corretagem_mercado*qtdNegociada*ordem_compra.preco_executado
+                                custo_corretagem_venda = corretoraVenda.corretagem_mercado*qtdNegociada*ordem_venda.preco_executado
+                                google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,preco_de_compra,pnl/2,corretoraCompra.corretagem_mercado,custo_corretagem_compra,faltou_moeda_na_compra,'FALSE'])
+                                google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl/2,corretoraVenda.corretagem_mercado,custo_corretagem_venda,faltou_moeda_na_venda,'FALSE'])
+
+                                if not ordem_compra.foi_executada_completamente:
+                                    Logger.loga_erro('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                else:
+                                    Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,round(quero_comprar_a,6),corretoraCompra.nome))
+                                    Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                     
-                                    ordem_compra = corretoraCompra.enviar_ordem_compra(ordem_compra)
-                                    ordem_venda = corretoraVenda.enviar_ordem_venda(ordem_venda)                                    
+                                if not ordem_venda.foi_executada_completamente:
+                                    Logger.loga_erro('Arbitragem: NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                else: 
+                                    Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,round(quero_vender_a,6),corretoraVenda.nome))
+                                    Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
 
-                                    realmente_paguei = qtdNegociada*ordem_compra.preco_executado*(1+corretoraCompra.corretagem_mercado)
-                                    realmente_ganhei = qtdNegociada*ordem_venda.preco_executado*(1-corretoraVenda.corretagem_mercado)
-
-                                    if ordem_compra.preco_executado== 0 or ordem_venda.preco_executado ==0:
-                                        pnl_real = 0
-                                    else:
-                                        pnl_real = realmente_ganhei - realmente_paguei
-
-                                    comprei_a = round(ordem_compra.preco_executado,4)
-                                    vendi_a = round(ordem_venda.preco_executado,4)
-
-                                    quantidade_executada_compra = ordem_compra.quantidade_executada
-                                    quantidade_executada_venda = ordem_venda.quantidade_executada
-                                    
-                                    settings_client = Settings()
-                                    planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
-                                    google_client = Google()
-                                    trade_time = Converters.datetime_para_excel_date(datetime.now())
-                                    trade_id = str(uuid.uuid4())
-                        
-                                    faltou_moeda_na_compra = 0 if quantidade_de_compra<quanto_posso_comprar else 1
-                                    faltou_moeda_na_venda = 0 if quantidade_de_venda<quanto_posso_vender else 1
-                                    custo_corretagem_compra = corretoraCompra.corretagem_mercado*qtdNegociada*ordem_compra.preco_executado
-                                    custo_corretagem_venda = corretoraVenda.corretagem_mercado*qtdNegociada*ordem_venda.preco_executado
-                                    google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraCompra.nome,'COMPRA',comprei_a,quantidade_executada_compra,realmente_paguei,pnl_real/2,preco_de_compra,pnl/2,corretoraCompra.corretagem_mercado,custo_corretagem_compra,faltou_moeda_na_compra,'FALSE'])
-                                    google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl/2,corretoraVenda.corretagem_mercado,custo_corretagem_venda,faltou_moeda_na_venda,'FALSE'])
-
-                                    if not ordem_compra.foi_executada_completamente:
-                                        Logger.loga_erro('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
-                                    else:
-                                        Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,round(quero_comprar_a,6),corretoraCompra.nome))
-                                        Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
-                                        
-                                    if not ordem_venda.foi_executada_completamente:
-                                        Logger.loga_erro('Arbitragem: NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
-                                    else: 
-                                        Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,round(quero_vender_a,6),corretoraVenda.nome))
-                                        Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
-
-                                    return fiz_arb , pnl_real
+                                return fiz_arb , pnl_real
 
                             else:
                                 Logger.loga_info('Arbitragem: nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo['brl'],2),corretoraVenda.saldo[ativo]))
