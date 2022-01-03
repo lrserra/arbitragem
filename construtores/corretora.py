@@ -147,16 +147,15 @@ class Corretora:
         if ordem.ativo_parte not in self.moedas_negociaveis:
             return ordem
         
-        #todas nossas ordens sao truncadas em alguma casa
-        ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
-
         try:
             if self.nome == 'MercadoBitcoin':
+                ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
                 return MercadoBitcoin().enviar_ordem_compra(ordem)
 
             elif self.nome == 'BrasilBitcoin':
                 if ordem.tipo_ordem == 'market':
                     ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
+                    ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
                 elif ordem.tipo_ordem == 'limited':
                     ordem.quantidade_enviada = Matematica().adiciona_numero_magico(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
                 return BrasilBitcoin().enviar_ordem_compra(ordem)
@@ -164,6 +163,7 @@ class Corretora:
             elif self.nome == 'Binance':
                 if ordem.tipo_ordem == 'market':
                     ordem.quantidade_enviada = ordem.quantidade_enviada*(1+self.corretagem_mercado)
+                    ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
                 return Binance().enviar_ordem_compra(ordem)
                 
             elif self.nome == 'BitcoinTrade':
