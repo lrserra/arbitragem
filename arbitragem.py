@@ -177,7 +177,7 @@ class Arbitragem:
                                 Logger.loga_info('Arbitragem: nao vai enviar ordem de {} porque saldo em reais {} ou saldo em cripto {} nao é suficiente'.format(ativo,round(corretoraCompra.saldo['brl'],2),corretoraVenda.saldo[ativo]))
                                 return fiz_arb , pnl_real
                         else: 
-                            Logger.loga_info('Arbitragem: nao vai enviar ordem de {} porque qtde {} nao é maior que a minima {} ou o valor a pagar {} nao é maior que o minimo {}'.format(ativo,qtdNegociada,Util.retorna_menor_quantidade_venda(ativo),vou_pagar,Util.retorna_menor_valor_compra(ativo)))
+                            Logger.loga_info('Arbitragem: nao vai enviar ordem de {} porque qtde {} nao é maior que a minima {} ou o valor a pagar {} nao é maior que o minimo {}'.format(ativo,qtdNegociada,corretoraVenda.quantidade_minima_venda[ativo],vou_pagar,corretoraCompra.valor_minimo_compra[ativo]))
                             return fiz_arb , pnl_real
                     else:
                         Logger.loga_info('Arbitragem: nao vai enviar ordem de {} porque comprando na {} o pnl estimado (${}) é menor que o minimo (${}) ou nao atinge nossa rentabilidade minima:({}%>{}/{}*100)'.format(ativo,corretoraCompra.nome,round(pnl,2),round(pnl_minimo,2),round(100*rentabilidade_minima,4),round(pnl,2),round(vou_pagar,2)))
