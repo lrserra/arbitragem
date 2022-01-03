@@ -187,7 +187,7 @@ class Binance:
         if response['orderId'] > 0:
             ordem.id = response['orderId']
             ordem.status = response['status']
-            ordem.foi_executada_completamente = ordem.status == 'filled'
+            ordem.foi_executada_completamente = ordem.status.lower() == 'filled'
             ordem.quantidade_executada = 0
             ordem.preco_executado = 0
             i = 0
@@ -217,6 +217,7 @@ class Binance:
         if response['orderId'] > 0:
             ordem.id = response['orderId']
             ordem.status = response['status']
+            ordem.foi_executada_completamente = ordem.status.lower() == 'filled'
             ordem.quantidade_executada = 0
             ordem.preco_executado = 0
             i = 0

@@ -1,6 +1,4 @@
 import sys,os,uuid
-
-
 from uteis.google import Google
 root_path = os.getcwd()
 sys.path.append(root_path)

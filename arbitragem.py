@@ -160,13 +160,13 @@ class Arbitragem:
                                 google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl/2,corretoraVenda.corretagem_mercado,custo_corretagem_venda,faltou_moeda_na_venda,'FALSE'])
 
                                 if not ordem_compra.foi_executada_completamente:
-                                    Logger.loga_erro('Arbitragem: NAO zerou a compra na {}, o status\status executado veio {}\{}'.format(corretoraCompra.nome,ordem_compra.status,ordem_compra.descricao_status_executado))
+                                    Logger.loga_erro('Arbitragem','Simples','Arbitragem: NAO zerou a compra na {}, o status veio {}'.format(corretoraCompra.nome,ordem_compra.status))
                                 else:
                                     Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,round(quero_comprar_a,6),corretoraCompra.nome))
                                     Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                     
                                 if not ordem_venda.foi_executada_completamente:
-                                    Logger.loga_erro('Arbitragem: NAO zerou a venda na {}, o status\status executado veio {}\{}'.format(corretoraVenda.nome,ordem_venda.status,ordem_venda.descricao_status_executado))
+                                    Logger.loga_erro('Arbitragem','Simples','NAO zerou a venda na {}, o status veio {}'.format(corretoraVenda.nome,ordem_venda.status))
                                 else: 
                                     Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,round(quero_vender_a,6),corretoraVenda.nome))
                                     Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com venda de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_venda.quantidade_enviada,4),ativo,ordem_venda.preco_executado,corretoraVenda.nome))
