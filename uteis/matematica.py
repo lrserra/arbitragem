@@ -10,7 +10,7 @@ from uteis.converters import Converters
 class Matematica:
     def __init__(self):
         self.settings_client = Settings()
-        self.numero_magico = 171/1000
+        self.numero_magico = 171
     
     def trunca(self,qtd,moeda='',corretora=''):
         '''
@@ -33,12 +33,12 @@ class Matematica:
         else:
             regra_trunc = self.settings_client.retorna_campo_de_json('broker',corretora,'truncate')
             dic_trunc = Converters.string_para_dicionario(regra_trunc,'#')
-            casa_trunc = float(dic_trunc[moeda])
+            casa_trunc = int(dic_trunc[moeda])
             
             if 'numero_magico' in self.settings_client.retorna_campo_de_json('broker',corretora).keys():
-                self.numero_magico = float(self.settings_client.retorna_campo_de_json('broker',corretora,'numero_magico'))/1000
+                self.numero_magico = int(self.settings_client.retorna_campo_de_json('broker',corretora,'numero_magico'))
 
-            return self.trunca(qtd,moeda,corretora) + (1/10**casa_trunc)*self.numero_magico
+            return self.trunca(qtd,moeda,corretora) + (1/10**casa_trunc)*(self.numero_magico/1000)
 
     def tem_numero_magico(self,qtd,corretora=''):
         '''
@@ -46,8 +46,8 @@ class Matematica:
         '''
 
         if corretora != '' and 'numero_magico' in self.settings_client.retorna_campo_de_json('broker',corretora).keys():
-            self.numero_magico = float(self.settings_client.retorna_campo_de_json('broker',corretora,'numero_magico'))/1000
+            self.numero_magico = int(self.settings_client.retorna_campo_de_json('broker',corretora,'numero_magico'))
         
-        return str(qtd)[-3:]==str(self.numero_magico)
+        return str(qtd)[-3:]==str(self.numero_magico)[:3]
   
 
