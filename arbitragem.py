@@ -26,13 +26,17 @@ if __name__ == "__main__":
     white_list = [moeda for moeda in lista_de_moedas_na_arbitragem if moeda in white_list]
     black_list = []
 
+    arbitragem_ligada = settings_client.retorna_campo_de_json('strategy','arbitragem','ligada').lower() == 'true'
+    compra_ligada = settings_client.retorna_campo_de_json('strategy','arbitragem','compra').lower() == 'true'
+    venda_ligada = settings_client.retorna_campo_de_json('strategy','arbitragem','venda').lower() == 'true'
+
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
     
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    while True:
+    while arbitragem_ligada:
 
         lista_de_moedas = [moeda for moeda in white_list if (moeda not in black_list)]
 
@@ -40,7 +44,7 @@ if __name__ == "__main__":
             try:
                 # Roda a arbitragem nas 2 corretoras
                 teve_arb = True
-                while teve_arb:
+                while teve_arb and venda_ligada:
                     teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)
@@ -48,7 +52,7 @@ if __name__ == "__main__":
                         Logger.loga_warning('Arbitragem: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
 
                 teve_arb = True
-                while teve_arb:
+                while teve_arb and compra_ligada:
                     teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
