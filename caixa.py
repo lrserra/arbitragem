@@ -29,6 +29,10 @@ if __name__ == "__main__":
 
     lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys() if moeda in white_list]
     
+    caixa_ligada = settings_client.retorna_campo_de_json('strategy','caixa','ligada').lower() == 'true'
+    compra_ligada = settings_client.retorna_campo_de_json('strategy','caixa','compra').lower() == 'true'
+    venda_ligada = settings_client.retorna_campo_de_json('strategy','caixa','venda').lower() == 'true'
+
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
     
@@ -36,8 +40,8 @@ if __name__ == "__main__":
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
     cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
-    if cancelei_todas:
-        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,moedas_com_saldo_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False)
+    if cancelei_todas and caixa_ligada:
+        Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,moedas_com_saldo_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False,compra_ligada,venda_ligada)
     
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
@@ -140,7 +144,7 @@ class Caixa:
 
         return True
    
-    def zera_o_pnl_de_todas_moedas(self,lista_de_moedas,saldo_inicial,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo=True):
+    def zera_o_pnl_de_todas_moedas(self,lista_de_moedas,saldo_inicial,CorretoraMaisLiquida:Corretora,CorretoraMenosLiquida:Corretora,atualizar_saldo=True,compra_ligada=True,venda_ligada=True):
         '''
         ao longo do dia, nós pagamos corretagem em cripto, então é bom comprar essa quantidade novamente
         '''
@@ -180,18 +184,18 @@ class Caixa:
                         #A mais liquida é a mais vantajosa para vender    
                         quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda])
                         quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara if quantidade_a_vender_na_mais_cara > CorretoraMaisLiquida.quantidade_minima_venda[moeda] else min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda]) #pode ser que seja menor que a qtd minima em uma corretora mas não em outra
-                        if quantidade_a_vender_na_mais_cara>CorretoraMaisLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:    
+                        if quantidade_a_vender_na_mais_cara>CorretoraMaisLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis and compra_ligada:    
                             self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMaisLiquida)
-                        if quantidade_que_restou>CorretoraMenosLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        if quantidade_que_restou>CorretoraMenosLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis and venda_ligada:
                             self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMenosLiquida)
                     
                     elif CorretoraMaisLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) < CorretoraMenosLiquida.livro.obter_preco_medio_de_venda(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
                         #A menos liquida é a mais vantajosa para vender    
                         quantidade_a_vender_na_mais_cara = min(quantidade_a_zerar,CorretoraMenosLiquida.saldo[moeda])
                         quantidade_que_restou = quantidade_a_zerar-quantidade_a_vender_na_mais_cara if quantidade_a_vender_na_mais_cara > CorretoraMenosLiquida.quantidade_minima_venda[moeda] else min(quantidade_a_zerar,CorretoraMaisLiquida.saldo[moeda]) #pode ser que seja menor que a qtd minima em uma corretora mas não em outra
-                        if quantidade_a_vender_na_mais_cara>CorretoraMenosLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        if quantidade_a_vender_na_mais_cara>CorretoraMenosLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis and venda_ligada:
                             self.zera_o_pnl_de_uma_moeda('venda',quantidade_a_vender_na_mais_cara,moeda,CorretoraMenosLiquida)
-                        if quantidade_que_restou>CorretoraMaisLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                        if quantidade_que_restou>CorretoraMaisLiquida.quantidade_minima_venda[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis and compra_ligada:
                             self.zera_o_pnl_de_uma_moeda('venda',quantidade_que_restou,moeda,CorretoraMaisLiquida)
 
                 #precisa comprar e dá pra comprar em alguma corretora
@@ -208,9 +212,9 @@ class Caixa:
                         financeiro_a_comprar_na_mais_barata = quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_comprar_na_mais_barata)
                         quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if financeiro_a_comprar_na_mais_barata > CorretoraMaisLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
                         financeiro_que_restou = 0 if quantidade_que_restou==0 else quantidade_que_restou*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_que_restou)
-                        if financeiro_a_comprar_na_mais_barata>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                        if financeiro_a_comprar_na_mais_barata>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis and venda_ligada:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida)
-                        if financeiro_que_restou>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        if financeiro_que_restou>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis and compra_ligada:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMenosLiquida)
 
                     elif CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
@@ -221,9 +225,9 @@ class Caixa:
                         financeiro_a_comprar_na_mais_barata = quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_comprar_na_mais_barata)
                         quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if financeiro_a_comprar_na_mais_barata > CorretoraMenosLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
                         financeiro_que_restou = 0 if quantidade_que_restou==0 else quantidade_que_restou*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_que_restou)
-                        if financeiro_a_comprar_na_mais_barata>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        if financeiro_a_comprar_na_mais_barata>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis and compra_ligada:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida)
-                        if financeiro_que_restou>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                        if financeiro_que_restou>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis and venda_ligada:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida)
 
                 else:
