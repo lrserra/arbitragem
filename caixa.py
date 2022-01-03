@@ -130,7 +130,7 @@ class Caixa:
             preco_por_corretora_compra[moeda][CorretoraMenosLiquida.nome]=CorretoraMenosLiquida.livro.preco_compra
 
         planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
-        google_client.escrever(planilha,'spot',[Converters.datetime_para_excel_date(datetime.now())
+        google_client.escrever(planilha,'position',[Converters.datetime_para_excel_date(datetime.now())
                                         ,rasp_id
                                         ,produto
                                         ,Converters.dicionario_simples_para_string(saldo)
@@ -207,10 +207,12 @@ class Caixa:
                         quantidade_posso_comprar_na_mais_barata = CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)
                         quantidade_posso_comprar_na_mais_cara = CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)
                         quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_barata)
-                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if quantidade_a_comprar_na_mais_barata > CorretoraMaisLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
-                        if quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                        financeiro_a_comprar_na_mais_barata = quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_comprar_na_mais_barata)
+                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if financeiro_a_comprar_na_mais_barata > CorretoraMaisLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
+                        financeiro_que_restou = 0 if quantidade_que_restou==0 else quantidade_que_restou*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_que_restou)
+                        if financeiro_a_comprar_na_mais_barata>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMaisLiquida)
-                        if quantidade_que_restou*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        if financeiro_que_restou>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMenosLiquida)
 
                     elif CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) > CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar) or moeda not in CorretoraMaisLiquida.moedas_negociaveis:
@@ -218,10 +220,12 @@ class Caixa:
                         quantidade_posso_comprar_na_mais_barata = CorretoraMenosLiquida.saldo['brl']/CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)
                         quantidade_posso_comprar_na_mais_cara = CorretoraMaisLiquida.saldo['brl']/CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)                        
                         quantidade_a_comprar_na_mais_barata = min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_barata)
-                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if quantidade_a_comprar_na_mais_barata > CorretoraMenosLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
-                        if quantidade_a_comprar_na_mais_barata*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
+                        financeiro_a_comprar_na_mais_barata = quantidade_a_comprar_na_mais_barata*CorretoraMenosLiquida.livro.obter_preco_medio_de_compra(quantidade_a_comprar_na_mais_barata)
+                        quantidade_que_restou = quantidade_a_zerar - quantidade_a_comprar_na_mais_barata if financeiro_a_comprar_na_mais_barata > CorretoraMenosLiquida.valor_minimo_compra[moeda] else min(quantidade_a_zerar,quantidade_posso_comprar_na_mais_cara)
+                        financeiro_que_restou = 0 if quantidade_que_restou==0 else quantidade_que_restou*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_que_restou)
+                        if financeiro_a_comprar_na_mais_barata>CorretoraMenosLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMenosLiquida.moedas_negociaveis:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_a_comprar_na_mais_barata,moeda,CorretoraMenosLiquida)
-                        if quantidade_que_restou*CorretoraMaisLiquida.livro.obter_preco_medio_de_compra(quantidade_a_zerar)>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
+                        if financeiro_que_restou>CorretoraMaisLiquida.valor_minimo_compra[moeda] and moeda in CorretoraMaisLiquida.moedas_negociaveis:
                             self.zera_o_pnl_de_uma_moeda('compra',quantidade_que_restou,moeda,CorretoraMaisLiquida)
 
                 else:
