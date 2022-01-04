@@ -22,18 +22,21 @@ class Binance:
         '''
         carrega os books da corretora Binance
         '''
-        try:
-            res = self.client.depth('{}{}'.format(ativo_parte.upper(), ativo_contraparte.upper()))
-            retries = 1
-            while len(res['asks'])<2 and retries<self.max_retries:
-                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque o book nao retornou nada'.format('Binance',retries,'obterBooks',self.time_to_sleep))
-                time.sleep(self.time_to_sleep)
+        sucesso = False
+        while not sucesso: #ele nao pode sair desse loop sem os books
+            try:
                 res = self.client.depth('{}{}'.format(ativo_parte.upper(), ativo_contraparte.upper()))
-                retries+=1
-        
-        except Exception as err:
-            Logger.loga_erro('obterBooks','Binance',err,'Binance')
-        
+                retries = 1
+                while len(res['asks'])<2 and retries<self.max_retries:
+                    Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque o book nao retornou nada'.format('Binance',retries,'obterBooks',self.time_to_sleep))
+                    time.sleep(self.time_to_sleep)
+                    res = self.client.depth('{}{}'.format(ativo_parte.upper(), ativo_contraparte.upper()))
+                    retries+=1
+                sucesso = True
+            except Exception as err:
+                time.sleep(self.time_to_sleep)
+                Logger.loga_erro('obterBooks','Binance',err,'Binance')
+            
         return res
 
     def __obterSaldo(self):
