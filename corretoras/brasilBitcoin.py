@@ -201,7 +201,7 @@ class BrasilBitcoin:
         '''
         response = self.__enviarOrdemCompra(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
                 
-        if response['success'] == True:
+        if response['success'] == True and response['data']['status'] not in ('filled', 'new','partially_filled'):
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
             ordem.foi_executada_completamente = ordem.status == 'filled'
@@ -231,7 +231,7 @@ class BrasilBitcoin:
         envia ordem de venda para a Brasil Bitcoin
         '''
         response = self.__enviarOrdemVenda(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem, ordem.preco_enviado)
-        if response['success'] == True:
+        if response['success'] == True and response['data']['status'] not in ('filled', 'new','partially_filled'):
             ordem.id = response['data']['id']
             ordem.status = response['data']['status']
             ordem.foi_executada_completamente = ordem.status == 'filled'
