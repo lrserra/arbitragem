@@ -85,20 +85,20 @@ class Corretora:
         '''
         try:
             if self.nome == 'MercadoBitcoin':
-                return MercadoBitcoin().obter_ordens_abertas(self.white_list)
+                return MercadoBitcoin().obter_ordens_abertas()
             elif self.nome == 'BrasilBitcoin':
-                return BrasilBitcoin().obter_ordens_abertas(self.white_list)
+                return BrasilBitcoin().obter_ordens_abertas()
             elif self.nome == 'Binance':
-                return Binance().obter_ordens_abertas(self.white_list)
+                return Binance().obter_ordens_abertas()
             elif self.nome == 'BitcoinTrade':
-                return BitcoinTrade().obter_ordens_abertas(self.white_list)
+                return BitcoinTrade().obter_ordens_abertas()
         
         except Exception as erro:
             Logger.loga_erro('obter_todas_ordens_abertas','Corretora', erro, self.nome)
         
     def cancelar_todas_ordens(self):
         '''
-        cancela todas ordens em aberto na corretora que estejam na white list
+        cancela todas ordens em aberto na corretora
         '''
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
@@ -109,13 +109,13 @@ class Corretora:
                 Logger.loga_warning('nenhuma ordem precisa ser cancelada na {}'.format(self.nome))
 
             if self.nome == 'MercadoBitcoin':
-                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas,self.white_list)
+                MercadoBitcoin().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'BrasilBitcoin':
-                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas,self.white_list)
+                BrasilBitcoin().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'Binance':
-                Binance().cancelar_todas_ordens(ordens_abertas,self.white_list)
+                Binance().cancelar_todas_ordens(ordens_abertas)
             elif self.nome == 'BitcoinTrade':
-                BitcoinTrade().cancelar_todas_ordens(ordens_abertas,self.white_list)
+                BitcoinTrade().cancelar_todas_ordens(ordens_abertas)
 
         except Exception as erro:
             Logger.loga_erro('cancelar_todas_ordens','Corretora', erro, self.nome)

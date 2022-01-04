@@ -24,10 +24,9 @@ if __name__ == "__main__":
     settings_client = Settings()
     instance = settings_client.retorna_campo_de_json('rasp','instance')
 
-    white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
     moedas_com_saldo_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
 
-    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys() if moeda in white_list]
+    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys()]
     
     caixa_ligada = settings_client.retorna_campo_de_json('strategy','caixa','ligada').lower() == 'true'
     compra_ligada = settings_client.retorna_campo_de_json('strategy','caixa','compra').lower() == 'true'
@@ -46,7 +45,7 @@ if __name__ == "__main__":
     CorretoraMaisLiquida.atualizar_saldo()
     CorretoraMenosLiquida.atualizar_saldo()
 
-    Caixa.envia_position_google(white_list,CorretoraMaisLiquida,CorretoraMenosLiquida)
+    Caixa.envia_position_google(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
 
 class Caixa:
 
