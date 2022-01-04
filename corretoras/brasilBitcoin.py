@@ -22,17 +22,20 @@ class BrasilBitcoin:
         '''
         carrega os books da corretora BrasilBitcoin
         '''
-        try:
-            res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
-            retries = 1
-            while res.status_code != 200 and retries<self.max_retries:
-                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',self.time_to_sleep,res.status_code,res.text))
-                time.sleep(self.time_to_sleep)
+        sucesso = False
+        while not sucesso: #ele nao pode sair desse loop sem os books
+            try:
                 res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
-                retries+=1
-
-        except Exception as err:
-            Logger.loga_erro('obterBooks','BrasilBitcoin',err,'BrasilBitcoin')
+                retries = 1
+                while res.status_code != 200 and retries<self.max_retries:
+                    Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',self.time_to_sleep,res.status_code,res.text))
+                    time.sleep(self.time_to_sleep)
+                    res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
+                    retries+=1
+                sucesso = True
+            except Exception as err:
+                time.sleep(self.time_to_sleep)
+                Logger.loga_erro('obterBooks','BrasilBitcoin',err,'BrasilBitcoin')
 
         return res.json()
 
