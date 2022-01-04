@@ -76,6 +76,13 @@ class Arbitragem:
             corretoraCompra.atualizar_saldo()
             corretoraVenda.atualizar_saldo()
 
+            #se estiver com saldo barreado ja para aqui
+            fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
+            fracao_da_moeda = corretoraVenda.saldo[ativo]/(corretoraCompra.saldo[ativo]+corretoraVenda.saldo[ativo])
+
+            if fracao_do_caixa < 0.01 or fracao_da_moeda < 0.05:#se estiver com saldo barreado ja para aqui
+                return fiz_arb , pnl_real
+            
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
             corretoraVenda.atualizar_book(ativo,'brl')
             corretoraCompra.atualizar_book(ativo,'brl')
@@ -96,7 +103,7 @@ class Arbitragem:
 
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
                 qtdNegociada = min(quantidade_de_compra, quantidade_de_venda,quanto_posso_comprar,quanto_posso_vender)
-             
+            
                 # Verifica em termos financeiros levando em conta as corretagens de compra e venda, se a operação vale a pena
                 vou_pagar = qtdNegociada*preco_de_compra*(1+corretoraCompra.corretagem_mercado)
                 vou_ganhar = qtdNegociada*preco_de_venda*(1-corretoraVenda.corretagem_mercado)
@@ -195,5 +202,6 @@ class Arbitragem:
 
         except Exception as erro:
             Logger.loga_erro('Simples','Arbitragem',erro)
+            return fiz_arb , pnl_real
 
 
