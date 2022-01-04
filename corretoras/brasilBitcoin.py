@@ -107,8 +107,12 @@ class BrasilBitcoin:
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
             retries = 1
             while res.status_code not in (200,418) and retries<self.max_retries:
-                Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
-                time.sleep(self.time_to_sleep)
+                Logger.loga_warning('{}: {}, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text))
+                if 'Too Many Attempts' in res.text:
+                    time.sleep(61)
+                else:
+                    Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
+                    time.sleep(self.time_to_sleep)
                 res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
                 retries+=1
             
@@ -150,19 +154,12 @@ class BrasilBitcoin:
         
         return saldo
 
-    def obter_ordens_abertas(self,white_list):
+    def obter_ordens_abertas(self):
         '''
         Obtém todas as ordens abertas
         '''
-        retorno = self.__obterOrdensAbertas()
-        if len(retorno)==0 or retorno is None:
-            return retorno
-        lista_final = []
-        for item in retorno:
-            if item['coin'].lower() in white_list:
-                lista_final.append(item)
-        return lista_final
-
+        return self.__obterOrdensAbertas()
+       
     def cancelar_ordem(self, idOrdem):
         '''
         Cancelar unitariamente uma ordem
@@ -177,13 +174,12 @@ class BrasilBitcoin:
 
         return retorno_cancel['success']
 
-    def cancelar_todas_ordens(self, ordens_abertas,white_list):
+    def cancelar_todas_ordens(self, ordens_abertas):
         '''
         Cancelar todas as ordens abertas por ativo
         '''
         for ordem in ordens_abertas:
-            if ordem['coin'].lower() in white_list:
-                self.cancelar_ordem(ordem['id'])
+            self.cancelar_ordem(ordem['id'])
 
     def obter_ordem_por_id(self, ordem:Ordem):
         '''
