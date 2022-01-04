@@ -60,7 +60,7 @@ class Settings:
                 "https://www.googleapis.com/auth/drive.file", 
                 "https://www.googleapis.com/auth/drive"]
 
-        creds = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(self.current_path+'/settings/creds.json', scope)
         client = gspread.authorize(creds)
 
         return client
