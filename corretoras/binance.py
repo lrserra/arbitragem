@@ -184,7 +184,7 @@ class Binance:
         '''
         response = self.__enviarOrdemCompra(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem.upper(), ordem.preco_enviado)
                 
-        if response['orderId'] > 0 and response['status'].lower() not in ('filled', 'new','partially_filled'):
+        if response['orderId'] > 0 and response['status'].lower() in ('filled', 'new','partially_filled'):
             ordem.id = response['orderId']
             ordem.status = response['status']
             ordem.foi_executada_completamente = ordem.status.lower() == 'filled'
@@ -214,7 +214,7 @@ class Binance:
         '''
         response = self.__enviarOrdemVenda(ordem.ativo_parte,ordem.quantidade_enviada, ordem.tipo_ordem.upper(), ordem.preco_enviado)
 
-        if response['orderId'] > 0 and response['status'].lower() not in ('filled', 'new','partially_filled'):
+        if response['orderId'] > 0 and response['status'].lower() in ('filled', 'new','partially_filled'):
             ordem.id = response['orderId']
             ordem.status = response['status']
             ordem.foi_executada_completamente = ordem.status.lower() == 'filled'
