@@ -149,6 +149,7 @@ class Corretora:
         
         try:
             if self.nome == 'MercadoBitcoin':
+                ordem.quantidade_enviada = ordem.quantidade_enviada*0.999
                 ordem.quantidade_enviada = Matematica().trunca(ordem.quantidade_enviada,ordem.ativo_parte,self.nome)
                 return MercadoBitcoin().enviar_ordem_compra(ordem)
 
