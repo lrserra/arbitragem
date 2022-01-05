@@ -91,7 +91,9 @@ class Caixa:
         financeiro_por_corretora = {}
         preco_por_corretora_venda={}
         preco_por_corretora_compra={}
- 
+
+        Logger.loga_warning('enviando posicao para o google')
+
         rasp_id = settings_client.retorna_campo_de_json('rasp','instance')
         produto = 'spot'
                 
