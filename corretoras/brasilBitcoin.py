@@ -1,4 +1,3 @@
-import logging
 import requests
 import json
 import time
@@ -170,7 +169,7 @@ class BrasilBitcoin:
         retorno_cancel = self.__cancelarOrdem(idOrdem)
 
         if not retorno_cancel['success']:
-            logging.info('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
+            Logger.loga_warning('Erro no cancelamento da Brasil: {}'.format(retorno_cancel))
         
         if retorno_cancel['message']=='Ordem já removida.' or retorno_cancel['message']=='Ordem completamente executada.': #se a operacao ja ta cancelada, fala que cancelou
             return True 
@@ -196,6 +195,7 @@ class BrasilBitcoin:
         ordem.preco_executado = float(response['data']['price'])
         ordem.preco_enviado = ordem.preco_executado
         ordem.direcao = response['data']['type']
+        ordem.ativo_parte = response['data']['pair'].split('/')[0].lower()
         return ordem
 
     def enviar_ordem_compra(self, ordem:Ordem):
