@@ -80,7 +80,7 @@ class Arbitragem:
             fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
             fracao_da_moeda = corretoraVenda.saldo[ativo]/(corretoraCompra.saldo[ativo]+corretoraVenda.saldo[ativo])
 
-            if fracao_do_caixa < 0.01 or fracao_da_moeda < 0.05:#se estiver com saldo barreado ja para aqui
+            if fracao_do_caixa < 0.01 or fracao_da_moeda < 0.01:#se estiver com saldo barreado ja para aqui
                 return fiz_arb , pnl_real
             
             #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
