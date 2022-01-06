@@ -9,13 +9,13 @@ from uteis.converters import Converters
 from uteis.google import Google
 from uteis.settings import Settings
 
-while True:
+settings_client = Settings()
+google_client = Google()
+instance = settings_client.retorna_campo_de_json('rasp','instance')
+planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
-    settings_client = Settings()
-    google_client = Google()
-    instance = settings_client.retorna_campo_de_json('rasp','instance')
-    planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
+while True:
 
     agora = Converters.datetime_para_excel_date(datetime.now())
     google_client.update(planilha,'Painel','D'+str(7+int(instance)),agora)
-    time.sleep(60)
+    time.sleep(120)
