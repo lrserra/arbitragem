@@ -12,7 +12,7 @@ from uteis.logger import Logger
 
 if __name__ == "__main__":
 
-        
+    import time
     from caixa import Caixa
     from datetime import datetime
     from uteis.settings import Settings
@@ -49,6 +49,7 @@ if __name__ == "__main__":
         Caixa.envia_position_google(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
     else:
         Logger.loga_warning('nao vou zerar nada pq nao sou o rasp primario!!')
+        time.sleep(120)
 
 class Caixa:
 
