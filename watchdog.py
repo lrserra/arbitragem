@@ -17,5 +17,5 @@ while True:
     planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
     agora = Converters.datetime_para_excel_date(datetime.now())
-    google_client.update(planilha,'settings','H'+str(3+int(instance)),agora)
+    google_client.update(planilha,'Painel','D'+str(7+int(instance)),agora)
     time.sleep(60)

@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
     corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
-    corretoraLeilao.cancelar_todas_ordens()
-
+    corretoraLeilao.cancelar_todas_ordens(white_list)
+  
     corretoraZeragem.atualizar_saldo()
     corretoraLeilao.atualizar_saldo()
         

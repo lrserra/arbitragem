@@ -96,13 +96,15 @@ class Corretora:
         except Exception as erro:
             Logger.loga_erro('obter_todas_ordens_abertas','Corretora', erro, self.nome)
         
-    def cancelar_todas_ordens(self):
+    def cancelar_todas_ordens(self, white_list = []):
         '''
         cancela todas ordens em aberto na corretora
         '''
         try:
             ordens_abertas = self.obter_todas_ordens_abertas()
-            
+            #no caso de querermos restringir as ordens a cancelar
+            ordens_abertas = [ordem for ordem in ordens_abertas if ordem['coin'].lower() in white_list] if len(white_list)>0 else ordens_abertas
+
             if len(ordens_abertas)>0:
                 Logger.loga_warning('{} ordens em aberto serao canceladas na {}'.format(len(ordens_abertas),self.nome))
             else:
