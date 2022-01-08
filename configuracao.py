@@ -24,7 +24,7 @@ Logger.loga_warning('atualizando settings de brokers')
 google_client.atualiza_broker_settings(planilha)
 
 instance = settings_client.retorna_campo_de_json('rasp','instance')
-if 'btc' in settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#'):
+if 'bnb' in settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#'):
     Logger.loga_warning('comprimindo tabela position')
     google_client.comprime_position(planilha)
 

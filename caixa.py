@@ -38,7 +38,7 @@ if __name__ == "__main__":
     CorretoraMaisLiquida = Corretora(corretora_mais_liquida)
     CorretoraMenosLiquida = Corretora(corretora_menos_liquida)
 
-    if 'btc' in settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#'):
+    if 'bnb' in settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#'):
         cancelei_todas = Caixa.atualiza_saldo_inicial(lista_para_zerar,CorretoraMaisLiquida,CorretoraMenosLiquida)
         if cancelei_todas and caixa_ligada:
             Caixa().zera_o_pnl_de_todas_moedas(lista_para_zerar,moedas_com_saldo_no_caixa,CorretoraMaisLiquida,CorretoraMenosLiquida,False,compra_ligada,venda_ligada)
