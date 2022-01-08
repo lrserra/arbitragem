@@ -79,7 +79,10 @@ class Google:
                 instance = int(linha[0])
                 app_json[instance]={}
                 for campo in header[1:]:
-                    app_json[instance][campo]=linha[header.index(campo)]
+                    if len(linha) > header.index(campo):
+                        app_json[instance][campo]=linha[header.index(campo)]
+                    else:
+                        app_json[instance][campo]=''
             
             self.settings.salva_json(app_json,'app')
 
