@@ -109,8 +109,8 @@ class BrasilBitcoin:
             res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
             retries = 1
             while res.status_code not in (200,418) and retries<self.max_retries:
-                Logger.loga_warning('{}: {}, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text))
                 if 'Too Many Attempts' in res.text:
+                    Logger.loga_warning('{}: erro {} no endpoint {}, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text, endpoint))
                     time.sleep(61)
                 else:
                     Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
