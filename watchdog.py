@@ -16,6 +16,24 @@ planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
 while True:
 
+    try:
+        mtime = os.path.getmtime('Arbitragem.log')
+        arb_modified_date =Converters.datetime_para_excel_date(datetime.fromtimestamp(mtime)) 
+    except OSError:
+        mtime = 0
+        arb_modified_date = 0
+
+    try:
+        mtime = os.path.getmtime('Leilao.log')
+        leilao_modified_date = Converters.datetime_para_excel_date(datetime.fromtimestamp(mtime))
+    except OSError:
+        mtime = 0
+        leilao_modified_date = 0
+    
     agora = Converters.datetime_para_excel_date(datetime.now())
+
     google_client.update(planilha,'Painel','D'+str(7+int(instance)),agora)
-    time.sleep(120)
+    google_client.update(planilha,'Painel','E'+str(7+int(instance)),arb_modified_date)
+    google_client.update(planilha,'Painel','F'+str(7+int(instance)),leilao_modified_date)
+    
+    time.sleep(180)
