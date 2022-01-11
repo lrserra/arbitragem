@@ -1,4 +1,4 @@
-import uuid
+import uuid, time
 from datetime import datetime
 from construtores.corretora import Corretora
 from construtores.ordem import Ordem
@@ -42,10 +42,13 @@ if __name__ == "__main__":
 
         for moeda in lista_de_moedas:
             try:
+                Arbitragem.atualiza_corretoras(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                 # Roda a arbitragem nas 2 corretoras
                 teve_arb = True
                 while teve_arb and venda_ligada:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda)
+                    teve_arb, pnl_real = Arbitragem.roda_uma_vez(CorretoraMaisLiquida, CorretoraMenosLiquida, moeda)
+                    if teve_arb:
+                        Arbitragem.atualiza_corretoras(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)
                         teve_arb = False #para sair imediatamente do loop
@@ -53,7 +56,9 @@ if __name__ == "__main__":
 
                 teve_arb = True
                 while teve_arb and compra_ligada:
-                    teve_arb, pnl_real = Arbitragem.simples(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
+                    teve_arb, pnl_real = Arbitragem.roda_uma_vez(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
+                    if teve_arb:
+                        Arbitragem.atualiza_corretoras(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         teve_arb = False #para sair imediatamente do loop
@@ -65,28 +70,26 @@ if __name__ == "__main__":
 
 class Arbitragem:
 
-    def simples(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo):
+    def atualiza_corretoras(CorretoraMenosLiquida:Corretora, CorretoraMaisLiquida:Corretora, moeda):
+        '''
+        atualiza saldo e book na ordem certa
+        '''
+        time.sleep(2)
+        CorretoraMenosLiquida.atualizar_saldo() 
+        CorretoraMaisLiquida.atualizar_saldo()
+        CorretoraMenosLiquida.atualizar_book(moeda,'brl')
+        CorretoraMaisLiquida.atualizar_book(moeda,'brl')
         
         
+    def roda_uma_vez(corretoraCompra:Corretora, corretoraVenda:Corretora, ativo):
+        '''
+        executa uma vez a estrategia
+        '''    
         try:
             fiz_arb = False
             pnl = 0
             pnl_real = 0
 
-            corretoraCompra.atualizar_saldo()
-            corretoraVenda.atualizar_saldo()
-
-            #se estiver com saldo barreado ja para aqui
-            fracao_do_caixa = corretoraCompra.saldo['brl']/(corretoraCompra.saldo['brl']+corretoraVenda.saldo['brl'])
-            fracao_da_moeda = corretoraVenda.saldo[ativo]/(corretoraCompra.saldo[ativo]+corretoraVenda.saldo[ativo])
-
-            if fracao_do_caixa < 0.01 or fracao_da_moeda < 0.01:#se estiver com saldo barreado ja para aqui
-                return fiz_arb , pnl_real
-            
-            #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos!!! é a hora do show!!
-            corretoraVenda.atualizar_book(ativo,'brl')
-            corretoraCompra.atualizar_book(ativo,'brl')
-        
             preco_de_compra = corretoraCompra.livro.preco_compra #primeiro no book de ordens
             preco_de_venda = corretoraVenda.livro.preco_venda #primeiro no book de ordens
 
@@ -201,7 +204,7 @@ class Arbitragem:
                 return fiz_arb , pnl_real
 
         except Exception as erro:
-            Logger.loga_erro('Simples','Arbitragem',erro)
+            Logger.loga_erro('roda_uma_vez','Arbitragem',erro)
             return fiz_arb , pnl_real
 
 

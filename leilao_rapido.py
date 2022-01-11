@@ -1,4 +1,4 @@
-import uuid
+import uuid, time
 from datetime import datetime
 from construtores.corretora import Corretora
 from construtores.ordem import Ordem
@@ -116,54 +116,57 @@ if __name__ == "__main__":
         Logger.loga_warning('no proximo ciclo serao consideradas apenas as seguintes {} ordens:'.format(qtd_ordens_abertas))
         Logger.loga_warning('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
 
-        corretoraLeilao.atualizar_saldo()#vamos atualizar saldo dessa corretora menos, pela performance
-
         while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
             ordens_enviadas = {}
+            time.sleep(5)
+            corretoraLeilao.atualizar_saldo()
             corretoraZeragem.atualizar_saldo()
 
-            for ordem_aberta in ordens_abertas.keys():
-                
-                Logger.loga_info('**************************************************')
-                Logger.loga_info('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
-                
-                ordem_leilao = Ordem()
-                ordem_leilao.id = ordens_abertas[ordem_aberta]['id']
-                ordem_leilao.preco_enviado = float(ordens_abertas[ordem_aberta]['price'])
-                ordem_leilao.quantidade_enviada = float(ordens_abertas[ordem_aberta]['amount'])
-                
-                moeda = ordem_aberta.split('_')[0]
-                direcao = ordem_aberta.split('_')[1]
-                
-                #a partir daqui é correria! 
+            Logger.loga_info('**************************************************')
+            Logger.loga_info('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
+
+            moedas_abertas = list(set([ordem_aberta.split('_')[0] for ordem_aberta in ordens_abertas.keys()]))
+  
+            for moeda in moedas_abertas:
+                ordens_abertas_dessa_moeda = [ordem_aberta for ordem_aberta in ordens_abertas.keys() if ordem_aberta.split('_')[0] == moeda]
+
                 corretoraZeragem.atualizar_book(moeda,'brl')
                 corretoraLeilao.atualizar_book(moeda,'brl')
-                                
-                if direcao == 'buy':
 
-                    ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
-                    if ordem_enviada.id != 0:
-                        ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
-                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
-                        black_list.append(moeda)   
-                        Logger.loga_warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
+                for ordem_aberta in ordens_abertas_dessa_moeda:
+
+                    ordem_leilao = Ordem()
+                    ordem_leilao.id = ordens_abertas[ordem_aberta]['id']
+                    ordem_leilao.preco_enviado = float(ordens_abertas[ordem_aberta]['price'])
+                    ordem_leilao.quantidade_enviada = float(ordens_abertas[ordem_aberta]['amount'])
+                    
+                    direcao = ordem_aberta.split('_')[1]
+                                    
+                    if direcao == 'buy':
+
+                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
+                        if ordem_enviada.id != 0:
+                            ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
+                        if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                            black_list.append(moeda)   
+                            Logger.loga_warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
+                            
+                    elif direcao =='sell':
                         
-                elif direcao =='sell':
-                    
-                    ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
-                    if ordem_enviada.id != 0:
-                        ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
-                    if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
-                        black_list.append(moeda)   
-                        Logger.loga_warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
-                    
+                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
+                        if ordem_enviada.id != 0:
+                            ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
+                        if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
+                            black_list.append(moeda)   
+                            Logger.loga_warning('Leilao: a moeda {} vai ser adicionado ao blacklist porque deu pnl {} menor que {}'.format(moeda,round(pnl_real,2),-10))
+                        
             #step4: ir ao step 2
             ordens_abertas = {}
             Logger.loga_info('**************************************************')
             for ordem_aberta in corretoraLeilao.obter_todas_ordens_abertas(): #vamos montar um dic com as ordens abertas
                 if ordem_aberta['coin'].lower() in lista_de_moedas:
-                    Logger.loga_info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],round(float(ordem_aberta['price']),4),round(float(ordem_aberta['amount']),8)))
+                    #Logger.loga_info('Ordem Aberta: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower(),ordem_aberta['id'],round(float(ordem_aberta['price']),4),round(float(ordem_aberta['amount']),8)))
                     ordens_abertas['{}_{}'.format(ordem_aberta['coin'].lower(),ordem_aberta['type'].lower())]={'id':ordem_aberta['id'],'price':ordem_aberta['price'],'amount':ordem_aberta['amount']}
 
             for ordem_enviada in ordens_enviadas.keys():
@@ -173,7 +176,7 @@ if __name__ == "__main__":
                 id = ordens_enviadas[ordem_enviada]['id']
                 preco_enviado = round(float(ordens_enviadas[ordem_enviada]['price']),4)
                 quantidade_enviada = round(float(ordens_enviadas[ordem_enviada]['amount']),8)
-                Logger.loga_info('Ordem Enviada: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(moeda,direcao,id,preco_enviado,quantidade_enviada))
+                #Logger.loga_info('Ordem Enviada: Moeda - {} / Direcao - {} / ID - {} / Price - {} / Qtd - {}'.format(moeda,direcao,id,preco_enviado,quantidade_enviada))
                 
                 if ordem_enviada not in ordens_abertas.keys():
                     Logger.loga_warning('Ordem Enviada {} nao esta na lista de ordem abertas e sera adicionada para zeragem!'.format(ordem_enviada))

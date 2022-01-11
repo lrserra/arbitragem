@@ -1,9 +1,8 @@
-import requests
 import json
 import time
-from urllib.parse import urlencode
 from uteis.logger import Logger
 from uteis.settings import Settings
+from uteis.requests import Requests
 from construtores.ordem import Ordem
 
 class BrasilBitcoin:
@@ -21,22 +20,24 @@ class BrasilBitcoin:
         '''
         carrega os books da corretora BrasilBitcoin
         '''
-        sucesso = False
-        while not sucesso: #ele nao pode sair desse loop sem os books
+        while True: #ele nao pode sair desse loop sem os books
             try:
-                res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
+                res = Requests.envia_get_com_retry(self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), self.timeout,self.time_to_sleep)
                 retries = 1
-                while res.status_code != 200 and retries<self.max_retries:
-                    Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',self.time_to_sleep,res.status_code,res.text))
-                    time.sleep(self.time_to_sleep)
-                    res = requests.get(url = self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), timeout =self.timeout)
+                while res.status_code != 200:
+                    if 'Too Many Attempts' in res.text:
+                        Logger.loga_warning('{}: erro {} no endpoint API/orderbook/, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text))
+                        time.sleep(61)
+                    else:
+                        Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'obterBooks',self.time_to_sleep,res.status_code,res.text))
+                        time.sleep(self.time_to_sleep)       
+                    res = Requests.envia_get_com_retry(self.urlBrasilBitcoin + 'API/orderbook/{}'.format(ativo_parte), self.timeout,self.time_to_sleep)
                     retries+=1
-                sucesso = True
+                return res.json()
             except Exception as err:
-                time.sleep(self.time_to_sleep)
                 Logger.loga_erro('obterBooks','BrasilBitcoin',err,'BrasilBitcoin')
-
-        return res.json()
+                time.sleep(self.time_to_sleep)
+        
 
     def __obterSaldo(self):
         retorno = self.__executarRequestBrasilBTC('GET', '','/api/get_balance')
@@ -105,23 +106,25 @@ class BrasilBitcoin:
             'Content-type': 'application/json'
         }
         # requisição básica com módulo requests
-        try:
-            res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
-            retries = 1
-            while res.status_code not in (200,418) and retries<self.max_retries:
-                if 'Too Many Attempts' in res.text:
-                    Logger.loga_warning('{}: erro {} no endpoint {}, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text, endpoint))
-                    time.sleep(61)
-                else:
-                    Logger.loga_warning('{}: será feito retry automatico #{} do metodo {} após {} segundos porque res.status_code {} é diferente de 200. Mensagem de Erro: {}'.format('BrasilBitcoin',retries,'__executarRequestBrasilBTC',5,res.status_code,res.text))
-                    time.sleep(self.time_to_sleep)
-                res = requests.request(requestMethod, self.urlBrasilBitcoin+endpoint, headers=headers, data=payload, timeout =self.timeout)
-                retries+=1
-            
-        except Exception as err:
-            Logger.loga_erro('__executarRequestBrasilBTC','BrasilBitcoin',err,'BrasilBitcoin')
+        while True:
+            try:
+                res = Requests.envia_requisicao_com_retry(requestMethod,self.urlBrasilBitcoin+endpoint,headers,payload,self.timeout,self.time_to_sleep)
+                retries = 1
+                while res.status_code not in (200,418):
+                    if 'Too Many Attempts' in res.text:
+                        Logger.loga_warning('{}: erro {} no endpoint {}, vai aguardar 61 segundos'.format('BrasilBitcoin',res.text, endpoint))
+                        time.sleep(61)
+                    else:
+                        Logger.loga_warning('{}: será feito retry automatico #{} do endpoint {} após {} segundos.'.format('BrasilBitcoin',retries,endpoint,self.time_to_sleep))
+                        time.sleep(self.time_to_sleep)
+                    retries+=1
+                    res = res = Requests.envia_requisicao_com_retry(requestMethod,self.urlBrasilBitcoin+endpoint,headers,payload,self.timeout,self.time_to_sleep)
+                
+                return json.loads(res.text.encode('utf8'))    
+            except Exception as err:
+                Logger.loga_erro('__executarRequestBrasilBTC','BrasilBitcoin',err,'BrasilBitcoin')
+                time.sleep(self.time_to_sleep)
 
-        return json.loads(res.text.encode('utf8'))
     
 #---------------- MÉTODOS PÚBLICOS ----------------#    
     def obter_moedas_negociaveis(self):
@@ -129,7 +132,7 @@ class BrasilBitcoin:
         Método público para obter lista de moedas negociaveis nessa corretora
         '''
         moedas_negociaveis = []
-        time.sleep(0.5)
+        
         response_json = self.__obterSaldo()
 
         for item in response_json.keys():
@@ -144,7 +147,6 @@ class BrasilBitcoin:
         '''
         saldo = {}
         
-        time.sleep(0.5)
         response_json = self.__obterSaldo()
 
         for item in response_json.keys():
