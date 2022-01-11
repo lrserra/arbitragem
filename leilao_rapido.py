@@ -109,20 +109,19 @@ if __name__ == "__main__":
             
             qtd_ordens_abertas = len(ordens_abertas.keys())
             
-        #step 3: essa parte faz em loop de 1 minuto
+        #step 3: essa parte faz em loop de 3 minuto
         agora = datetime.now() 
-        proximo_ciclo = agora + timedelta(minutes=1)
+        proximo_ciclo = agora + timedelta(minutes=3)
         Logger.loga_info('proximo ciclo até: {} '.format(proximo_ciclo))
         Logger.loga_warning('no proximo ciclo serao consideradas apenas as seguintes {} ordens:'.format(qtd_ordens_abertas))
         Logger.loga_warning('Ordens abertas: ' + Leilao.monta_string_de_ordens(ordens_abertas))
 
-        #vamos atualizar saldo a cada ciclo, para evitar erros operacionais
-        corretoraZeragem.atualizar_saldo()
-        corretoraLeilao.atualizar_saldo()
+        corretoraLeilao.atualizar_saldo()#vamos atualizar saldo dessa corretora menos, pela performance
 
         while agora < proximo_ciclo and qtd_ordens_abertas > 0:
             
             ordens_enviadas = {}
+            corretoraZeragem.atualizar_saldo()
 
             for ordem_aberta in ordens_abertas.keys():
                 
@@ -138,7 +137,6 @@ if __name__ == "__main__":
                 direcao = ordem_aberta.split('_')[1]
                 
                 #a partir daqui é correria! 
-                corretoraZeragem.atualizar_saldo()
                 corretoraZeragem.atualizar_book(moeda,'brl')
                 corretoraLeilao.atualizar_book(moeda,'brl')
                                 
