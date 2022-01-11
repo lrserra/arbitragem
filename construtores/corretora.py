@@ -260,7 +260,6 @@ class Corretora:
                     time.sleep(5) #se der pau esperamos um pouco mais
             
             elif self.nome == 'BrasilBitcoin': 
-                time.sleep(0.5)
                 retorno_book_sem_tratar = BrasilBitcoin().obterBooks(ativo_parte,ativo_contraparte)
                 while 'sell' not in retorno_book_sem_tratar.keys():
                     retorno_book_sem_tratar = BrasilBitcoin().obterBooks(ativo_parte,ativo_contraparte)
