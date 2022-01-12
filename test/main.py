@@ -9,7 +9,7 @@ from estrategias.caixa import Caixa
 from estrategias.arbitragem import Arbitragem
 from estrategias.leilao import Leilao
 from uteis.ordem import Ordem
-from uteis.googleSheets import GoogleSheets
+from test.googleSheets import GoogleSheets
 
 #from coreTelegram import Telegram - teste iran
 

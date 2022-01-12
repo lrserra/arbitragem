@@ -3,7 +3,7 @@ sys.path.append(os.getcwd())
 
 
 from uteis.util import Util
-from uteis.googleSheets import GoogleSheets
+from test.googleSheets import GoogleSheets
 from uteis.corretora import Corretora
 from uteis.ordem import Ordem
 import time
