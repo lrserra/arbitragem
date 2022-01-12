@@ -206,10 +206,8 @@ class Leilao:
         '''
         try:
             ordem = Ordem()
-            if (Matematica().tem_numero_magico(corretoraLeilao.livro.quantidade_compra,corretoraLeilao.nome)):
-                preco_que_vou_vender = corretoraLeilao.livro.preco_compra #se for 171 eu coloco ordem no mesmo preço
-            else:
-                preco_que_vou_vender = corretoraLeilao.livro.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
+            
+            preco_que_vou_vender = corretoraLeilao.livro.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
             preco_de_zeragem = corretoraZeragem.livro.preco_compra # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão
@@ -248,10 +246,7 @@ class Leilao:
         '''
         try:
             ordem = Ordem()
-            if (Matematica().tem_numero_magico(corretoraLeilao.livro.quantidade_venda,corretoraLeilao.nome)):
-                preco_que_vou_comprar = corretoraLeilao.livro.preco_venda #se for 171 eu chego junto
-            else:
-                preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
+            preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
             preco_de_zeragem = corretoraZeragem.livro.preco_venda # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão

@@ -249,6 +249,7 @@ class Corretora:
         carrega a lista atualizada de ordens no livro da corretora
         '''
         try:
+            retorno_book_com_exclusoes = {'asks':[],'bids':[]}
             retorno_book ={'asks':[],'bids':[]}
             retorno_book_sem_tratar ={'asks':[],'bids':[]}
             
@@ -287,7 +288,19 @@ class Corretora:
                     retorno_book['asks'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
                 for preco_no_livro in retorno_book_sem_tratar['bids']:
                     retorno_book['bids'].append([float(preco_no_livro[0]),float(preco_no_livro[1])])
-            
+
+            for preco_no_livro in retorno_book['bids'][:5]:
+                indice = retorno_book['bids'].index(preco_no_livro)
+                if Matematica().tem_numero_magico(float(preco_no_livro[1]),self.nome): #as ordens dos outros robos vão ser transparentes pra gente
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('NUMERO MAGICO')
+
+            for preco_no_livro in retorno_book['asks'][:5]:
+                indice = retorno_book['asks'].index(preco_no_livro)
+                if Matematica().tem_numero_magico(float(preco_no_livro[1]),self.nome): #as ordens dos outros robos vão ser transparentes pra gente
+                    preco_no_livro.append('DESCONSIDERAR')
+                    preco_no_livro.append('NUMERO MAGICO')
+
             for preco_no_livro in retorno_book['bids'][:5]:
                 indice = retorno_book['bids'].index(preco_no_livro)
                 if float(preco_no_livro[0]) > float(retorno_book['asks'][indice][0]): #o preco de venda tem que ser maior que o de compra
@@ -312,15 +325,10 @@ class Corretora:
                     preco_no_livro.append('DESCONSIDERAR')
                     preco_no_livro.append('QTD PEQUENA')
             
-            for preco_no_livro in retorno_book['asks']:
-                if 'DESCONSIDERAR' not in preco_no_livro:
-                    self.livro.book['asks'].append(preco_no_livro)
+            retorno_book_com_exclusoes['asks']= [preco_no_livro for preco_no_livro in retorno_book['asks'] if 'DESCONSIDERAR' not in preco_no_livro]
+            retorno_book_com_exclusoes['bids']= [preco_no_livro for preco_no_livro in retorno_book['bids'] if 'DESCONSIDERAR' not in preco_no_livro]
             
-            for preco_no_livro in retorno_book['bids']:
-                if 'DESCONSIDERAR' not in preco_no_livro:
-                    self.livro.book['bids'].append(preco_no_livro)
-
-            return retorno_book
+            return retorno_book_com_exclusoes
 
         except Exception as erro:
             Logger.loga_erro('__carregar_ordem_books','Corretora', erro, self.nome)
