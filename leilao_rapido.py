@@ -46,9 +46,6 @@ if __name__ == "__main__":
     corretoraLeilao = Corretora(corretora_menos_liquida)
     corretoraLeilao.cancelar_todas_ordens(white_list)
   
-    corretoraZeragem.atualizar_saldo()
-    corretoraLeilao.atualizar_saldo()
-        
     '''
     nesse script vamos 
     1 - listar todas moedas que queremos negociar 
@@ -71,12 +68,17 @@ if __name__ == "__main__":
         lista_de_moedas = [moeda for moeda in lista_de_moedas if (moeda not in black_list)] #atualiza lista conforme blacklist
 
         while qtd_ordens_abertas==0:
+            
+            time.sleep(2)
+            corretoraZeragem.atualizar_saldo()
+            corretoraLeilao.atualizar_saldo()       
 
             for moeda in lista_de_moedas:
-            
+                
                 Logger.loga_info('******************************************************************')                
                 ordem_enviada = Ordem()
                 #carrego os books de ordem mais recentes, a partir daqui precisamos ser rapidos
+                time.sleep(0.5)
                 corretoraLeilao.atualizar_book(moeda,'brl')
                 corretoraZeragem.atualizar_book(moeda,'brl')
 
