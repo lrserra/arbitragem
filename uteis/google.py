@@ -169,7 +169,7 @@ class Google:
                 linha['ROW'] = todos_dados.index(linha)+2
                 linha['PNL'] = Converters.string_para_float(linha['PNL'])
                 linha['FINANCEIRO'] = Converters.string_para_float(linha['FINANCEIRO'])
-                if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
+                if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.6:
                     linhas_a_excluir.append(linha['ROW'])
             for linha_a_deletar in reversed(linhas_a_excluir): #da uma primeira limada
                 Logger.loga_warning('deletando a linha vazia {}'.format(linha_a_deletar))
@@ -281,7 +281,7 @@ class Google:
             linha['ROW'] = todos_dados.index(linha)+2
             linha['PNL'] = Converters.string_para_float(linha['PNL'])
             linha['FINANCEIRO'] = Converters.string_para_float(linha['FINANCEIRO'])
-            if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.4:
+            if linha['DATA'] == '' or linha['FINANCEIRO']==0 or abs(linha['PNL']/linha['FINANCEIRO'])>0.6:
                 linhas_a_excluir.append(linha['ROW'])
         for linha_a_deletar in reversed(linhas_a_excluir):
             Logger.loga_info('deletando a linha vazia {}'.format(linha_a_deletar))
