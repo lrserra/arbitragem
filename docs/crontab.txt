@@ -1,0 +1,10 @@
+# m h  dom mon dow   command
+00 * * * * sudo reboot
+@reboot sleep 12 && cd /home/pi/arbitragem/ &&  sudo /usr/bin/python3 /home/pi/arbitragem/configuracao.py
+01 * * * *  cd /home/pi/arbitragem/ &&  sudo /usr/bin/python3 /home/pi/arbitragem/caixa.py
+@reboot sleep 120 && cd /home/pi/arbitragem/ && sudo /usr/bin/python3 /home/pi/arbitragem/leilao_rapido.py
+@reboot sleep 121 && cd /home/pi/arbitragem/ &&  sudo /usr/bin/python3 /home/pi/arbitragem/arbitragem.py
+@reboot sleep 122 && cd /home/pi/arbitragem/ &&  sudo /usr/bin/python3 /home/pi/arbitragem/watchdog.py
+51 00 * * * cd /home/pi/arbitragem/ &&  sudo /usr/bin/python3 /home/pi/arbitragem/salva_logs.py
+01 7 * * 1 sudo apt-get update && sudo apt-get upgrade -y
+51 7 * * 1 sudo rm -rf /home/pi/arbitragem/Logs
