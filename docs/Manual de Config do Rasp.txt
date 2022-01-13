@@ -1,0 +1,42 @@
+MANUAL DE CONFIGURAÇÃO DO RASPBERRY
+
+1. Formatar 
+- Baixar o software SD Card Formatter (sistema oficial do SD Card)
+- Formatar utilizando a função "quick formatter"
+- 
+
+2. Instalação do sistema operacional
+- Baixar o Raspberry Pi Imager(https://www.raspberrypi.org/downloads)
+- Instalar o Raspberry Pi OS lit (uma verão mais leve) no SD Card
+- Salvar na raiz do SD um arquivo chamado "ssh" (sem extensão).Esse arquivo é utilizado para acessar as configurações do Raspberry remotamente (sem um cabo), usando o sistema putty, por exemplo.
+
+3. Configuração do Raspberry
+- Entrar o Rasp na rede (IP).Programa: Advanced IP scanner
+- Conectar com o IP no rasp utilizando Putty (sistema)
+- Ao inciar o login é sempre "pi" e a senha é "raspberry"
+
+3.1. Configurando Raspberry via Putty
+- no putty, sudo raspi-config 
+- No System Option (opcao 1), alterar o nome (Hostname) e a senha (Password).
+- Em Localization (opçao 5), alterar o TimeZone para Bahia
+- Em Advanced Option (opçao 6), clicar em Expand Filesystem.
+- Clicar em Update (opçao 8)
+- no putty, sudo reboot
+
+4. Instaçao do SAMBA
+- Tutorial https://pimylifeup.com/raspberry-pi-samba/
+
+5. Configurando scripts da Rhyno
+- mapear unidade de rede com a pasta criada no tutorial SAMBA
+- colar scripts da rhyno dentroda pasta
+- entrar via putty e: sudo apt-get install python3-pip (para instalar asbibliotecas python)
+- instalar bibliotecas abaixo
+- sudo pip3 install gspread
+- sudo pip3 install binance-connector
+- sudo pip3 install oauth2client
+- sudo pip3 install requests
+
+6.Configuração do crontab
+- sudo crontab -e
+- escolher opção 1 (apenas na primeira vez)
+- 
