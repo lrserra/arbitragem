@@ -96,10 +96,12 @@ class Arbitragem:
 
                 quantidade_de_compra = corretoraCompra.livro.quantidade_compra #qtd no book de ordens
                 quantidade_de_venda = corretoraVenda.livro.quantidade_venda #qtd no book de ordens
+                
+                colchao_de_liquidez = 0.99
 
-                quanto_posso_comprar = corretoraCompra.saldo['brl']/corretoraCompra.livro.preco_compra #saldo em reais /preco
-                quanto_posso_vender = corretoraVenda.saldo[ativo] #saldo em cripto
-
+                quanto_posso_comprar = colchao_de_liquidez*corretoraCompra.saldo['brl']/corretoraCompra.livro.preco_compra #saldo em reais * colchão
+                quanto_posso_vender = colchao_de_liquidez*corretoraVenda.saldo[ativo] #saldo em cripto * colchão
+               
                 # Obtendo a menor quantidade de compra e venda entre as corretoras que tenho saldo para negociar
                 qtdNegociada = min(quantidade_de_compra, quantidade_de_venda,quanto_posso_comprar,quanto_posso_vender)
             
