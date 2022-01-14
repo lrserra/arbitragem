@@ -136,7 +136,7 @@ class BrasilBitcoin:
         response_json = self.__obterSaldo()
 
         for item in response_json.keys():
-            if item != 'user_cpf':
+            if item != 'user_cpf' and item!='brl':
                 moedas_negociaveis.append(item.lower())
         
         return moedas_negociaveis
