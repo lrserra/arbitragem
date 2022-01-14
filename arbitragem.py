@@ -57,6 +57,8 @@ if __name__ == "__main__":
                 teve_arb = True
                 while teve_arb and compra_ligada:
                     teve_arb, pnl_real = Arbitragem.roda_uma_vez(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
+                    if teve_arb:
+                        Arbitragem.atualiza_corretoras(CorretoraMenosLiquida, CorretoraMaisLiquida, moeda)
                     if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
                         black_list.append(moeda)   
                         teve_arb = False #para sair imediatamente do loop
@@ -172,12 +174,16 @@ class Arbitragem:
                                 google_client.escrever(planilha,'spot',[trade_time,trade_id,'ARBITRAGEM',ativo,corretoraVenda.nome,'VENDA',vendi_a,quantidade_executada_venda,realmente_ganhei,pnl_real/2,preco_de_venda,pnl/2,corretoraVenda.corretagem_mercado,custo_corretagem_venda,faltou_moeda_na_venda,'FALSE'])
 
                                 if not ordem_compra.foi_executada_completamente:
+                                    fiz_arb =False
+                                    pnl_real = 0
                                     Logger.loga_erro('Arbitragem','Simples','Arbitragem: NAO zerou a compra na {}, o status veio {}'.format(corretoraCompra.nome,ordem_compra.status))
                                 else:
                                     Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com compra de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_compra.quantidade_enviada,4),ativo,round(quero_comprar_a,6),corretoraCompra.nome))
                                     Logger.loga_warning('Arbitragem: operou arb de {}! com {}brl de pnl real com compra de {}{} @{} na {}'.format(ativo,round(pnl_real/2,2),round(ordem_compra.quantidade_enviada,4),ativo,ordem_compra.preco_executado,corretoraCompra.nome))
                                     
                                 if not ordem_venda.foi_executada_completamente:
+                                    fiz_arb =False
+                                    pnl_real = 0
                                     Logger.loga_erro('Arbitragem','Simples','NAO zerou a venda na {}, o status veio {}'.format(corretoraVenda.nome,ordem_venda.status))
                                 else: 
                                     Logger.loga_info('Arbitragem: operou arb de {}! com {}brl de pnl estimado com venda de {}{} @{} na {}'.format(ativo,round(pnl/2,2),round(ordem_venda.quantidade_enviada,4),ativo,round(quero_vender_a,6),corretoraVenda.nome))
