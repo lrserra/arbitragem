@@ -9,6 +9,24 @@ from uteis.converters import Converters
 from uteis.google import Google
 from uteis.settings import Settings
 
+def get_now_time():
+    return Converters.datetime_para_excel_date(datetime.now())
+
+def get_update_time(filename):
+    try:
+        mtime = os.path.getmtime(filename)
+        modified_date =Converters.datetime_para_excel_date(datetime.fromtimestamp(mtime)) 
+    except OSError:
+        modified_date = 0
+    return modified_date
+
+def get_temperature():
+    try:
+        cpu_temp = float(os.popen("vcgencmd measure_temp").readline().replace("temp=", "").replace("'C",""))
+    except:
+        cpu_temp = 0
+    return cpu_temp
+
 settings_client = Settings()
 google_client = Google()
 instance = settings_client.retorna_campo_de_json('rasp','instance')
@@ -16,24 +34,13 @@ planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
 while True:
 
-    try:
-        mtime = os.path.getmtime('Arbitragem.log')
-        arb_modified_date =Converters.datetime_para_excel_date(datetime.fromtimestamp(mtime)) 
-    except OSError:
-        mtime = 0
-        arb_modified_date = 0
+    update_range =[[get_now_time(),
+                    get_update_time('Arbitragem.log'),
+                    get_update_time('Leilao.log'),
+                    get_temperature()]]
 
-    try:
-        mtime = os.path.getmtime('Leilao.log')
-        leilao_modified_date = Converters.datetime_para_excel_date(datetime.fromtimestamp(mtime))
-    except OSError:
-        mtime = 0
-        leilao_modified_date = 0
-    
-    agora = Converters.datetime_para_excel_date(datetime.now())
-
-    google_client.update(planilha,'Painel','D'+str(7+int(instance)),agora)
-    google_client.update(planilha,'Painel','E'+str(7+int(instance)),arb_modified_date)
-    google_client.update(planilha,'Painel','F'+str(7+int(instance)),leilao_modified_date)
-    
+    google_client.update(planilha,'settings','monitor{}'.format(instance),update_range)
+    print('updated!')
     time.sleep(180)
+
+ 
