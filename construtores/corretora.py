@@ -315,13 +315,13 @@ class Corretora:
 
             for preco_no_livro in retorno_book['asks'][:5]:
                 indice = retorno_book['asks'].index(preco_no_livro)
-                if float(preco_no_livro[1])*float(preco_no_livro[0]) < self.valor_minimo_compra[ativo_parte]: #vamos ignorar se menor que valor minimo que posso comprar
+                if float(preco_no_livro[1])*float(preco_no_livro[0]) < 30: #vamos ignorar se financeiro menor que 30 paus
                     preco_no_livro.append('DESCONSIDERAR')
                     preco_no_livro.append('QTD PEQUENA')
 
             for preco_no_livro in retorno_book['bids'][:5]:
                 indice = retorno_book['bids'].index(preco_no_livro)
-                if float(preco_no_livro[1]) < self.quantidade_minima_venda[ativo_parte]: #vamos ignorar se menor que valor minimo que posso vender
+                if float(preco_no_livro[1])*float(preco_no_livro[0])< 30: #vamos ignorar se financeiro menor que 30 paus
                     preco_no_livro.append('DESCONSIDERAR')
                     preco_no_livro.append('QTD PEQUENA')
             
