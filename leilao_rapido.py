@@ -42,6 +42,8 @@ if __name__ == "__main__":
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
 
+    incremento_leilao = settings_client.retorna_campo_de_json_como_dicionario('broker','incremento_leilao','lista_de_moedas,'#')
+
     corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
     corretoraLeilao.cancelar_todas_ordens(white_list)
