@@ -158,10 +158,8 @@ class Google:
             sheet = self.google.open(planilha).worksheet('spot')
             todos_dados = sheet.get_all_records()
             
-            today_date = datetime.now()
-            today_minus_30_date = today_date - timedelta(days=30)
-
             compressao_diaria =[]
+            compressao_mensal = []
             linhas_a_excluir = []
             linhas_a_adicionar = []
 
@@ -178,7 +176,10 @@ class Google:
 
             linhas_a_excluir = []
             todos_dados = sheet.get_all_records()
+            
             today_date = datetime.now()
+            today_minus_30_date = today_date - timedelta(days=30)
+            
             for linha in todos_dados:
                 linha['DATA'] = datetime.strptime(linha['DATA'], '%m/%d/%Y %H:%M:%S')
                 linha['ROW'] = todos_dados.index(linha)+2
@@ -193,9 +194,67 @@ class Google:
                 linha['FALTOU MOEDA'] = Converters.string_para_float(linha['FALTOU MOEDA'])
                 if linha['DATA'] > today_minus_30_date and linha['DATA'].day != today_date.day:
                     compressao_diaria.append(linha)
-            
+                elif linha['DATA'] <= today_minus_30_date:
+                    compressao_mensal.append(linha)
+                
+            for linha in compressao_mensal:
+                trades_a_comprimir_nesse_mes = [row for row in compressao_mensal if row['DATA'].month==linha['DATA'].month and row['DATA'].month==linha['DATA'].month]
+                corretoras = list(set([row['CORRETORA'] for row in trades_a_comprimir_nesse_mes if row['CORRETORA']!='']))
+                estrategias = list(set([row['ESTRATEGIA'] for row in trades_a_comprimir_nesse_mes]))
+                moedas = list(set([row['MOEDA'] for row in trades_a_comprimir_nesse_mes]))
+                direcoes = list(set([row['DIREÇÃO'] for row in trades_a_comprimir_nesse_mes]))
+                
+                for corretora in corretoras:
+                    for estrategia in estrategias:
+                        for moeda in moedas:
+                            for direcao in direcoes:
+                                #cria trade comprimido e escreve
+                                compressed_trade = []
+                                trades_a_comprimir = [trade for trade in trades_a_comprimir_nesse_mes if trade['CORRETORA'] == corretora and trade['MOEDA']==moeda and trade['ESTRATEGIA']==estrategia and trade['DIREÇÃO'] == direcao]
+
+                                if len(trades_a_comprimir)>1:
+                                    data = trades_a_comprimir[0]['DATA']
+                                    trade_id = trades_a_comprimir[0]['ID']
+                                    precos = [row['PRECO'] for row in trades_a_comprimir]
+                                    preco = sum(precos)/len(precos)
+                                    quantidade = sum([row['QUANTIDADE'] for row in trades_a_comprimir])
+                                    financeiro = sum([row['FINANCEIRO'] for row in trades_a_comprimir])
+                                    pnl = sum([row['PNL'] for row in trades_a_comprimir])
+                                    precos_estimados = [row['PRECO ESTIMADO'] for row in trades_a_comprimir]
+                                    preco_estimado = sum(precos_estimados)/len(precos_estimados)
+                                    pnl_estimado = sum([row['PNL ESTIMADO'] for row in trades_a_comprimir])
+                                    taxas_corretagem = [row['TAXA CORRETAGEM'] for row in trades_a_comprimir]
+                                    taxa_corretagem = sum(taxas_corretagem)/len(taxas_corretagem)
+                                    financeiro_corretagem = sum([row['FINANCEIRO CORRETAGEM'] for row in trades_a_comprimir])
+                                    faltaram_moedas = [row['FALTOU MOEDA'] for row in trades_a_comprimir]
+                                    faltou_moeda = sum(faltaram_moedas)/len(faltaram_moedas)
+
+                                    compressed_trade.append(Converters.datetime_para_excel_date(data))
+                                    compressed_trade.append(trade_id)
+                                    compressed_trade.append(estrategia)
+                                    compressed_trade.append(moeda)
+                                    compressed_trade.append(corretora)
+                                    compressed_trade.append(direcao)
+                                    compressed_trade.append(preco)
+                                    compressed_trade.append(quantidade)
+                                    compressed_trade.append(financeiro)
+                                    compressed_trade.append(pnl)
+                                    compressed_trade.append(preco_estimado)
+                                    compressed_trade.append(pnl_estimado)
+                                    compressed_trade.append(taxa_corretagem)
+                                    compressed_trade.append(financeiro_corretagem)
+                                    compressed_trade.append(faltou_moeda)
+                                    compressed_trade.append(True)
+
+                                    linhas_a_adicionar.append(compressed_trade)
+                                    linhas_a_excluir = linhas_a_excluir + [linha['ROW'] for linha in trades_a_comprimir]
+                                    
+                for trade in trades_a_comprimir_nesse_mes:
+                    #remove da lista de compressao diaria, todos ja foram comprimidos quando necessario
+                    compressao_mensal.remove(trade)
+
             for linha in compressao_diaria:
-                trades_a_comprimir_nesse_dia = [row for row in compressao_diaria if row['DATA'].day==linha['DATA'].day and row['DATA'].month==linha['DATA'].month]
+                trades_a_comprimir_nesse_dia = [row for row in compressao_diaria if row['DATA'].day==linha['DATA'].day and row['DATA'].month==linha['DATA'].month and row['DATA'].year==linha['DATA'].year]
                 corretoras = list(set([row['CORRETORA'] for row in trades_a_comprimir_nesse_dia if row['CORRETORA']!='']))
                 estrategias = list(set([row['ESTRATEGIA'] for row in trades_a_comprimir_nesse_dia]))
                 moedas = list(set([row['MOEDA'] for row in trades_a_comprimir_nesse_dia]))
