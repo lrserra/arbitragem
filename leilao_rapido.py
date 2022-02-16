@@ -30,8 +30,6 @@ if __name__ == "__main__":
     white_list = settings_client.retorna_campo_de_json_como_lista('app',str(instance),'white_list','#')
     lista_de_moedas_no_leilao = settings_client.retorna_campo_de_json_como_lista('strategy','leilao','lista_de_moedas','#')
     lista_de_moedas = [moeda for moeda in lista_de_moedas_no_leilao if moeda in white_list]
-    moedas_com_saldo_no_caixa = settings_client.retorna_campo_de_json_como_dicionario('strategy','caixa','lista_de_moedas','#')
-    lista_para_zerar = [moeda for moeda in moedas_com_saldo_no_caixa.keys() if moeda in white_list]
     black_list = []
     
     qtd_de_moedas = len(lista_de_moedas)
@@ -59,7 +57,7 @@ if __name__ == "__main__":
     4 - após um tempo x no loop (3), voltar pro (2)
 
     '''
-    #essa parte faz a cada 6 minutos
+    #essa parte faz a cada x minutos
     ordens_abertas = {}
     while leilao_ligada:
 
@@ -209,7 +207,7 @@ class Leilao:
         try:
             ordem = Ordem()
             
-            preco_que_vou_vender = corretoraLeilao.livro.preco_compra-0.01 #primeiro no book de ordens - 1 centavo
+            preco_que_vou_vender = corretoraLeilao.livro.preco_compra-0.01 #primeiro no book de ordens - incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_compra # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão
@@ -248,7 +246,7 @@ class Leilao:
         '''
         try:
             ordem = Ordem()
-            preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+0.01 #primeiro no book de ordens + 1 centavo
+            preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+0.01 #primeiro no book de ordens + incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_venda # zeragem no primeiro book de ordens
 
             # Valida se existe oportunidade de leilão
