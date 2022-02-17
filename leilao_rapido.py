@@ -39,12 +39,10 @@ if __name__ == "__main__":
 
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
-
-    incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretora_menos_liquida,'incremento_leilao')
-    
+       
     corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
-    corretoraLeilao.cancelar_todas_ordens(white_list)
+    #corretoraLeilao.cancelar_todas_ordens(white_list)
   
     '''
     nesse script vamos 
@@ -205,7 +203,9 @@ class Leilao:
         envia ordem limitada de venda se tiver leilao aberto
         '''
         try:
-            ordem = Ordem()            
+            ordem = Ordem()  
+            settings_client = Settings()
+            incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretoraLeilao.nome,'incremento_leilao')          
             incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
             preco_que_vou_vender = corretoraLeilao.livro.preco_compra-incremento_leilao #primeiro no book de ordens - incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_compra # zeragem no primeiro book de ordens
@@ -247,6 +247,8 @@ class Leilao:
         try:
            
             ordem = Ordem()
+            settings_client = Settings()
+            incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretoraLeilao.nome,'incremento_leilao')
             incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
             preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+incremento_leilao #primeiro no book de ordens + incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_venda # zeragem no primeiro book de ordens
