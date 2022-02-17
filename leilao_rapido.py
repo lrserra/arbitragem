@@ -42,7 +42,9 @@ if __name__ == "__main__":
 
     incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretora_menos_liquida,'incremento_leilao')
     
+    corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
+    corretoraLeilao.cancelar_todas_ordens(white_list)
   
     '''
     nesse script vamos 
