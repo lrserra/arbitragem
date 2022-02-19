@@ -310,14 +310,14 @@ class Leilao:
         #agora vai logar pnl
         if ordem_zeragem.id != 0:
                     
-            comprei_a = round(ordem_zeragem.preco_executado,2)
-            vendi_a = round(ordem_antiga.preco_enviado,2)
+            comprei_a = ordem_zeragem.preco_executado
+            vendi_a = ordem_antiga.preco_enviado
             quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
             financeiro_compra = comprei_a * (1+corretoraZeragem.corretagem_mercado) * quantidade
             financeiro_venda = vendi_a * (1-corretoraLeilao.corretagem_limitada)* quantidade
 
-            queria_comprar_a = round(ordem_zeragem.preco_enviado,2)
+            queria_comprar_a = ordem_zeragem.preco_enviado
             financeiro_compra_estimado = queria_comprar_a* (1+corretoraZeragem.corretagem_mercado) * quantidade
             custo_corretagem_compra = corretoraZeragem.corretagem_mercado*financeiro_compra
             custo_corretagem_venda = corretoraLeilao.corretagem_limitada*financeiro_venda
@@ -439,14 +439,14 @@ class Leilao:
 
         if  ordem_zeragem.id != 0:
 
-            vendi_a = round(ordem_zeragem.preco_executado,2)
-            comprei_a = round(ordem_antiga.preco_enviado,2)
+            vendi_a = ordem_zeragem.preco_executado
+            comprei_a = ordem_antiga.preco_enviado
             quantidade = round(ordem_zeragem.quantidade_enviada,6)
 
             financeiro_compra = comprei_a*(1+corretoraLeilao.corretagem_limitada)* quantidade
             financeiro_venda = vendi_a*(1-corretoraZeragem.corretagem_mercado)* quantidade
 
-            queria_vender_a = round(ordem_zeragem.preco_enviado,2)
+            queria_vender_a = ordem_zeragem.preco_enviado
             financeiro_venda_estimado = queria_vender_a* (1+corretoraZeragem.corretagem_mercado) * quantidade
             custo_corretagem_compra = corretoraLeilao.corretagem_limitada*financeiro_compra
             custo_corretagem_venda = corretoraZeragem.corretagem_mercado*financeiro_venda
