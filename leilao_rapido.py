@@ -39,10 +39,12 @@ if __name__ == "__main__":
 
     corretora_mais_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_mais_liquida')
     corretora_menos_liquida = settings_client.retorna_campo_de_json('app',str(instance),'corretora_menos_liquida')
+
+    incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretora_menos_liquida,'incremento_leilao')          
        
     corretoraZeragem = Corretora(corretora_mais_liquida)
     corretoraLeilao = Corretora(corretora_menos_liquida)
-    #corretoraLeilao.cancelar_todas_ordens(white_list)
+    corretoraLeilao.cancelar_todas_ordens(white_list)
   
     '''
     nesse script vamos 
@@ -86,14 +88,14 @@ if __name__ == "__main__":
                 fracao_da_moeda = round(corretoraLeilao.saldo[moeda]/(corretoraLeilao.saldo[moeda]+corretoraZeragem.saldo[moeda]),6)
                 
                 if venda_ligada and fracao_do_caixa < 0.995 and fracao_da_moeda > 0.025 and ('{}_{}'.format(moeda,'sell') not in ordens_abertas.keys()):
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,incremento_leilao_dic)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                         ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                 else:
                     Logger.loga_info('leilao rapido de compra nao enviara ordem de {} porque a fracao de caixa {} é maior que 99% ou a fracao de moeda {} é menor que 5%'.format(moeda,fracao_do_caixa*100,fracao_da_moeda*100))  
                  
                 if compra_ligada and fracao_do_caixa > 0.005 and fracao_da_moeda < 0.975 and ('{}_{}'.format(moeda,'buy') not in ordens_abertas.keys()):
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,moeda,qtd_de_moedas,incremento_leilao_dic)
                     if ordem_enviada.id != 0: #se colocar uma nova ordem, vamos logar como ordem enviada
                        ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}                       
                 else:
@@ -146,7 +148,7 @@ if __name__ == "__main__":
                                     
                     if direcao == 'buy':
 
-                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
+                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_venda(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas,incremento_leilao_dic)
                         if ordem_enviada.id != 0:
                             ordens_enviadas['{}_{}'.format(moeda,'buy')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                         if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
@@ -155,7 +157,7 @@ if __name__ == "__main__":
                             
                     elif direcao =='sell':
                         
-                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas)
+                        ordem_enviada, pnl_real = Leilao.atualiza_leilao_de_compra(corretoraLeilao,corretoraZeragem,moeda,ordem_leilao,qtd_de_moedas,incremento_leilao_dic)
                         if ordem_enviada.id != 0:
                             ordens_enviadas['{}_{}'.format(moeda,'sell')]={'id':ordem_enviada.id,'price':ordem_enviada.preco_enviado,'amount':ordem_enviada.quantidade_enviada}
                         if pnl_real < -10: #menor pnl aceitavel, do contrario fica de castigo
@@ -198,14 +200,13 @@ class Leilao:
             retorno += '* ' +ordem 
         return retorno
 
-    def envia_leilao_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, qtd_de_moedas):
+    def envia_leilao_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, qtd_de_moedas,incremento_leilao_dic):
         '''
         envia ordem limitada de venda se tiver leilao aberto
         '''
         try:
             ordem = Ordem()  
-            settings_client = Settings()
-            incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretoraLeilao.nome,'incremento_leilao')          
+            
             incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
             preco_que_vou_vender = corretoraLeilao.livro.preco_compra-incremento_leilao #primeiro no book de ordens - incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_compra # zeragem no primeiro book de ordens
@@ -240,15 +241,14 @@ class Leilao:
 
         return ordem
 
-    def envia_leilao_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, qtd_de_moedas):
+    def envia_leilao_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, qtd_de_moedas,incremento_leilao_dic):
         '''
         envia ordem limitada de compra na corretora de baixa liquidez
         '''
         try:
            
             ordem = Ordem()
-            settings_client = Settings()
-            incremento_leilao_dic = settings_client.retorna_campo_de_json_como_dicionario('broker',corretoraLeilao.nome,'incremento_leilao')
+            
             incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
             preco_que_vou_comprar = corretoraLeilao.livro.preco_venda+incremento_leilao #primeiro no book de ordens + incremento
             preco_de_zeragem = corretoraZeragem.livro.preco_venda # zeragem no primeiro book de ordens
@@ -345,7 +345,7 @@ class Leilao:
             Logger.loga_info('leilao compra atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
         return pnl
 
-    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, qtd_de_moedas):
+    def atualiza_leilao_de_compra(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, qtd_de_moedas,incremento_leilao_dic):
         '''
         atualiza ordem no leilao de compra
         '''
@@ -365,7 +365,7 @@ class Leilao:
                 if (abs(corretoraLeilao.livro.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado) > 0.02):
                     corretoraLeilao.atualizar_book(ativo,'brl') #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
 
             #2: estou sem saldo para zerar
@@ -378,7 +378,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
                 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
 
             #3: esta dando pnl negativo para zerar tudo
@@ -390,7 +390,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
                 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
             #4: fui executado
             ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
@@ -401,7 +401,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl 
 
             Logger.loga_info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
@@ -474,7 +474,7 @@ class Leilao:
             Logger.loga_info('leilao venda atualizou o saldo na corretora leilao e zeragem pois foi executado, Saldo brl: {}/{} Saldo {}: {}/{}'.format(round(corretoraLeilao.saldo['brl'],2),round(corretoraZeragem.saldo['brl'],2),ativo,round(corretoraLeilao.saldo[ativo],4),round(corretoraZeragem.saldo[ativo],4)))
         return pnl
 
-    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, qtd_de_moedas):
+    def atualiza_leilao_de_venda(corretoraLeilao:Corretora, corretoraZeragem:Corretora, ativo, ordem_antiga:Ordem, qtd_de_moedas,incremento_leilao_dic):
         '''
         atualiza ordem no leilao de venda
         '''
@@ -494,7 +494,7 @@ class Leilao:
                 if (abs(ordem_antiga.preco_enviado -corretoraLeilao.livro.preco_venda_segundo_na_fila) > 0.02):
                     corretoraLeilao.atualizar_book(ativo,'brl') #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
                 
             #2: estou sem saldo para zerar
@@ -507,7 +507,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
                 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
 
             #3: esta dando pnl negativo para zerar tudo    
@@ -519,7 +519,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
 
             #4: fui executado
@@ -531,7 +531,7 @@ class Leilao:
                 pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
 
                 if cancelou:
-                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas)
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl 
 
             Logger.loga_info('Leilao nao precisou cancelar a ordem {} de {} e colocar outra'.format(ordem_antiga.id,ativo))
