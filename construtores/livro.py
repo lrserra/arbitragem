@@ -22,13 +22,13 @@ class Livro:
             lista_de_precos = precos['bids']
             while qtd_vendida <qtd_a_vender:
                 if linha >= len(lista_de_precos):
-                    return round(preco_medio/qtd_vendida,4)
+                    return preco_medio/qtd_vendida
                 else:
                     vou_vender_nessa_linha = min(lista_de_precos[linha][1],qtd_a_vender-qtd_vendida)
                     qtd_vendida += vou_vender_nessa_linha
                     preco_medio += lista_de_precos[linha][0]*vou_vender_nessa_linha
                     linha +=1
-            return round(preco_medio/qtd_vendida,4)
+            return preco_medio/qtd_vendida
            
         except Exception as erro:
             raise Exception(erro)
@@ -43,13 +43,13 @@ class Livro:
             
             while qtd_comprada <qtd_a_comprar:
                 if linha >= len(lista_de_precos):
-                    return round(preco_medio/qtd_comprada,4)
+                    return preco_medio/qtd_comprada
                 else:
                     vou_comprar_nessa_linha = min(lista_de_precos[linha][1],qtd_a_comprar-qtd_comprada)
                     qtd_comprada += vou_comprar_nessa_linha
                     preco_medio += lista_de_precos[linha][0]*vou_comprar_nessa_linha
                     linha +=1
-            return round(preco_medio/qtd_comprada,4)
+            return preco_medio/qtd_comprada
 
         except Exception as erro:
             raise Exception(erro)
