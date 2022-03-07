@@ -1,6 +1,8 @@
 from datetime import datetime
 import os, sys, time
 
+from uteis.logger import Logger
+
 root_path = os.getcwd()
 sys.path.append(root_path)
 
@@ -32,15 +34,21 @@ google_client = Google()
 instance = settings_client.retorna_campo_de_json('rasp','instance')
 planilha = settings_client.retorna_campo_de_json('rasp','sheet_name')
 
+Logger.cria_arquivo_log('WatchDog')
+Logger.loga_info('iniciando script watchdog...')
+
 while True:
 
-    update_range =[[get_now_time(),
-                    get_update_time('Arbitragem.log'),
-                    get_update_time('Leilao.log'),
-                    get_temperature()]]
+    try:    
+        update_range =[[get_now_time(),
+                        get_update_time('Arbitragem.log'),
+                        get_update_time('Leilao.log'),
+                        get_temperature()]]
 
-    google_client.update(planilha,'settings','monitor{}'.format(instance),update_range)
-    print('updated!')
-    time.sleep(180)
-
+        google_client.update(planilha,'settings','monitor{}'.format(instance),update_range)
+        Logger.loga_info('updated!')
+        time.sleep(180)
+    except Exception as err:
+        Logger.loga_erro('main','watchdog',err)
+        time.sleep(60)
  
