@@ -367,7 +367,8 @@ class Leilao:
                 return ordem_enviada, pnl
           
            #1.5: nao estou exatamente na frente do segundo
-            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra_segundo_na_fila - incremento_leilao_dic[ativo]) :
+            incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra_segundo_na_fila -  incremento_leilao) :
                 
                 Logger.loga_info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é exatamente apos o segundo da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_compra_segundo_na_fila,corretoraLeilao.nome))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
@@ -506,7 +507,8 @@ class Leilao:
                 return ordem_enviada, pnl
                 
             #1.5: nao sou o primeiro da fila
-            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda_segundo_na_fila + incremento_leilao_dic[ativo]):
+            incremento_leilao = incremento_leilao_dic[ativo] if ativo in incremento_leilao_dic.keys() else 0.01
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda_segundo_na_fila + incremento_leilao):
                 
                 Logger.loga_info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao esta exatamente apos o segundo da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_venda_segundo_na_fila,corretoraLeilao.nome))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
