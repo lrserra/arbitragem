@@ -365,6 +365,18 @@ class Leilao:
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
+          
+           #1.5: nao estou exatamente na frente do segundo
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra_segundo_na_fila - incremento_leilao_dic[ativo]) :
+                
+                Logger.loga_info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é exatamente apos o segundo da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_compra_segundo_na_fila,corretoraLeilao.nome))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
+                cancelou = corretoraLeilao.cancelar_ordem(ordem_antiga)
+                pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
+
+                if cancelou:
+                    ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
+                return ordem_enviada, pnl
 
             #2: estou sem saldo para zerar
             corretoraZeragem.atualizar_saldo()
@@ -493,6 +505,18 @@ class Leilao:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
                 
+            #1.5: nao sou o primeiro da fila
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda_segundo_na_fila + incremento_leilao_dic[ativo]):
+                
+                Logger.loga_info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao esta exatamente apos o segundo da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_venda_segundo_na_fila,corretoraLeilao.nome))
+                ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
+                cancelou = corretoraLeilao.cancelar_ordem(ordem_antiga)
+                pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
+
+                if cancelou:
+                    ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
+                return ordem_enviada, pnl
+
             #2: estou sem saldo para zerar
             corretoraZeragem.atualizar_saldo()
             if (corretoraZeragem.saldo[ativo] < ordem_antiga.quantidade_enviada):
