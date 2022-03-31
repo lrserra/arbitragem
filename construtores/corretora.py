@@ -267,10 +267,10 @@ class Corretora:
                     Logger.loga_warning('{}: {} nao foi encontrado no book, vai tentar novamente'.format('BrasilBitcoin','sell'))
                     time.sleep(5) #se der pau esperamos um pouco mais
                 for preco_no_livro in retorno_book_sem_tratar['sell']:#Brasil precisa ter retorno tratado para ficar igual a mercado, dai o restantes dos metodos vai por osmose
-                    preco = preco_no_livro['valor']/preco_no_livro['quantidade'] if ativo_parte == 'shib' else preco_no_livro['preco']
+                    preco = preco_no_livro['valor']/preco_no_livro['quantidade']
                     retorno_book['asks'].append([preco,preco_no_livro['quantidade']])
                 for preco_no_livro in retorno_book_sem_tratar['buy']:
-                    preco = preco_no_livro['valor']/preco_no_livro['quantidade'] if ativo_parte == 'shib' else preco_no_livro['preco']
+                    preco = preco_no_livro['valor']/preco_no_livro['quantidade'] 
                     retorno_book['bids'].append([preco,preco_no_livro['quantidade']])
               
             elif self.nome == 'BitcoinTrade': 

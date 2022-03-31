@@ -355,15 +355,13 @@ class Leilao:
         
         try:
             #1: nao sou o primeiro da fila
-            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra) or (corretoraLeilao.livro.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado > 0.02):
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_compra) :
                 
-                Logger.loga_info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos menor que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_compra,corretoraLeilao.nome,corretoraLeilao.livro.preco_compra_segundo_na_fila))
+                Logger.loga_info('Leilao compra vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_compra,corretoraLeilao.nome))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
                 cancelou = corretoraLeilao.cancelar_ordem(ordem_antiga)
                 pnl = Leilao.zera_leilao_de_compra(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
 
-                if (abs(corretoraLeilao.livro.preco_compra_segundo_na_fila - ordem_antiga.preco_enviado) > 0.02):
-                    corretoraLeilao.atualizar_book(ativo,'brl') #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_compra(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
@@ -484,15 +482,13 @@ class Leilao:
         
         try:
             #1: nao sou o primeiro da fila
-            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda) or (ordem_antiga.preco_enviado -corretoraLeilao.livro.preco_venda_segundo_na_fila > 0.02):
+            if (ordem_antiga.preco_enviado != corretoraLeilao.livro.preco_venda):
                 
-                Logger.loga_info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {} ou é mais de 2 centavos maior que {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_venda,corretoraLeilao.nome,corretoraLeilao.livro.preco_venda_segundo_na_fila))
+                Logger.loga_info('Leilao venda vai cancelar ordem {} de {} pq meu preco {} nao é o primeiro da fila {} na {}'.format(ordem_antiga.id,ativo,ordem_antiga.preco_enviado,corretoraLeilao.livro.preco_venda,corretoraLeilao.nome))
                 ordem_antiga = corretoraLeilao.obter_ordem_por_id(ordem_antiga)
                 cancelou = corretoraLeilao.cancelar_ordem(ordem_antiga)
                 pnl = Leilao.zera_leilao_de_venda(corretoraLeilao,corretoraZeragem,ativo,ordem_antiga)
 
-                if (abs(ordem_antiga.preco_enviado -corretoraLeilao.livro.preco_venda_segundo_na_fila) > 0.02):
-                    corretoraLeilao.atualizar_book(ativo,'brl') #nesse caso especifico é melhor atualizar o book de ordens
                 if cancelou:
                     ordem_enviada = Leilao.envia_leilao_venda(corretoraLeilao,corretoraZeragem,ativo,qtd_de_moedas,incremento_leilao_dic)
                 return ordem_enviada, pnl
