@@ -9,7 +9,7 @@ class BrasilBitcoin:
 
     def __init__(self):
         self.urlBrasilBitcoin = 'https://brasilbitcoin.com.br/'
-        self.credenciais = Settings().retorna_campo_de_json('broker','BrasilBitcoin','Authentication')
+        self.credenciais = Settings().retorna_campo_de_json('rasp','BrasilBitcoin','Authentication')
         self.timeout = 30
         self.time_to_sleep = 5
         self.max_retries = 20

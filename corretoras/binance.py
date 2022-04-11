@@ -9,8 +9,8 @@ class Binance:
 
     def __init__(self):
         self.urlBinance = 'https://api.binance.com/'
-        self.authentication = Settings().retorna_campo_de_json('broker','Binance','Authentication')
-        self.secret = Settings().retorna_campo_de_json('broker','Binance','Secret')
+        self.authentication = Settings().retorna_campo_de_json('rasp','Binance','Authentication')
+        self.secret = Settings().retorna_campo_de_json('rasp','Binance','Secret')
         self.client = Spot(self.authentication,self.secret)
         self.recvWindow = 60*1000
         self.time_to_sleep = 5
