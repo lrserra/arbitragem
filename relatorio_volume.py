@@ -14,20 +14,23 @@ volume_diario = []
 trades_diario = []
 endpoint = 'https://brasilbitcoin.com.br/api/dailySummary' #BTC/13/1/2022
 corretora_br = Corretora('BrasilBitcoin')
+corretora_bin = Corretora('Binance')
 
 # The size of each step in days
 day_delta = datetime.timedelta(days=1)
 
-current_date = datetime.date(2021,11,25) 
-end_date = datetime.date(2022,1,13)#----->nao esquece de mudar aqui mané!!
+current_date = datetime.date(2022,3,1) 
+end_date = datetime.date(2022,4,12)#----->nao esquece de mudar aqui mané!!
 
 #header da planilha
-google_client.escrever(planilha,'volume',['data']+sorted(corretora_br.moedas_negociaveis))
-google_client.escrever(planilha,'trades',['data']+sorted(corretora_br.moedas_negociaveis))
+moedas_arbitraveis = [moeda for moeda in corretora_br.moedas_negociaveis if moeda in corretora_bin.moedas_negociaveis]
+
+google_client.escrever(planilha,'volume',['data']+sorted(moedas_arbitraveis))
+google_client.escrever(planilha,'trades',['data']+sorted(moedas_arbitraveis))
 
 while end_date >= current_date:
 
-    for moeda in sorted(corretora_br.moedas_negociaveis):
+    for moeda in sorted(moedas_arbitraveis):
         try:
             response_json = Requests.envia_get_com_retry('{}/{}/{}/{}/{}'.format(endpoint,moeda.upper(),current_date.day,current_date.month,current_date.year),30,5).json()
             volume_diario.append(response_json['volume_fiat'])
