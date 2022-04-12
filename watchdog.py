@@ -61,7 +61,8 @@ while True:
             time.sleep(180)
         else:
             Logger.loga_warning('my ip {} not in my ip list {}'.format(my_external_ip,my_ip_list))
+            time.sleep(180)
     except Exception as err:
         Logger.loga_erro('main','watchdog',err)
-        time.sleep(60)
+        time.sleep(180)
  
